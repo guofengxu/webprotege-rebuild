@@ -1,0 +1,14 @@
+---
+description: 移动端（wp-mobile，uni-app Vue3 版）编码约定与平台限制
+globs: ["wp-mobile/**"]
+alwaysApply: false
+---
+
+- uni-app 固定了自己的 Vue（3.4.x）与 Vite（5.x）版本：**不要**升级或覆盖这些依赖，也不要从 `wp-web` 复制组件或 composable（ADR-014）。
+- 模板只用 uni-app 组件（`view`、`text`、`scroll-view`、`image` 等）和 wot-design-uni 组件，不使用 `div`、`span` 等 HTML 标签，不直接操作 DOM、`window`、`document`。
+- 网络请求只通过 `src/shared/http.ts` 中对 `uni.request` 的封装，不使用 `fetch` 或 axios；类型来自 `@wp/api-types`。
+- 认证使用 Bearer 访问令牌与刷新令牌（ADR-010），存放在 `uni.setStorageSync`；不依赖 Cookie。
+- 实时更新使用长轮询接口 `/api/projects/{id}/events/poll`，页面隐藏（`onHide`）时停止轮询，`onShow` 时恢复。
+- 页面在 `src/pages.json` 中注册；路由跳转用 `uni.navigateTo` / `uni.redirectTo`，不使用 Vue Router。
+- 平台差异用条件编译（`// #ifdef H5`、`// #ifdef APP-PLUS`），并在卡片中写明影响范围；首期只保证 H5 与 Android App。
+- 纯 TypeScript 逻辑（令牌刷新、数据转换）用 Vitest 测试；页面级验证用 H5 构建 + Playwright。

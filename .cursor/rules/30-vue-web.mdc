@@ -1,0 +1,14 @@
+---
+description: Web 端（wp-web，Vue 3.5 + Vite 8 + Element Plus）编码约定
+globs: ["wp-web/**", "packages/**"]
+alwaysApply: false
+---
+
+- 只用 Composition API + `<script setup lang="ts">`；TypeScript `strict`，禁止 `any`（确有必要时写 `// eslint-disable-next-line` 并注明原因）。
+- 目录按功能划分：`src/features/<功能>/`（组件、composable、API 调用）、`src/shared/`（通用组件与工具）、`src/app/`（路由、布局、全局配置）。
+- 服务端数据一律通过 TanStack Vue Query 获取与缓存；Pinia 只存界面状态（当前项目、选中实体、面板开合）。不要把接口返回的数据复制进 Pinia。
+- API 调用使用 `openapi-fetch` 客户端，类型来自 `@wp/api-types`；错误统一按 `ProblemDetail` 处理，根据 `code` 字段给出中文提示。
+- 界面文字全部走 `vue-i18n`，至少提供 zh-CN 与 en-US；本体内容的显示名称来自后端，不做翻译。
+- 大列表、树一律使用虚拟滚动组件（`el-tree-v2`、`el-table-v2`）。
+- 组件测试用 Vitest + Vue Test Utils，测试文件与组件同目录，命名 `*.spec.ts`；端到端测试放在 `wp-web/e2e/`，使用 Playwright。
+- 不使用 Nuxt、不做 SSR；不引入 React 生态的库。

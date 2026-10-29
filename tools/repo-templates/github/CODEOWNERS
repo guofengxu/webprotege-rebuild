@@ -1,0 +1,17 @@
+# 开发标准与流程文件：修改需要维护者评审（配合分支保护的 require_code_owner_reviews）。
+# 业务代码不设代码负责人，任意一位同事评审通过即可合并。
+# 增加维护者时，在每行末尾追加其 GitHub 用户名，例如 @guofengxu @colleague。
+
+/AGENTS.md                         @guofengxu
+/CONTRIBUTING.md                   @guofengxu
+/.cursor/                          @guofengxu
+/.githooks/                        @guofengxu
+/.github/                          @guofengxu
+# .github/ 的初始版本在 tools/repo-templates/github/（已被 /tools/ 覆盖）
+/tools/                            @guofengxu
+/tasks/TEMPLATE.md                 @guofengxu
+/docs/00-planning-principles.md    @guofengxu
+/docs/02-architecture/adr/         @guofengxu
+/docs/04-dev-workflow.md           @guofengxu
+/.gitattributes                    @guofengxu
+/.gitignore                        @guofengxu

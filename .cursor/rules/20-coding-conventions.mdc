@@ -1,0 +1,15 @@
+---
+description: Java 编码约定
+globs: ["**/*.java"]
+alwaysApply: false
+---
+
+- 根包：`wprebuild.kernel`、`wprebuild.app`、`wprebuild.migrator`。
+- Java 25：值对象用 `record`，封闭的类型层次用 `sealed interface`，分支处理用 `switch` 模式匹配。
+- 构造函数里校验参数（`Objects.requireNonNull`、范围检查），非法时抛 `IllegalArgumentException` 并写清楚原因。
+- 公共方法不返回 `null`：用 `Optional`、空集合或抛异常。集合返回不可变副本（`List.copyOf`）。
+- 测试：JUnit Jupiter + AssertJ；类名以 `Test` 结尾；实现行为规格的测试类名以规格编号开头，例如 `BS01_ChangeListMinimiserTest`；测试方法名用英文 snake_case 描述行为，例如 `cancels_add_followed_by_remove`。
+- 属性测试用 jqwik，`@Property(tries = 200)` 为默认值，固定 seed 失败时把 seed 写进测试注释。
+- 日志用 SLF4J，参数化输出（`log.info("{} loaded in {} ms", projectId, ms)`），不要字符串拼接。
+- 不写与代码重复的注释；只在“为什么这样做”不明显的地方写注释，并引用规格编号，例如 `// BS-02：旧系统把导入变更一律判为无效，这里按规则判断`。
+- 格式化由 Spotless 统一，提交前运行 `./mvnw spotless:apply`。

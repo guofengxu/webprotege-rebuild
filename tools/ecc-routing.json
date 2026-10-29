@@ -1,0 +1,161 @@
+{
+  "eccBaseline": "everything-claude-code v2.2.3（GitHub affaan-m/everything-claude-code，提交 25278e7，2026-10-26）",
+  "eccInstall": {
+    "target": "cursor",
+    "modules": ["rules-core", "agents-core", "commands-core", "hooks-runtime", "platform-configs"],
+    "skillsNote": "skill 按需单独安装：python tools/check_ecc.py --print-install 会根据本文件列出需要的全部 skill，并给出安装命令。"
+  },
+  "common": {
+    "description": "所有 impl 类卡片都适用",
+    "beforeCoding": [],
+    "commit": {"skills": ["conventional-commit-review"], "agents": ["commit-reviewer"]},
+    "afterPush": {"commands": ["/pr"]}
+  },
+  "workTypes": {
+    "build": {
+      "label": "工程构建与配置（Maven、POM、Wrapper、质量门禁）",
+      "skills": ["java-coding-standards"],
+      "agents": ["code-reviewer"],
+      "onFailure": {"agents": ["java-build-resolver"], "commands": ["/build-fix"]},
+      "fullCheck": "java"
+    },
+    "kernel": {
+      "label": "内核领域代码（wp-kernel，纯 Java + OWL API 5）",
+      "skills": ["java-coding-standards", "tdd-workflow", "hexagonal-architecture"],
+      "agents": ["java-reviewer", "type-design-analyzer", "silent-failure-hunter"],
+      "onFailure": {"agents": ["java-build-resolver"], "commands": ["/build-fix"]},
+      "fullCheck": "java"
+    },
+    "migrator": {
+      "label": "旧数据迁移工具（wp-legacy-migrator，OWL API 4）",
+      "skills": ["java-coding-standards", "tdd-workflow"],
+      "agents": ["java-reviewer", "silent-failure-hunter"],
+      "onFailure": {"agents": ["java-build-resolver"], "commands": ["/build-fix"]},
+      "fullCheck": "java"
+    },
+    "app-service": {
+      "label": "Spring Boot 应用服务、命令处理器与 REST 接口",
+      "skills": ["springboot-patterns", "springboot-tdd", "api-design", "java-coding-standards"],
+      "agents": ["java-reviewer", "code-reviewer"],
+      "onFailure": {"agents": ["java-build-resolver"], "commands": ["/build-fix"]},
+      "fullCheck": "java"
+    },
+    "app-security": {
+      "label": "认证、授权、令牌与其它安全相关接口",
+      "skills": ["springboot-security", "security-review", "springboot-tdd", "java-coding-standards"],
+      "agents": ["security-reviewer", "java-reviewer"],
+      "onFailure": {"agents": ["java-build-resolver"], "commands": ["/build-fix"]},
+      "fullCheck": "java"
+    },
+    "db": {
+      "label": "数据库 schema、Flyway 迁移与 JDBC 仓储",
+      "skills": ["postgres-patterns", "database-migrations", "springboot-tdd"],
+      "agents": ["database-reviewer", "java-reviewer"],
+      "onFailure": {"agents": ["java-build-resolver"], "commands": ["/build-fix"]},
+      "fullCheck": "java"
+    },
+    "api-contract": {
+      "label": "API 契约（OpenAPI 快照与契约测试）",
+      "skills": ["contract-first", "api-design"],
+      "agents": ["code-reviewer"],
+      "onFailure": {"agents": ["java-build-resolver"], "commands": ["/build-fix"]},
+      "fullCheck": "java"
+    },
+    "frontend-workspace": {
+      "label": "前端 pnpm 工作区与共享 API 类型包",
+      "skills": ["contract-first"],
+      "agents": ["typescript-reviewer"],
+      "onFailure": {"agents": ["build-error-resolver"], "commands": ["/build-fix"]},
+      "fullCheck": "api-types"
+    },
+    "web": {
+      "label": "Web 端（Vue 3.5 + Vite 8 + Element Plus）",
+      "skills": ["vue-patterns", "vite-patterns", "frontend-design-direction", "accessibility", "i18n-sync", "tdd-workflow"],
+      "agents": ["vue-reviewer", "typescript-reviewer", "a11y-architect"],
+      "commands": ["/vue-review"],
+      "onFailure": {"agents": ["build-error-resolver"], "commands": ["/build-fix"]},
+      "fullCheck": "web"
+    },
+    "mobile": {
+      "label": "移动端（uni-app Vue3 版）",
+      "skills": ["vue-patterns", "i18n-sync", "tdd-workflow"],
+      "agents": ["vue-reviewer", "typescript-reviewer"],
+      "commands": ["/vue-review"],
+      "onFailure": {"agents": ["build-error-resolver"], "commands": ["/build-fix"]},
+      "notes": "ECC 没有 uni-app 专用 skill：以 .cursor/rules/31-uniapp.mdc 为准；vue-patterns 中关于 DOM、Vue Router、Nuxt 的内容不适用。",
+      "fullCheck": "mobile"
+    },
+    "e2e": {
+      "label": "端到端测试（Playwright）",
+      "skills": ["e2e-testing"],
+      "agents": ["e2e-runner", "pr-test-analyzer"],
+      "notes": "使用项目自带的 Playwright，不使用 e2e-runner 默认推荐的 Vercel Agent Browser。",
+      "fullCheck": "auto"
+    },
+    "benchmark": {
+      "label": "性能基准",
+      "skills": ["benchmark"],
+      "agents": ["performance-optimizer"],
+      "notes": "performance-optimizer 只用于分析报告，本类卡片不做任何优化（见卡片「实现要点」）。",
+      "fullCheck": "java"
+    },
+    "ci-devops": {
+      "label": "CI、Docker Compose 与部署配置",
+      "skills": ["deployment-patterns", "docker-patterns", "github-ops"],
+      "agents": ["code-reviewer"],
+      "fullCheck": "java"
+    },
+    "test-data": {
+      "label": "测试语料与测试支持代码",
+      "skills": ["java-coding-standards"],
+      "agents": ["code-reviewer"],
+      "fullCheck": "java"
+    },
+    "planning": {
+      "label": "规划卡（产出任务卡，不写业务代码）",
+      "skills": ["blueprint", "intent-driven-development"],
+      "agents": ["planner", "architect"],
+      "notes": "blueprint 产出的步骤必须转写成 tasks/TEMPLATE.md 的格式，并通过 plan_lint；不要另建 plans/ 目录。",
+      "fullCheck": "plan"
+    }
+  },
+  "extras": {
+    "rea": {
+      "label": "需要对照旧工程行为的卡",
+      "assistAgents": ["spec-miner"],
+      "skills": ["code-tour"],
+      "notes": "spec-miner 只用来辅助阅读 ../webprotege；不要生成 openspec/ 目录。行为以 docs/01-rea/behavior-specs.md 为准。"
+    },
+    "concurrency": {
+      "label": "涉及锁、并发或写路径不变量的卡",
+      "agents": ["silent-failure-hunter"],
+      "notes": "审查重点：锁顺序（ADR-006）、WP-1 ~ WP-8（docs/01-rea/write-path.md）。"
+    },
+    "security": {
+      "label": "处理上传、外部输入或批量创建用户等敏感操作的卡",
+      "skills": ["security-review"],
+      "agents": ["security-reviewer"]
+    },
+    "docker": {
+      "label": "涉及 Docker Compose 的卡",
+      "skills": ["docker-patterns"]
+    },
+    "milestone": {
+      "label": "里程碑验收卡",
+      "skills": ["production-audit", "brownfield-retrospective"],
+      "commands": ["/review-pr"],
+      "notes": "里程碑 PR 合并前跑一次 /review-pr 多代理审查；brownfield-retrospective 的差距清单写入卡片执行记录，不新建文档目录。"
+    }
+  },
+  "doNotUse": [
+    {"item": "/plan", "reason": "任务卡就是计划；/plan 会停下来等待确认，打断流程。规划卡可以使用 planner agent。"},
+    {"item": "git-workflow（分支命名、提交与合并策略部分）", "reason": "以 git-naming-conventions skill 和 docs/04-dev-workflow.md 为准。Agent 不执行 git commit / push / merge，提交由人运行 tools/task.py commit 确认。"},
+    {"item": "conventional-commit-review、commit-reviewer 中执行提交的步骤", "reason": "只用来起草和审查提交信息，然后传给 tools/task.py finish -m；不执行 git commit，不写 Task / Confirmed-by 尾注。"},
+    {"item": "architecture-decision-records", "reason": "其默认目录是 docs/adr/；本项目 ADR 在 docs/02-architecture/adr/，并且 Agent 不得新建或修改已接受的 ADR。"},
+    {"item": "jpa-patterns、mybatis-patterns、prisma-patterns", "reason": "本项目不使用 ORM（ADR-002，使用 JdbcClient）。"},
+    {"item": "frontend-patterns、react-patterns、react-testing、react-performance、frontend-a11y、nextjs-turbopack、nuxt4-patterns", "reason": "这些面向 React / Next.js / Nuxt；本项目前端是 Vue + uni-app。无障碍用 accessibility skill。"},
+    {"item": "springboot-verification、verification-loop 中的 SpotBugs / PMD / Checkstyle / OWASP 步骤", "reason": "本项目没有配置这些插件，不要为了跑通这些步骤而新增依赖；验收以 tools/task.py test 为准。"},
+    {"item": "tdd-workflow、tdd-guide 的 80% 覆盖率要求", "reason": "作为参考，不作为门禁；门禁是卡片的验收命令。"},
+    {"item": "security-scan", "reason": "它扫描 .claude/ 配置，与本项目代码无关。"}
+  ]
+}

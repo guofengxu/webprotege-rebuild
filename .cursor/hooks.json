@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "python .cursor/hooks/commit_gate.py",
+        "event": "beforeShellExecution",
+        "matcher": "git|gh|task\\.py",
+        "timeout": 10,
+        "failClosed": true,
+        "description": "webprotege-rebuild: 提交与推送必须由人确认（python tools/task.py commit），Agent 不得执行 git commit / push / merge 等"
+      }
+    ]
+  }
+}

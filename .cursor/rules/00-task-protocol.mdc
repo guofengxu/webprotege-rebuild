@@ -1,0 +1,13 @@
+---
+description: 任务卡执行协议，所有编码工作必须遵守
+alwaysApply: true
+---
+
+- 本仓库的所有编码工作都以 `tasks/` 下的任务卡为单位进行，完整协议见根目录 `AGENTS.md`，开工前必须读完。
+- 流程固定为：`python tools/task.py start <卡号>`（从 GitHub 主分支建分支并拉取）→ 开发 → `python tools/task.py test <卡号>`（本地测试）→ 审查 → `python tools/task.py finish <卡号> -m "…" --summary "…" --reviews "…"`（更新卡片状态、暂存改动、生成提交前确认单）→ **停止，等人确认**。不要手工建分支，不要在 `main` 上改动，不要跳过 `test`。
+- **Agent 不提交、不推送。** 提交和推送只由人在自己的终端运行 `python tools/task.py commit <卡号>` 完成。Agent 不得执行 `git commit` / `push` / `merge` / `rebase` / `reset --hard`、`--no-verify`、`--amend`、`task.py commit`；被钩子拒绝时不要换写法重试，按 `git-naming-conventions` skill 第 4 节在对话里报告后停下。
+- 人提出修改意见时，先运行 `python tools/task.py reject <卡号> --reason "<人的原话>"`，再修改、重新 `test` 与 `finish`。存在 `.task-runs/<卡号>.feedback.md` 时先读它。
+- 每张卡要用的 ECC skill / agent / 命令见卡片「ECC 技能」小节和 `.cursor/skills/wp-ecc-routing/SKILL.md`。ECC 的建议与本仓库规则冲突时，以本仓库为准。
+- 一次只做一张卡；只做卡片「产出」里列出的内容；「不在本卡范围」里列出的事一律不做。
+- 遇到歧义、需要改动卡片范围以外的模块或接口、改动量明显超过 400 行时：运行 `python tools/task.py block <卡号> --reason "…"`，然后停下来问人（阻塞同样由人确认后提交）。
+- 旧工程 `../webprotege` 只用作行为参照：可以读、可以移植测试断言，不要复制源码，也不要修改它。

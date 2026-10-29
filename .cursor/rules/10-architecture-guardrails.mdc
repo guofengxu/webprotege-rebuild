@@ -1,0 +1,16 @@
+---
+description: 架构护栏，违反即视为缺陷
+alwaysApply: true
+---
+
+- `wp-kernel` 是纯 Java 模块：禁止引入 Spring、JDBC 等框架依赖。
+- `wp-legacy-migrator` 与 `wp-kernel` / `wp-app` 之间互不依赖，只通过迁移包文件格式交换数据（`docs/02-architecture/interchange-format.md`）。
+- OWL API：内核和应用只用 5.5.x；4.x 和 binaryowl 只允许出现在 `wp-legacy-migrator`。
+- Spring Boot 版本固定为 4.1.1（ADR-002），任何卡都不得顺带升级。
+- wp-app 的模块边界以 `docs/02-architecture/overview.md` 第 2 节为准，`ModularityTest` 必须保持通过。不要为了让测试通过而放宽 `allowedDependencies`。
+- 写路径顺序：先持久化修订，再更新内存（`docs/01-rea/write-path.md`）。任何改动都不能打破 WP-1 ~ WP-8。
+- 解析本体时禁止访问网络：导入声明只记录，不加载外部文档。
+- 运行期的大规模本体实例不进编辑器（ADR-013）：不要为了“存实例”给编辑器增加表或接口。
+- `wp-web` 与 `wp-mobile` 是两个独立的前端工程，只共享 `packages/api-types`；不要在两者之间共享 Vue 组件或运行时代码，也不要为了统一版本修改 uni-app 自带的 Vue / Vite 依赖（ADR-014）。
+- 前端不手写 API 的请求与响应类型，一律使用 `@wp/api-types`。
+- 不要新建 ADR，也不要修改已接受的 ADR；有异议写进任务卡的「阻塞」小节。

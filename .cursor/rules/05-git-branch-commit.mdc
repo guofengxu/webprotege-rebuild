@@ -1,0 +1,52 @@
+---
+description: 分支命名、提交信息、提交前人工确认、PR 与 GitHub 评论规范；建分支、起草提交信息、准备提交、开 PR、发评论时必须遵守
+alwaysApply: true
+---
+
+# 分支、提交与评论规范（摘要）
+
+完整规范见 skill `git-naming-conventions`（`.cursor/skills/git-naming-conventions/SKILL.md`），规则由其中的 `scripts/validate_names.py` 实现。
+
+## 提交前人工确认（最重要）
+
+- Agent 做到 `python tools/task.py finish <卡号> -m "<header>" --summary "…" --reviews "…"` 为止。它暂存改动并生成 `.task-runs/<卡号>.review.md`。
+- 然后 Agent **停止**，在对话里报告确认单要点，请人在自己的终端运行 `python tools/task.py commit <卡号>`。
+- Agent 永远不执行：`git commit`、`git push`、`git merge`、`git rebase`、`git cherry-pick`、`git revert`、`git tag`、`git reset --hard`、`git clean -f`、`task.py commit`、`gh pr merge`；不用 `--no-verify`、`--force`、`--amend`；不改 `core.hooksPath`。Cursor 钩子 `.cursor/hooks/commit_gate.py` 会拒绝这些命令，被拒绝后不要换写法重试。
+- `finish` 之后任何改动都要重新 `test` 与 `finish`。人不同意时运行 `reject`，原因在 `.task-runs/<卡号>.feedback.md`。
+
+## 分支
+
+- 任务卡分支由 `task.py start` 生成：`<type>/<卡号小写>-<卡片短描述>`，例如 `feature/p1-03-change-minimiser`。规划卡用 `docs/`，ci-devops 用 `chore/`，其余 `feature/`。不要手工建分支或改名。
+- 其它分支只由人创建：`<feature|fix|hotfix|test|refactor|docs|chore|release>/<可选工单>-<kebab-desc>`。
+- 禁止直接推送 `main`，一律 PR + CI。
+
+## 提交信息（Conventional Commits）
+
+```
+<type>(<scope>): <subject>
+
+<body：为什么，可省略>
+
+Task: P1-03                     ← 只由 task.py commit 添加
+Confirmed-by: 姓名 <邮箱>        ← 只由 task.py commit 添加
+```
+
+- type：`feat | fix | docs | style | refactor | perf | test | chore | ci | build | revert`，破坏性变更加 `!`。
+- scope：`kernel` `app` `access` `bus` `project` `revision` `ontology` `search` `events` `migration` `shared` `web` `mobile` `api-types` `migrator` `testdata` `build` `deps` `ci` `tasks` `docs` `tools`。
+- subject：英文祈使句、小写开头、无句号、整行 ≤ 72 字符；header 后空一行再写 body。禁止 `update` / `fix` / `wip` 这类空主题。
+- 一张卡一个提交；阻塞提交固定为 `docs(tasks): mark pX-NN as blocked`。
+- 起草后先校验：`python .cursor/skills/git-naming-conventions/scripts/validate_names.py --message "<草稿>"`。
+
+```
+✅ feat(kernel): port change list minimiser
+✅ fix(revision): keep revision numbers gapless on retry
+❌ update      ❌ Fixed stuff.      ❌ feat: Add tree      ❌ -m 中自己写 Task: 尾注
+```
+
+## PR
+
+标题 = 提交 header。正文含 Summary / Deviation / Test plan / Review 与两个尾注（`task.py commit --pr` 自动生成）。合并只由人操作。
+
+## GitHub 评论（Conventional Comments）
+
+`<label> [decorations]: <subject>`，label 取 `praise | nitpick | suggestion | issue | todo | question | thought | chore | note`；`issue` / `todo` 默认阻塞。一条评论一个关注点，先结论后证据；禁止只写 “LGTM” / “+1” / “fix this”。用 `gh` 发评论时正文走 HEREDOC。

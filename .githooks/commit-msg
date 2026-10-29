@@ -1,0 +1,27 @@
+#!/bin/sh
+# 校验提交信息（规则见 .cursor/skills/git-naming-conventions/SKILL.md）。
+# 任务分支（<type>/pX-NN-...）上的提交必须带 Task 与 Confirmed-by 尾注，
+# 它们只由 python tools/task.py commit 在人确认后添加。
+# 由 task.py start 自动启用：git config core.hooksPath .githooks
+PY=""
+for c in python3 python py; do
+  if command -v "$c" >/dev/null 2>&1 && "$c" -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)" >/dev/null 2>&1; then
+    PY="$c"; break
+  fi
+done
+if [ -z "$PY" ]; then
+  echo "commit-msg: 找不到 Python 3.9+，无法校验提交信息" >&2
+  exit 1
+fi
+V=".cursor/skills/git-naming-conventions/scripts/validate_names.py"
+branch=$(git branch --show-current 2>/dev/null)
+case "$branch" in
+  */p[0-9]-[0-9][0-9]-*)
+    "$PY" "$V" --branch "$branch" --message-file "$1" --require-trailers || {
+      echo "" >&2
+      echo "提交被拒绝。任务分支上的提交请由人运行：python tools/task.py commit <卡号>" >&2
+      exit 1
+    } ;;
+  *)
+    "$PY" "$V" --message-file "$1" || exit 1 ;;
+esac

@@ -1,0 +1,15 @@
+{
+  "_comment": "main 的分支保护，由人运行 python tools/repo_setup.py protect 应用（GitHub REST: PUT /repos/{owner}/{repo}/branches/main/protection）。P0-05 合并后，把 CI 任务名加入 required_status_checks.contexts 并重新运行 protect。enforce_admins=false 保留维护者在紧急情况下绕过的能力；团队稳定后可改为 true。",
+  "required_status_checks": null,
+  "enforce_admins": false,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 1,
+    "require_code_owner_reviews": true,
+    "dismiss_stale_reviews": true
+  },
+  "restrictions": null,
+  "required_linear_history": false,
+  "allow_force_pushes": false,
+  "allow_deletions": false,
+  "required_conversation_resolution": true
+}
