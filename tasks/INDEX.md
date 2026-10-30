@@ -2,18 +2,18 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 63 张卡：完成 0，进行中 0，阻塞 0，待办 63。
+共 63 张卡：完成 1，进行中 0，阻塞 0，待办 62。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P0-01](P0/P0-01-repo-skeleton.md) 建立 Maven 多模块骨架与 Maven Wrapper
+- [P0-02](P0/P0-02-dependency-smoke.md) 依赖兼容性冒烟：OWL API 5 与 Spring Boot 4.1 共存
 
 ## P0
 
 | ID | 标题 | 模块 | 类型 | 规模 | 状态 | 依赖 |
 |---|---|---|---|---|---|---|
-| [P0-01](P0/P0-01-repo-skeleton.md) | 建立 Maven 多模块骨架与 Maven Wrapper | root | build | S | 待办（可开工） | — |
-| [P0-02](P0/P0-02-dependency-smoke.md) | 依赖兼容性冒烟：OWL API 5 与 Spring Boot 4.1 共存 | wp-kernel, wp-app | build | S | 待办 | P0-01 |
+| [P0-01](P0/P0-01-repo-skeleton.md) | 建立 Maven 多模块骨架与 Maven Wrapper | root | build | S | 完成 | — |
+| [P0-02](P0/P0-02-dependency-smoke.md) | 依赖兼容性冒烟：OWL API 5 与 Spring Boot 4.1 共存 | wp-kernel, wp-app | build | S | 待办（可开工） | P0-01 |
 | [P0-03](P0/P0-03-quality-gates.md) | 质量门禁：Spotless、Enforcer、JaCoCo | root | build | S | 待办 | P0-02 |
 | [P0-04](P0/P0-04-postgres-testcontainers.md) | 本地 PostgreSQL 与 Testcontainers 测试基座 | wp-app | db | S | 待办 | P0-02 |
 | [P0-05](P0/P0-05-ci.md) | GitHub Actions CI | root | ci-devops | S | 待办 | P0-03、P0-04 |
