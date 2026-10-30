@@ -78,7 +78,7 @@ ECC 由维护者安装到本仓库的 `.cursor/` 并**提交进仓库**，所有
 
 1. 新建分支，例如 `chore/vendor-ecc-2-2-3`。
 2. 按 `.cursor/skills/wp-ecc-routing/SKILL.md` 第 4 节安装。
-3. 运行 `python tools/check_ecc.py --fix-hooks`（ECC 安装会覆盖 `.cursor/hooks.json`，这一步把提交闸门放回第一位），再运行 `python tools/check_ecc.py`，退出码应为 0。
+3. 运行 `python tools/check_ecc.py --fix-hooks`（ECC 安装会覆盖 `.cursor/hooks.json`，这一步把提交闸门放回第一位，并把语言 rule 的 `paths:` 转成 Cursor 的 `globs:`），再运行 `python tools/check_ecc.py`，退出码应为 0。
 4. 更新 `eccBaseline`，提交并发 PR。
 
 如果个人在 `~/.cursor/` 下另装了 ECC，与仓库版本冲突时以仓库版本为准；`check_ecc.py` 两处都会查找。

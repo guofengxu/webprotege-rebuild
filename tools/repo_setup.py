@@ -247,8 +247,9 @@ def cmd_dev(args: argparse.Namespace) -> None:
 
     say("工具链")
     check("Python 3.9+", sys.version_info >= (3, 9), sys.version.split()[0])
-    check("Cursor 钩子使用的 python 命令", bool(shutil.which("python")),
-          shutil.which("python") or "PATH 中没有 python（commit_gate 钩子会失败，并拒绝 Agent 的全部 git 命令）")
+    py = shutil.which("python3") or shutil.which("python")
+    check("提交闸门的 Python 解释器", bool(py),
+          py or "PATH 中没有 python3 或 python（commit_gate 钩子会失败，并拒绝所有命中的命令）")
     check("git", bool(shutil.which("git")), version_of(["git", "--version"]) or "未安装")
     sys.path.insert(0, str(ROOT / "tools"))
     try:
