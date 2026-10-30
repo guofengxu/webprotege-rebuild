@@ -57,7 +57,7 @@ python tools/task.py finish P0-01 -m "build: add maven multi-module skeleton" --
 python tools/task.py commit P0-01         # 【人】在自己的终端核对确认单，输入卡号后提交并推送
 python tools/task.py reject P0-01 --reason "…"   # 【人】不同意，原因交给 Agent
 python tools/plan_lint.py                 # 校验任务卡，并重新生成 tasks/INDEX.md 与依赖图
-python tools/check_ecc.py                 # 检查 ECC 安装情况与提交闸门（--fix-hooks 修复）
+python tools/check_ecc.py                 # 检查 ECC 安装、提交闸门、rule 的 globs:（--fix-hooks 修复）
 ```
 
 新同事先读 `CONTRIBUTING.md`：克隆仓库后运行 `python tools/repo_setup.py dev` 配置本机环境。维护者首次建仓见 `CONTRIBUTING.md` 第 6 节。

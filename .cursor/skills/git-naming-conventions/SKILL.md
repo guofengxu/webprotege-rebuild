@@ -234,7 +234,7 @@ EOF
 
 这些措施防的是**误操作和跳步**，不是有意绕过：本地钩子可以被 `--no-verify` 跳过，尾注也可以手写。真正的底线是 GitHub 分支保护加 CI，以及人在合并前看 PR。
 
-安装或更新 ECC 后运行 `python tools/check_ecc.py`：ECC 会覆盖 `.cursor/hooks.json`，提交闸门缺失或不在第一位时用 `--fix-hooks` 修复。
+安装或更新 ECC 后运行 `python tools/check_ecc.py`：ECC 会覆盖 `.cursor/hooks.json`，提交闸门缺失或不在第一位、或语言 rule 仍是 `paths:` 时，用 `--fix-hooks` 修复。
 
 ## 参考
 

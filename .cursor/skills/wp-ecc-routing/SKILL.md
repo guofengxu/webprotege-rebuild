@@ -94,7 +94,7 @@ ECC 的 skill 是通用建议；与本仓库的 ADR、`.cursor/rules/` 或任务
 
 1. 获取 ECC（建议固定在本映射所依据的版本或之后的版本）：`git clone https://github.com/affaan-m/everything-claude-code.git`。
 2. 运行 `python tools/check_ecc.py --print-install`，按输出的命令在**本仓库根目录**下安装：先装核心模块（规则、agent、命令、hook），再按清单安装需要的 skill。每条命令先加 `--dry-run` 确认写入位置是本仓库的 `.cursor/`。
-3. 运行 `python tools/check_ecc.py --fix-hooks`，把提交闸门放回 `.cursor/hooks.json` 第一位；退出码为 0 表示 ECC 齐全且闸门已启用。重启 Cursor 使钩子生效。
+3. 运行 `python tools/check_ecc.py --fix-hooks`，把提交闸门放回 `.cursor/hooks.json` 第一位，并把 ECC 语言 rule 的 `paths:` 转成 Cursor 的 `globs:`；退出码为 0 表示 ECC 齐全、闸门已启用、rule frontmatter 已兼容。重启 Cursor 使钩子与 rule 生效。
 4. ECC 安装进本仓库的 `.cursor/` 后**提交进 Git**（在人手工建的 `chore/` 分支上，经 PR 合并），同事克隆即用同一版本，不需要各自安装；版本记在 `tools/ecc-routing.json` 的 `eccBaseline`。详见 `CONTRIBUTING.md` 第 5 节。
 5. ECC 会在 `.cursor/rules/` 中写入 `common-*.mdc` 等规则文件。它们与本项目的 `00-` ~ `31-` 规则冲突时，以本项目规则为准；不要删除或修改本项目的规则来迁就 ECC。
 
