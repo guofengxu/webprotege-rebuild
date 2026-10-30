@@ -19,7 +19,7 @@ flowchart LR
 
 - P1、P2 和 P3 的数据库 / 账户 / 权限部分可以并行，各自只依赖 P0。
 - P4（Web 端）与 P5（移动端）在 M3 之后并行，两者只共享 `packages/api-types`（P3-27）。
-- 精确的依赖关系：本地运行 `python tools/plan_lint.py` 后查看 `dependency-graph.md`；主分支上的真实进度用 `python tools/task.py next` 查看。
+- 精确的依赖关系与进度：`tasks/INDEX.md` 与 `dependency-graph.md`（由 `plan_lint.py` 生成并纳入 Git）；也可以运行 `python tools/task.py next` 查看主分支上可以开工的卡。
 
 ## 里程碑与门禁
 

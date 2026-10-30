@@ -1,6 +1,6 @@
 # 任务索引
 
-> 本文件由 `python tools/plan_lint.py` 在本地生成，不纳入 Git。状态以各卡片文件为准；要看 GitHub 主分支上的真实进度，运行 `python tools/task.py next`。
+> 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
 共 63 张卡：完成 0，进行中 0，阻塞 0，待办 63。
 

@@ -5,8 +5,9 @@
     python tools/repo_setup.py init --remote https://github.com/<账号>/webprotege-rebuild.git
         维护者执行一次：把当前目录建成 Git 仓库，作为基线提交推送到 GitHub 的 main。
 
-    python tools/repo_setup.py protect
-        维护者执行：按 .github/branch-protection.json 设置 main 的分支保护（需要 gh 且已登录）。
+    python tools/repo_setup.py protect [--team]
+        维护者执行：按 .github/branch-protection.json（单人维护，默认）或 branch-protection.team.json（多人协作）
+        设置 main 的分支保护（需要 gh 且已登录）。
 
     python tools/repo_setup.py dev
         每位开发者克隆仓库后执行一次：检查工具链与 Git 身份，启用仓库自带的 Git 钩子，检查 ECC 与提交闸门。
@@ -192,9 +193,11 @@ def cmd_protect(args: argparse.Namespace) -> None:
     if not shutil.which("gh"):
         raise SetupError("找不到 gh。请安装 GitHub CLI 并运行 gh auth login；或在网页 Settings → Branches 中按 "
                          ".github/branch-protection.json 手工设置。")
-    cfg = ROOT / ".github" / "branch-protection.json"
+    name = "branch-protection.team.json" if args.team else "branch-protection.json"
+    cfg = ROOT / ".github" / name
     if not cfg.exists():
-        cfg = GITHUB_TEMPLATES / "branch-protection.json"
+        cfg = GITHUB_TEMPLATES / name
+    say(f"使用配置：{cfg.relative_to(ROOT).as_posix()}（{'多人协作' if args.team else '单人维护'}）")
     payload = json.loads(cfg.read_text(encoding="utf-8"))
     payload.pop("_comment", None)
     slug = repo_slug()
@@ -304,7 +307,9 @@ def main() -> int:
     g.add_argument("--remote", metavar="URL", help="已在 GitHub 上建好的空仓库地址")
     s.add_argument("--public", action="store_true", help="与 --gh-create 一起使用：建公开仓库（默认私有）")
     s.set_defaults(func=cmd_init)
-    sub.add_parser("protect", help="【维护者】设置 main 的分支保护").set_defaults(func=cmd_protect)
+    s = sub.add_parser("protect", help="【维护者】设置 main 的分支保护（默认单人维护配置）")
+    s.add_argument("--team", action="store_true", help="改用多人协作配置 branch-protection.team.json")
+    s.set_defaults(func=cmd_protect)
     sub.add_parser("dev", help="【每位开发者】检查并配置本机开发环境").set_defaults(func=cmd_dev)
     args = p.parse_args()
     try:

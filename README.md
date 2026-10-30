@@ -35,7 +35,7 @@ tasks/
   P0/ … P6/                       各阶段任务卡与候选清单（EPIC.md）
 tools/
   task.py                         开发流程脚本（start / test / finish / commit / reject / block / next / status / ecc）
-  plan_lint.py                    任务卡校验；在本地生成 tasks/INDEX.md 与依赖图（这两个文件不纳入 Git）
+  plan_lint.py                    任务卡校验；生成 tasks/INDEX.md 与依赖图（纳入 Git，由 finish / block 自动更新）
   ecc-routing.json                工作项类型 → ECC 映射（唯一真源）
   check_ecc.py                    检查 ECC 是否已安装齐全
   repo_setup.py                   建仓（init）、分支保护（protect）、开发者环境检查（dev）
@@ -56,7 +56,7 @@ python tools/task.py finish P0-01 -m "build: add maven multi-module skeleton" --
                                           # Agent 到此停止：更新卡片状态、暂存改动、生成 .task-runs/P0-01.review.md
 python tools/task.py commit P0-01         # 【人】在自己的终端核对确认单，输入卡号后提交并推送
 python tools/task.py reject P0-01 --reason "…"   # 【人】不同意，原因交给 Agent
-python tools/plan_lint.py                 # 校验任务卡，并在本地生成 tasks/INDEX.md
+python tools/plan_lint.py                 # 校验任务卡，并重新生成 tasks/INDEX.md 与依赖图
 python tools/check_ecc.py                 # 检查 ECC 安装情况与提交闸门（--fix-hooks 修复）
 ```
 

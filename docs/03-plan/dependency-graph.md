@@ -1,6 +1,6 @@
 # 任务依赖图
 
-> 本文件由 `python tools/plan_lint.py` 在本地生成，不纳入 Git。箭头表示“先完成 → 后开工”。
+> 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑。箭头表示“先完成 → 后开工”。
 
 ```mermaid
 flowchart LR

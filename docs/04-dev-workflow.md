@@ -76,7 +76,9 @@ flowchart LR
 
 ## 2. 版本管理与团队协作
 
-本目录的全部内容（规划、任务卡、规则、skill、钩子、流程脚本）都纳入 Git，托管在 GitHub 的 `webprotege-rebuild` 仓库。同事克隆后得到的是同一套标准；标准的修改同样走 PR（见 `CONTRIBUTING.md` 第 4 节）。
+本目录的全部内容（规划、任务卡、任务索引与依赖图、规则、skill、钩子、流程脚本）都纳入 Git，托管在 GitHub 的 `guofengxu/webprotege-rebuild` 仓库。标准的修改同样走 PR（见 `CONTRIBUTING.md` 第 4 节）。
+
+> **当前阶段：单人维护。** 分支保护使用单人配置（见下）；“多人并行的规则”、`CODEOWNERS` 评审与多人分支保护配置（`branch-protection.team.json`）暂不启用，待项目具备多人维护条件后重新规划。
 
 ### 维护者首次建仓（一次）
 
@@ -86,21 +88,24 @@ python tools/repo_setup.py protect
 ```
 
 - `init`：删除规划改版留下的空壳文件（内容只有 `<!-- superseded… -->`）→ 从 `tools/repo-templates/github/` 生成 `.github/`（PR 模板、`CODEOWNERS`、`branch-protection.json`；建仓后以 `.github/` 为准）→ `git init -b main` → 暂存全部文件并给钩子脚本加可执行位 → 基线提交 → 用 `gh` 在 GitHub 上建仓（默认私有）→ 推送 `main` → 启用 `.githooks`。只能在交互式终端运行，Cursor 钩子也会拒绝 Agent 执行。
-- `protect`：按 `.github/branch-protection.json` 设置 `main` 的分支保护：禁止直接推送与强推、合并前至少 1 人批准、标准文件需要 `.github/CODEOWNERS` 中的维护者批准、评论必须全部解决。P0-05 合并后，把 CI 任务名加入其中的 `required_status_checks` 并重新运行 `protect`。GitHub 免费账户的私有仓库不支持分支保护。
+- `protect`：按 `.github/branch-protection.json`（单人维护配置）设置 `main` 的分支保护：`main` 只能经 PR 合并、**管理员也不例外**（禁止直接推送）、禁止强推与删除、PR 上的评论必须全部解决；不要求批准人数和代码负责人评审，因为单人维护时没有第二个人能批准（PR 作者不能批准自己的 PR）。人工确认环节（`task.py commit`）仍然保留，相当于每个提交都由你本人审过。P0-05 合并后，把 CI 任务名加入 `required_status_checks` 并重新运行 `protect`。
+- 多人协作时改用 `python tools/repo_setup.py protect --team`（`.github/branch-protection.team.json`：至少 1 人批准、标准文件需 `CODEOWNERS` 中的维护者批准）。GitHub 免费账户只有公开仓库支持分支保护。
 - 然后在仓库设置中邀请同事，把 `CONTRIBUTING.md` 发给他们；按其第 5 节把 ECC 安装进仓库并提交。
 
 ### 每位开发者（一次）
 
 克隆仓库（旧工程放在同级目录 `../webprotege`），运行 `python tools/repo_setup.py dev`，重启 Cursor。详见 `CONTRIBUTING.md` 第 1 节。
 
-### 多人并行的规则
+### 多人并行的规则（暂缓，待重新规划）
+
+以下是已实现、但当前阶段不依赖的机制，供将来规划多人协作时参考：
 
 | 问题 | 处理 |
 |---|---|
 | 两人想做同一张卡 | `start` 在 GitHub 上新建本卡分支即为认领；分支已存在时拒绝（同时认领时只有一人能新建成功）。`next` 只列出未被认领的卡，并单独列出已被认领的卡 |
 | 依赖同事未合并的卡 | `start` 拒绝开工；先评审、合并对方的 PR |
 | 谁确认的提交 | 每个提交的 `Confirmed-by` 尾注记录确认人（取其 `git config user.name / user.email`） |
-| 合并冲突 | 任务卡单模块、文件路径写到类一级，冲突应很少；`tasks/INDEX.md` 等生成文件不入库。冲突时由人在本卡分支上 `git merge origin/main` 解决（Agent 不执行 merge），然后重新 `test`、`finish`、`commit` |
+| 合并冲突 | 任务卡单模块、文件路径写到类一级，冲突应很少。`tasks/INDEX.md` 与依赖图冲突时不要手工合并，运行 `python tools/plan_lint.py` 重新生成即可。冲突时由人在本卡分支上 `git merge origin/main` 解决（Agent 不执行 merge），然后重新 `test`、`finish`、`commit` |
 | PR 评审 | 任意一位同事批准；标准文件需维护者批准。PR 模板见 `.github/pull_request_template.md` |
 
 ## 3. 约定
@@ -108,6 +113,6 @@ python tools/repo_setup.py protect
 - 分支名：`<类型>/<卡号小写>-<卡片文件名中的短描述>`，由 `task.py` 生成，不要手工起名。规划卡用 `docs/`，CI 类用 `chore/`，其余用 `feature/`。规则见 `git-naming-conventions` skill 第 2 节。
 - 提交信息：Conventional Commits，格式、scope 与尾注见 `.cursor/skills/git-naming-conventions/SKILL.md`。一张卡一个提交，由人运行 `task.py commit` 生成；Agent 不做中间提交。
 - `.task-runs/` 中的文件：`<卡号>.json` 测试记录、`<卡号>.pending.json` 待确认的准备、`<卡号>.review.md` 确认单、`<卡号>.feedback.md` 人工反馈、`<卡号>.log.jsonl` 准备 / 确认 / 拒绝的历史。
-- `tasks/INDEX.md` 与 `docs/03-plan/dependency-graph.md` 是本地生成的视图，**不纳入 Git**：多张卡并行时，它们会在合并时互相冲突。真实进度以 `main` 上各卡片文件的 `status` 为准，用 `task.py next` 查看。
+- `tasks/INDEX.md` 与 `docs/03-plan/dependency-graph.md` 由 `plan_lint.py` 根据卡片生成，**纳入 Git**，不要手工编辑。`finish` 与 `block` 会重新生成它们，与卡片状态一起进入同一个提交；`reject` 撤回时也会重新生成。CI（P0-05）用 `plan_lint.py --check --check-index` 检查它们与卡片一致。多人并行后若频繁冲突，再重新评估是否入库。
 - `.task-runs/` 只保存在本地，不纳入 Git。
 - 主分支名默认为 `main`，远程默认为 `origin`；如有不同，设置环境变量 `WP_MAIN_BRANCH`、`WP_REMOTE`。

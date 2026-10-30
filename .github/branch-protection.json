@@ -1,0 +1,15 @@
+{
+  "_comment": "当前阶段（单人维护）的 main 分支保护，由人运行 python tools/repo_setup.py protect 应用。main 只能经 PR 合并，管理员也不例外（enforce_admins）；禁止强推和删除；PR 上的评论必须全部解决。单人维护时没有第二个人能批准，所以不要求批准人数和代码负责人评审（作者不能批准自己的 PR）。多人协作见 branch-protection.team.json。P0-05 合并后，把 CI 任务名加入 required_status_checks 并重新运行 protect。",
+  "required_status_checks": null,
+  "enforce_admins": true,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 0,
+    "require_code_owner_reviews": false,
+    "dismiss_stale_reviews": false
+  },
+  "restrictions": null,
+  "required_linear_history": false,
+  "allow_force_pushes": false,
+  "allow_deletions": false,
+  "required_conversation_resolution": true
+}

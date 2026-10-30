@@ -1,7 +1,3 @@
-# 由 tools/plan_lint.py 在本地生成的视图，不纳入 Git（避免并行分支互相冲突）
-#tasks/INDEX.md
-#docs/03-plan/dependency-graph.md
-
 # tools/task.py 的本地测试记录
 .task-runs/
 

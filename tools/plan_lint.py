@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""校验 tasks/ 下的任务卡，并在本地生成 tasks/INDEX.md 与 docs/03-plan/dependency-graph.md。
+"""校验 tasks/ 下的任务卡，并生成 tasks/INDEX.md 与 docs/03-plan/dependency-graph.md。
+
+这两个文件纳入 Git（当前阶段单人维护，见 docs/04-dev-workflow.md 第 3 节），请勿手工编辑：
+tools/task.py 的 finish / block 会重新生成它们，并与卡片一起提交。
 
 用法：
-    python tools/plan_lint.py           校验并在本地重写索引文件（索引文件不纳入 Git）
-    python tools/plan_lint.py --check   只校验，不写文件（CI 与 tools/task.py 使用）
+    python tools/plan_lint.py                     校验并重写两个索引文件
+    python tools/plan_lint.py --check             只校验，不写文件（tools/task.py test 使用）
+    python tools/plan_lint.py --check --check-index   另外要求两个索引文件与卡片一致（CI 使用）
 
 只依赖 Python 3.9+ 标准库。
 """
@@ -224,8 +228,8 @@ def render_index(cards: list[Card]) -> str:
     lines = [
         "# 任务索引",
         "",
-        "> 本文件由 `python tools/plan_lint.py` 在本地生成，不纳入 Git。状态以各卡片文件为准；"
-        "要看 GitHub 主分支上的真实进度，运行 `python tools/task.py next`。",
+        "> 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` "
+        "会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。",
         "",
         f"共 {len(cards)} 张卡：完成 {counts['done']}，进行中 {counts['in_progress']}，"
         f"阻塞 {counts['blocked']}，待办 {counts['todo']}。",
@@ -262,7 +266,7 @@ def render_graph(cards: list[Card]) -> str:
     out = [
         "# 任务依赖图",
         "",
-        "> 本文件由 `python tools/plan_lint.py` 在本地生成，不纳入 Git。箭头表示“先完成 → 后开工”。",
+        "> 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑。箭头表示“先完成 → 后开工”。",
         "",
         "```mermaid",
         "flowchart LR",
@@ -300,14 +304,21 @@ def main() -> int:
         print(f"\n共 {len(errors)} 个错误。")
         return 1
     cards.sort(key=lambda c: c.id)
+    outputs = ((INDEX, render_index(cards)), (GRAPH, render_graph(cards)))
     if check_only:
+        if "--check-index" in sys.argv[1:]:
+            stale = [p.relative_to(ROOT).as_posix() for p, text in outputs
+                     if not p.exists() or p.read_text(encoding="utf-8").replace("\r\n", "\n") != text]
+            if stale:
+                print("错误：以下文件与任务卡不一致，请运行 python tools/plan_lint.py 重新生成后提交：" + "、".join(stale))
+                return 1
         print(f"通过：{len(cards)} 张卡。")
         return 0
-    for p, text in ((INDEX, render_index(cards)), (GRAPH, render_graph(cards))):
+    for p, text in outputs:
         p.parent.mkdir(parents=True, exist_ok=True)
         with open(p, "w", encoding="utf-8", newline="\n") as f:
             f.write(text)
-    print(f"通过：{len(cards)} 张卡，已在本地更新 tasks/INDEX.md 与 docs/03-plan/dependency-graph.md。")
+    print(f"通过：{len(cards)} 张卡，已更新 tasks/INDEX.md 与 docs/03-plan/dependency-graph.md。")
     return 0
 
 

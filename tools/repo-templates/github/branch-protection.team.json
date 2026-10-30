@@ -1,0 +1,15 @@
+{
+  "_comment": "多人协作时的 main 分支保护（暂未启用，待重新规划多人协作后再定）：至少 1 人批准、标准文件需 CODEOWNERS 中的维护者批准。启用：python tools/repo_setup.py protect --team。注意 PR 作者不能批准自己的 PR，CODEOWNERS 中至少要有两位维护者，否则维护者自己改标准文件时只能用管理员身份绕过。",
+  "required_status_checks": null,
+  "enforce_admins": false,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 1,
+    "require_code_owner_reviews": true,
+    "dismiss_stale_reviews": true
+  },
+  "restrictions": null,
+  "required_linear_history": false,
+  "allow_force_pushes": false,
+  "allow_deletions": false,
+  "required_conversation_resolution": true
+}

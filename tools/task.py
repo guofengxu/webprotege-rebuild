@@ -320,6 +320,12 @@ def module_prefixes(card: plan_lint.Card) -> set[str] | None:
     return prefixes or None
 
 
+def regenerate_index() -> bool:
+    """重新生成 tasks/INDEX.md 与依赖图（纳入 Git，需与卡片保持一致）。"""
+    return subprocess.run([sys.executable, str(ROOT / "tools" / "plan_lint.py")], cwd=ROOT,
+                          capture_output=True).returncode == 0
+
+
 def restore_pending(card_id: str) -> dict | None:
     """撤回一次准备：恢复卡片原文、取消暂存、删除待确认记录。"""
     pf = pending_file(card_id)
@@ -328,6 +334,7 @@ def restore_pending(card_id: str) -> dict | None:
     pending = json.loads(pf.read_text(encoding="utf-8"))
     git("reset", "-q")
     write_lf(ROOT / pending["cardPath"], pending["cardBackup"])
+    regenerate_index()
     pf.unlink()
     rf = review_file(card_id)
     if rf.exists():
@@ -652,6 +659,10 @@ def cmd_block(args: argparse.Namespace) -> None:
     text = set_frontmatter(backup, "status", "blocked").rstrip()
     text += f"\n\n## 阻塞\n- 日期：{dt.date.today().isoformat()}\n- 原因：{args.reason}\n"
     write_lf(path, text)
+    if not regenerate_index():
+        write_lf(path, backup)
+        regenerate_index()
+        raise TaskError("任务卡校验失败，卡片已恢复原样。请运行 python tools/plan_lint.py 查看错误。")
     message = f"docs(tasks): mark {card.id.lower()} as blocked"
     say(f"已在本地把 {card.id} 标记为 blocked（尚未提交）")
     stage_pending(card, path, backup, "block", message, args.reason, "", [], None, [])

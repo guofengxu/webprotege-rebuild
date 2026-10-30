@@ -1,5 +1,7 @@
 # 参与开发（同事必读）
 
+> **当前阶段由一人维护。** 本文第 1、2、5、6 节适用于现在；涉及同事评审、认领与 `CODEOWNERS` 的内容（第 3、4 节与多人分支保护）待项目具备多人维护条件后重新规划，届时以更新后的本文为准。
+
 本仓库所有人用同一套标准开发：同一份任务卡、同一个流程脚本、同一组 Cursor 规则与 skill、同一版本的 ECC。这些标准本身也在仓库里做版本管理，**改标准和改代码一样走 PR**。
 
 ## 1. 第一次参与（每人一次，约 15 分钟）
@@ -85,7 +87,7 @@ ECC 由维护者安装到本仓库的 `.cursor/` 并**提交进仓库**，所有
 
 ```bash
 python tools/repo_setup.py init --gh-create guofengxu/webprotege-rebuild    # 默认私有；公开仓库加 --public
-python tools/repo_setup.py protect                                         # 按 .github/branch-protection.json 保护 main
+python tools/repo_setup.py protect                                         # 单人维护配置；多人协作时加 --team
 ```
 
 `init` 会删除规划改版留下的空壳文件、从 `tools/repo-templates/github/` 生成 `.github/`（PR 模板、CODEOWNERS、分支保护配置）、建立 Git 仓库、提交基线、在 GitHub 上建仓并推送 `main`、启用 Git 钩子。然后在 GitHub 仓库 Settings → Collaborators（或组织的团队）中邀请同事。
