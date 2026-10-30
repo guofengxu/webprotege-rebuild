@@ -9,7 +9,7 @@ flowchart LR
     classDef blocked fill:#ffe3e3,stroke:#c92a2a
     classDef todo fill:#f1f3f5,stroke:#868e96
     subgraph P0
-        P0_01["P0-01"]:::todo
+        P0_01["P0-01"]:::done
         P0_02["P0-02"]:::todo
         P0_03["P0-03"]:::todo
         P0_04["P0-04"]:::todo

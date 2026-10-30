@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: build
 ecc_extra: []
-status: todo
+status: done
 depends_on: []
 ---
 
@@ -48,14 +48,22 @@ depends_on: []
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] `./mvnw -v` 显示 Java 25
-- [ ] 三个模块的占位测试都被执行（查看 surefire 报告）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] `./mvnw -v` 显示 Java 25
+- [x] 三个模块的占位测试都被执行（查看 surefire 报告）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 任何 Spring、OWL API 依赖（P0-02）
 - 代码格式化、Enforcer（P0-03）
 - CI（P0-05）
+
+## 执行记录
+- 日期：2026-10-30
+- 分支：feature/p0-01-repo-skeleton
+- 测试：2026-10-30T21:15:06+08:00 通过（4 项）
+- 实际改动：新增 wp-kernel / wp-app / wp-legacy-migrator 空模块、Maven Wrapper 3.9.16 与 Java 25 编译基线。版本：spring-boot 4.1.1、spring-modulith 2.1.2、owlapi5 5.5.1、lucene 10.5.2、jqwik 1.10.2、assertj 3.27.7、junit-jupiter 6.0.3、compiler-plugin 3.16.0、surefire 3.6.1、jar-plugin 3.5.1。
+- 偏差：junit-jupiter 取 Spring Boot 4.1.1 BOM 的 6.0.3，而不是 Maven Central 最新的 6.1.3，避免 wp-app 导入 Boot BOM 后测试 classpath 混用两个 JUnit 小版本。
+- 审查：code-reviewer
