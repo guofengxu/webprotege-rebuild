@@ -4,7 +4,7 @@ M3 达成且 P3-27 完成后，由 `P4-00` 把下列每一项展开为任务卡�
 
 | # | 卡片 | 验收要点 |
 |---|---|---|
-| 1 | 工程骨架 | `frontend/wp-web/`：Vue 3.5 + Vite 8 + TypeScript（strict）+ ESLint + Vitest + Playwright；依赖 `@wp/api-types`；`verify` 脚本（vue-tsc、lint、vitest、build）全部通过；`vite build` 的产物由 `wp-app` 作为静态资源提供 |
+| 1 | 工程骨架 | `frontend/wp-web/`：Vue 3.5 + Vite 8 + TypeScript（strict）+ ESLint + Vitest + Playwright；依赖 `@wp/api-types`；`verify` 脚本（vue-tsc、lint、vitest、build）全部通过；`vite.config.ts` 把 `/api` 代理到 `http://localhost:8080`，会话 Cookie 与 CSRF Cookie 保持同源；命令从仓库根目录写成 `pnpm -C frontend --filter wp-web …` |
 | 2 | API 客户端与认证 | 基于 `openapi-fetch` 的客户端；读取 CSRF Cookie；登录页；未登录跳转登录页；401 统一处理；TanStack Vue Query 的全局配置 |
 | 3 | 布局、主题与国际化 | Element Plus 主题、设计令牌（由 `design-system` skill 产出）、`vue-i18n`（zh-CN / en-US）、顶部项目栏 |
 | 4 | 项目列表 | 列表、新建空项目、上传导入（进度条、错误展示）、回收站 |
@@ -19,4 +19,5 @@ M3 达成且 P3-27 完成后，由 `P4-00` 把下列每一项展开为任务卡�
 | 13 | 修订历史 | 项目级历史列表、单个修订的差异、实体历史、回滚（需二次确认） |
 | 14 | 实时事件 | 订阅 SSE；根据事件让 Vue Query 缓存失效；收到 `resync` 时重新加载数据；断线自动重连并带 `Last-Event-ID` |
 | 15 | 项目设置与共享 | 前缀、新实体设置、显示语言、成员管理 |
-| 16 | 端到端验收（M4） | Playwright 用界面操作走完 P3-24 的流程；两个浏览器上下文同时打开同一项目，验证实时更新 |
+| 16 | 单包打包（module `wp-app`，work_type `build`） | `backend/wp-app/pom.xml` 增加默认关闭的 profile `with-web`：用 `maven-resources-plugin` 把 `${maven.multiModuleProjectDirectory}/frontend/wp-web/dist` 复制到 `target/classes/static`。`copy-resources` 遇到不存在的目录只会跳过，所以在 profile 内用 `maven-enforcer-plugin`（P0-03 已引入）的 `requireFilesExist` 检查 `frontend/wp-web/dist/index.html`，绑定在 `process-resources` 之前，缺失时失败并提示先运行 `pnpm -C frontend --filter wp-web run build`。不引入 `frontend-maven-plugin`，Maven 不调用 Node，默认 `./mvnw verify` 不需要前端工具链。SPA 路由回退到 `index.html`，`/api/**` 不回退。验收：先构建 wp-web，再 `./mvnw -q -pl :wp-app -am -Pwith-web package`，断言 `backend/wp-app/target/classes/static/index.html` 存在、可执行 jar 中有 `BOOT-INF/classes/static/index.html` |
+| 17 | 端到端验收（M4） | Playwright 用界面操作走完 P3-24 的流程；两个浏览器上下文同时打开同一项目，验证实时更新 |

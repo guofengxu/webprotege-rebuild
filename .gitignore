@@ -19,10 +19,15 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Maven / frontend leftovers
+# Maven
 target/
-.idea/
-*.iml
+
+# 前端（frontend/ 下的 pnpm 工作区）
 node_modules/
-.DS_Store
+dist/
+unpackage/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
 

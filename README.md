@@ -37,8 +37,10 @@ backend/
   wp-kernel/                    纯 Java 内核（OWL API 5）
   wp-app/                       Spring Boot 应用
   wp-legacy-migrator/           旧数据迁移 CLI（OWL API 4，与上面两个模块隔离）
-frontend/                       Web（wp-web）与移动端（wp-mobile）；P4、P5 才创建工程
-packages/                       共享 TypeScript 类型（P3-27）
+frontend/                       前端 pnpm 工作区根（P3-27）；前端命令在这里运行，或从根目录用 pnpm -C frontend
+  wp-web/                       Web 端（P4 创建）
+  wp-mobile/                    移动端 uni-app（P5 创建）
+  packages/api-types/           共享 TypeScript 类型（P3-27）
 tools/
   task.py                         开发流程脚本（start / test / finish / commit / reject / block / next / status / ecc）
   plan_lint.py                    任务卡校验；生成 tasks/INDEX.md 与依赖图（纳入 Git，由 finish / block 自动更新）

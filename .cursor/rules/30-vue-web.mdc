@@ -1,6 +1,6 @@
 ---
 description: Web 端（wp-web，Vue 3.5 + Vite 8 + Element Plus）编码约定
-globs: ["frontend/wp-web/**", "packages/**"]
+globs: ["frontend/wp-web/**"]
 alwaysApply: false
 ---
 
