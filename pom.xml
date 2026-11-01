@@ -22,6 +22,7 @@
         <spring-boot.version>4.1.1</spring-boot.version>
         <spring-modulith.version>2.1.2</spring-modulith.version>
         <owlapi5.version>5.5.1</owlapi5.version>
+        <slf4j.version>2.0.18</slf4j.version>
         <lucene.version>10.5.2</lucene.version>
         <jqwik.version>1.10.2</jqwik.version>
         <assertj.version>3.27.7</assertj.version>
@@ -39,6 +40,26 @@
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sourceforge.owlapi</groupId>
+                <artifactId>owlapi-distribution</artifactId>
+                <version>${owlapi5.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>wprebuild</groupId>
+                <artifactId>wp-kernel</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

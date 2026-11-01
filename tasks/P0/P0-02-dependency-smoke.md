@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: build
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P0-01]
 ---
 
@@ -45,12 +45,20 @@ depends_on: [P0-01]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录中列出了关键传递依赖的最终版本
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录中列出了关键传递依赖的最终版本
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 数据库（P0-04）
 - Modulith 模块声明（P0-07）
+
+## 执行记录
+- 日期：2026-10-30
+- 分支：feature/p0-02-dependency-smoke
+- 测试：2026-10-30T23:14:14+08:00 通过（4 项）
+- 实际改动：为 wp-kernel 引入 OWL API 5.5.1 与 SLF4J（版本写在父 POM 的 dependencyManagement，slf4j 2.0.18 对齐 Spring Boot 4.1.1），并用含一个类、一个子类公理和一个中文 rdfs:label 的 Turtle 做函数式语法往返。wp-app 引入 spring-boot-starter-web、spring-modulith-starter-core 与 wp-kernel，@SpringBootTest 启动后解析最小本体；classpath 上没有 JDBC，未排除数据源自动配置。dependency:tree：wp-kernel 为 guava 33.0.0-jre、caffeine 3.1.8、jackson 2.16.1、rdf4j 5.0.2、slf4j-api 2.0.18、slf4j-simple 2.0.18（test）、jcl-over-slf4j 2.0.11；wp-app 为 guava 33.0.0-jre、caffeine 3.2.4、com.fasterxml.jackson 2.21.5（annotations 2.21）、tools.jackson 3.1.5、rdf4j 5.0.2、slf4j-api 2.0.18、jcl-over-slf4j 2.0.18。冒烟测试通过，没有排除依赖，也没有降级 Spring Boot 或 OWL API。
+- 偏差：无
+- 审查：code-reviewer

@@ -2,22 +2,24 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 63 张卡：完成 1，进行中 0，阻塞 0，待办 62。
+共 63 张卡：完成 2，进行中 0，阻塞 0，待办 61。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P0-02](P0/P0-02-dependency-smoke.md) 依赖兼容性冒烟：OWL API 5 与 Spring Boot 4.1 共存
+- [P0-03](P0/P0-03-quality-gates.md) 质量门禁：Spotless、Enforcer、JaCoCo
+- [P0-04](P0/P0-04-postgres-testcontainers.md) 本地 PostgreSQL 与 Testcontainers 测试基座
+- [P0-06](P0/P0-06-test-corpus.md) 测试本体语料与合成本体生成器
 
 ## P0
 
 | ID | 标题 | 模块 | 类型 | 规模 | 状态 | 依赖 |
 |---|---|---|---|---|---|---|
 | [P0-01](P0/P0-01-repo-skeleton.md) | 建立 Maven 多模块骨架与 Maven Wrapper | root | build | S | 完成 | — |
-| [P0-02](P0/P0-02-dependency-smoke.md) | 依赖兼容性冒烟：OWL API 5 与 Spring Boot 4.1 共存 | wp-kernel, wp-app | build | S | 待办（可开工） | P0-01 |
-| [P0-03](P0/P0-03-quality-gates.md) | 质量门禁：Spotless、Enforcer、JaCoCo | root | build | S | 待办 | P0-02 |
-| [P0-04](P0/P0-04-postgres-testcontainers.md) | 本地 PostgreSQL 与 Testcontainers 测试基座 | wp-app | db | S | 待办 | P0-02 |
+| [P0-02](P0/P0-02-dependency-smoke.md) | 依赖兼容性冒烟：OWL API 5 与 Spring Boot 4.1 共存 | wp-kernel, wp-app | build | S | 完成 | P0-01 |
+| [P0-03](P0/P0-03-quality-gates.md) | 质量门禁：Spotless、Enforcer、JaCoCo | root | build | S | 待办（可开工） | P0-02 |
+| [P0-04](P0/P0-04-postgres-testcontainers.md) | 本地 PostgreSQL 与 Testcontainers 测试基座 | wp-app | db | S | 待办（可开工） | P0-02 |
 | [P0-05](P0/P0-05-ci.md) | GitHub Actions CI | root | ci-devops | S | 待办 | P0-03、P0-04 |
-| [P0-06](P0/P0-06-test-corpus.md) | 测试本体语料与合成本体生成器 | testdata, wp-kernel | test-data | M | 待办 | P0-02 |
+| [P0-06](P0/P0-06-test-corpus.md) | 测试本体语料与合成本体生成器 | testdata, wp-kernel | test-data | M | 待办（可开工） | P0-02 |
 | [P0-07](P0/P0-07-modulith-skeleton.md) | 声明 wp-app 的 Modulith 模块与依赖规则 | wp-app | app-service | S | 待办 | P0-04 |
 
 ## P1
