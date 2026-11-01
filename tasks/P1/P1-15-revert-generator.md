@@ -41,7 +41,7 @@ depends_on: [P1-11]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=BS04_RevertRevisionGeneratorTest
+./mvnw -q -pl :wp-kernel test -Dtest=BS04_RevertRevisionGeneratorTest
 ```
 
 ## 完成判据

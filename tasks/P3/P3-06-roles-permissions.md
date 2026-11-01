@@ -41,7 +41,7 @@ depends_on: [P3-04]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=BS10_AccessServiceTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=BS10_AccessServiceTest
 ```
 
 ## 完成判据

@@ -41,7 +41,7 @@ depends_on: [P3-10, P3-06]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=MigrationMetadataTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=MigrationMetadataTest
 ```
 
 ## 完成判据

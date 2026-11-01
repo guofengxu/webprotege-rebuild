@@ -45,7 +45,7 @@ depends_on: [P2-03]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-legacy-migrator test -Dtest=MongoMetadataTest
+./mvnw -q -pl :wp-legacy-migrator test -Dtest=MongoMetadataTest
 ```
 
 ## 完成判据

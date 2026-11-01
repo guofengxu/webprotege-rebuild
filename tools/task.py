@@ -488,6 +488,28 @@ def is_test_path(p: str) -> bool:
     return any(h in "/" + p for h in TEST_PATH_HINTS)
 
 
+LAYOUT_PARENTS = ("backend", "frontend")
+
+
+def changed_path_modules(path: str) -> set[str]:
+    """A path's module directory. backend/<module> and frontend/<module> count as that module."""
+    parts = path.split("/")
+    if len(parts) == 1:
+        return set()
+    if parts[0] in LAYOUT_PARENTS and len(parts) > 1:
+        return {parts[1]}
+    return {parts[0]}
+
+
+def outside_module_label(path: str) -> str:
+    parts = path.split("/")
+    if len(parts) == 1:
+        return "（根目录）" + path
+    if parts[0] in LAYOUT_PARENTS and len(parts) > 1:
+        return "/".join(parts[:2])
+    return parts[0]
+
+
 def review_warnings(card: plan_lint.Card, numstat: list[tuple[int, int, str]], reviews: list[str] | None) -> list[str]:
     warnings = []
     card_text = card.path.read_text(encoding="utf-8")
@@ -498,9 +520,9 @@ def review_warnings(card: plan_lint.Card, numstat: list[tuple[int, int, str]], r
         warnings.append(f"改动量 {prod_lines} 行（不含测试与测试数据），超过 {size} 号卡的预期 {limit} 行")
     prefixes = module_prefixes(card)
     if prefixes:
-        outside = sorted({p.split("/")[0] if "/" in p else "（根目录）" + p
+        outside = sorted({outside_module_label(p)
                           for _, _, p in numstat
-                          if not p.startswith("tasks/") and (p.split("/")[0] not in prefixes)})
+                          if not p.startswith("tasks/") and changed_path_modules(p).isdisjoint(prefixes)})
         if outside:
             warnings.append(f"改动了卡片模块（{card.meta.get('module')}）以外的位置：{', '.join(outside)}")
     for _, _, p in numstat:

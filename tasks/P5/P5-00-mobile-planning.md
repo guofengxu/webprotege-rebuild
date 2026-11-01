@@ -25,7 +25,7 @@ depends_on: [P3-24, P3-27]
 
 ## 产出
 - `tasks/P5/` 下的任务卡 P5-01 起；每张卡使用 `tasks/TEMPLATE.md` 的全部小节，`work_type` 为 `mobile` 或 `e2e`。
-- 每张卡写到页面（`wp-mobile/src/pages/...`）、组件、composable 和文件路径一级；涉及平台差异的地方写明条件编译范围（`#ifdef H5` / `#ifdef APP-PLUS`）。
+- 每张卡写到页面（`frontend/wp-mobile/src/pages/...`）、组件、composable 和文件路径一级；涉及平台差异的地方写明条件编译范围（`#ifdef H5` / `#ifdef APP-PLUS`）。
 - 每张卡至少有一条验收命令：`pnpm --filter wp-mobile exec vitest run <文件>`、`pnpm --filter wp-mobile run build:h5` 或 H5 的 Playwright 用例。
 - P5-01（工程骨架）中验证并记录：uni-app CLI 工程在 pnpm 工作区中能否正常安装与构建（ADR-014 风险），以及 `wp-mobile` 的 `verify` 脚本内容。
 

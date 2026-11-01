@@ -41,7 +41,7 @@ depends_on: [P1-13]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=BS06_OboIdEntityCrudKitTest
+./mvnw -q -pl :wp-kernel test -Dtest=BS06_OboIdEntityCrudKitTest
 ```
 
 ## 完成判据

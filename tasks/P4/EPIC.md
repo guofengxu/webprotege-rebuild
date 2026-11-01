@@ -4,7 +4,7 @@ M3 达成且 P3-27 完成后，由 `P4-00` 把下列每一项展开为任务卡�
 
 | # | 卡片 | 验收要点 |
 |---|---|---|
-| 1 | 工程骨架 | `wp-web/`：Vue 3.5 + Vite 8 + TypeScript（strict）+ ESLint + Vitest + Playwright；依赖 `@wp/api-types`；`verify` 脚本（vue-tsc、lint、vitest、build）全部通过；`vite build` 的产物由 `wp-app` 作为静态资源提供 |
+| 1 | 工程骨架 | `frontend/wp-web/`：Vue 3.5 + Vite 8 + TypeScript（strict）+ ESLint + Vitest + Playwright；依赖 `@wp/api-types`；`verify` 脚本（vue-tsc、lint、vitest、build）全部通过；`vite build` 的产物由 `wp-app` 作为静态资源提供 |
 | 2 | API 客户端与认证 | 基于 `openapi-fetch` 的客户端；读取 CSRF Cookie；登录页；未登录跳转登录页；401 统一处理；TanStack Vue Query 的全局配置 |
 | 3 | 布局、主题与国际化 | Element Plus 主题、设计令牌（由 `design-system` skill 产出）、`vue-i18n`（zh-CN / en-US）、顶部项目栏 |
 | 4 | 项目列表 | 列表、新建空项目、上传导入（进度条、错误展示）、回收站 |

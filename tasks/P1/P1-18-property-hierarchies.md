@@ -40,7 +40,7 @@ depends_on: [P1-17]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=BS08_PropertyHierarchyViewsTest
+./mvnw -q -pl :wp-kernel test -Dtest=BS08_PropertyHierarchyViewsTest
 ```
 
 ## 完成判据

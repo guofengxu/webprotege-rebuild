@@ -40,7 +40,7 @@ depends_on: [P1-05, P1-07, P1-08]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=ProjectRuntimeLoaderTest
+./mvnw -q -pl :wp-kernel test -Dtest=ProjectRuntimeLoaderTest
 ```
 
 ## 完成判据

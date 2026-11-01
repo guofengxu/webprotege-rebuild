@@ -25,7 +25,7 @@ depends_on: [P3-24, P3-27]
 
 ## 产出
 - `tasks/P4/` 下的任务卡 P4-01 起，按 EPIC 中的顺序编号；每张卡使用 `tasks/TEMPLATE.md` 的全部小节，frontmatter 的 `work_type` 为 `web` 或 `e2e`。
-- 每张卡的「产出」写到组件、路由、composable 和文件路径一级（例如 `wp-web/src/features/hierarchy/HierarchyTree.vue`），并写明调用哪些 API（以 `docs/api/openapi.json` 中的 operationId 为准）。
+- 每张卡的「产出」写到组件、路由、composable 和文件路径一级（例如 `frontend/wp-web/src/features/hierarchy/HierarchyTree.vue`），并写明调用哪些 API（以 `docs/api/openapi.json` 中的 operationId 为准）。
 - 每张卡至少有一条验收命令：`pnpm --filter wp-web exec vitest run <文件>` 或 `pnpm --filter wp-web exec playwright test <spec>`。
 - P4-01（工程骨架）中写明：`wp-web` 的 `verify` 脚本依次执行 `vue-tsc --noEmit`、ESLint、`vitest run`、`vite build`；`tools/task.py test` 会调用它。
 

@@ -6,7 +6,7 @@ M3 达成且 P3-27 完成后，由 `P5-00` 把下列每一项展开为任务卡�
 
 | # | 卡片 | 验收要点 |
 |---|---|---|
-| 1 | 工程骨架 | `wp-mobile/`：uni-app Vue3 版 CLI 工程 + TypeScript 5.9 + wot-design-uni + Vitest；`build:h5`、`build:app` 能执行；记录在 pnpm 工作区中的安装方式（ADR-014 风险项） |
+| 1 | 工程骨架 | `frontend/wp-mobile/`：uni-app Vue3 版 CLI 工程 + TypeScript 5.9 + wot-design-uni + Vitest；`build:h5`、`build:app` 能执行；记录在 pnpm 工作区中的安装方式（ADR-014 风险项） |
 | 2 | 网络层与令牌 | 封装 `uni.request`，类型来自 `@wp/api-types`；登录换取访问令牌；令牌过期时自动用刷新令牌续期，失败则回到登录页；处理 `REFRESH_TOKEN_REUSED` |
 | 3 | 登录与项目列表 | 登录页、项目列表、下拉刷新 |
 | 4 | 层级浏览 | 逐级进入的层级列表（不做树形展开），显示名称，面包屑返回 |

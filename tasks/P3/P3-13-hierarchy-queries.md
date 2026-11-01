@@ -42,7 +42,7 @@ depends_on: [P3-08]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=HierarchyQueryTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=HierarchyQueryTest
 ```
 
 ## 完成判据

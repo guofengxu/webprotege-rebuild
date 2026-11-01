@@ -21,7 +21,7 @@ depends_on: [P0-07]
 - ADR-010
 
 ## 产出
-- `wp-app/src/main/resources/db/migration/V2__core_schema.sql`，内容如下（列名与约束照抄，可以补充注释）：
+- `backend/wp-app/src/main/resources/db/migration/V2__core_schema.sql`，内容如下（列名与约束照抄，可以补充注释）：
 
   ```sql
   create table users (
@@ -113,7 +113,7 @@ depends_on: [P0-07]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=CoreSchemaTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=CoreSchemaTest
 ```
 
 ## 完成判据

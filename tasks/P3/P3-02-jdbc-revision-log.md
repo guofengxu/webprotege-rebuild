@@ -44,7 +44,7 @@ depends_on: [P3-01, P1-08, P1-06, P1-07]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest='Jdbc*Test'
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest='Jdbc*Test'
 ```
 
 ## 完成判据

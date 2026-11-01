@@ -43,7 +43,7 @@ depends_on: [P0-02]
 ## 验收
 ```bash
 docker compose up -d postgres
-./mvnw -q -pl wp-app -am test -Dtest='FlywayBaselineTest,WpApplicationContextTest' -Dsurefire.failIfNoSpecifiedTests=false
+./mvnw -q -pl :wp-app -am test -Dtest='FlywayBaselineTest,WpApplicationContextTest' -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
 ## 完成判据

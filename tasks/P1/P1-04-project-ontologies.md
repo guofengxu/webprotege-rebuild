@@ -42,7 +42,7 @@ depends_on: [P1-02]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=ProjectOntologiesTest
+./mvnw -q -pl :wp-kernel test -Dtest=ProjectOntologiesTest
 ```
 
 ## 完成判据

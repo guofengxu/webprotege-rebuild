@@ -40,7 +40,7 @@ depends_on: [P3-08]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=DownloadTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=DownloadTest
 ```
 
 ## 完成判据

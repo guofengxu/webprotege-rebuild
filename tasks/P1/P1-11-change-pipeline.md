@@ -46,7 +46,7 @@ depends_on: [P1-09, P1-10]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=ChangePipelineTest
+./mvnw -q -pl :wp-kernel test -Dtest=ChangePipelineTest
 ```
 
 ## 完成判据

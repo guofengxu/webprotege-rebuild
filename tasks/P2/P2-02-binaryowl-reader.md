@@ -44,7 +44,7 @@ depends_on: [P2-01]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-legacy-migrator test -Dtest=LegacyRevisionReaderTest
+./mvnw -q -pl :wp-legacy-migrator test -Dtest=LegacyRevisionReaderTest
 ```
 
 ## 完成判据

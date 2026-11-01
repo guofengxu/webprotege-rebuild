@@ -42,7 +42,7 @@ depends_on: [P1-15, P1-16, P1-18, P1-19, P1-06]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest='KernelVerticalSliceTest,BS03_*'
+./mvnw -q -pl :wp-kernel test -Dtest='KernelVerticalSliceTest,BS03_*'
 ```
 
 ## 完成判据

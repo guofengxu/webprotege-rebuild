@@ -42,7 +42,7 @@ uni-app 客户端可以不依赖 Cookie，用 Bearer 令牌安全地调用 API�
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest='AccessTokenTest,CorsTest'
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest='AccessTokenTest,CorsTest'
 ```
 
 ## 完成判据

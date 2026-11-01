@@ -11,9 +11,9 @@
     <name>webprotege-rebuild</name>
 
     <modules>
-        <module>wp-kernel</module>
-        <module>wp-app</module>
-        <module>wp-legacy-migrator</module>
+        <module>backend/wp-kernel</module>
+        <module>backend/wp-app</module>
+        <module>backend/wp-legacy-migrator</module>
     </modules>
 
     <properties>

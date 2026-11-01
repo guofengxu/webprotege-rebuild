@@ -39,7 +39,7 @@ depends_on: [P1-04]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=OfnZipSnapshotCodecTest
+./mvnw -q -pl :wp-kernel test -Dtest=OfnZipSnapshotCodecTest
 ```
 
 ## 完成判据

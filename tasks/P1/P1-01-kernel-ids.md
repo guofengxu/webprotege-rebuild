@@ -38,7 +38,7 @@ depends_on: [P0-03]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=IdsTest
+./mvnw -q -pl :wp-kernel test -Dtest=IdsTest
 ```
 
 ## 完成判据

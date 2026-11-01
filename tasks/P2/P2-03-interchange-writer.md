@@ -42,7 +42,7 @@ depends_on: [P2-02]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-legacy-migrator test -Dtest=ProjectExporterTest
+./mvnw -q -pl :wp-legacy-migrator test -Dtest=ProjectExporterTest
 ```
 
 ## 完成判据

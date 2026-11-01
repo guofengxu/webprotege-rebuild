@@ -42,7 +42,7 @@ depends_on: [P1-02, P0-06]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=OfnLineChangeCodecTest
+./mvnw -q -pl :wp-kernel test -Dtest=OfnLineChangeCodecTest
 ```
 
 ## 完成判据

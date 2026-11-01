@@ -40,7 +40,7 @@ depends_on: [P1-09]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=BS09_DisplayNameViewTest
+./mvnw -q -pl :wp-kernel test -Dtest=BS09_DisplayNameViewTest
 ```
 
 ## 完成判据
