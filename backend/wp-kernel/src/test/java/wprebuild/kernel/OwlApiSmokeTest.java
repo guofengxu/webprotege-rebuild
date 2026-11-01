@@ -42,8 +42,7 @@ class OwlApiSmokeTest {
 
     private static String writeFunctionalSyntax(OWLOntology ontology) throws Exception {
         StringDocumentTarget target = new StringDocumentTarget();
-        ontology.getOWLOntologyManager()
-                .saveOntology(ontology, new FunctionalSyntaxDocumentFormat(), target);
+        ontology.getOWLOntologyManager().saveOntology(ontology, new FunctionalSyntaxDocumentFormat(), target);
         return target.toString();
     }
 }

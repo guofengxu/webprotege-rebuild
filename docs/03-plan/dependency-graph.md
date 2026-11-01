@@ -11,7 +11,7 @@ flowchart LR
     subgraph P0
         P0_01["P0-01"]:::done
         P0_02["P0-02"]:::done
-        P0_03["P0-03"]:::todo
+        P0_03["P0-03"]:::done
         P0_04["P0-04"]:::todo
         P0_05["P0-05"]:::todo
         P0_06["P0-06"]:::todo
