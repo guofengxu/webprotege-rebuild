@@ -238,11 +238,12 @@ def full_check_commands(card: plan_lint.Card) -> list[str]:
     if kind == "java":
         return ["./mvnw -q verify"] if (ROOT / "mvnw").exists() else []
     if kind == "web":
-        return ["pnpm --filter wp-web run verify"]
+        return ["pnpm -C frontend --filter wp-web run verify"]
     if kind == "mobile":
-        return ["pnpm --filter wp-mobile run verify"]
+        # Directory form: wp-mobile may be installed outside the pnpm workspace (ADR-014).
+        return ["pnpm -C frontend/wp-mobile run verify"]
     if kind == "api-types":
-        return ["pnpm --filter @wp/api-types run check"]
+        return ["pnpm -C frontend --filter @wp/api-types run check"]
     return []
 
 
@@ -314,7 +315,9 @@ def module_prefixes(card: plan_lint.Card) -> set[str] | None:
         return None
     prefixes = set()
     for t in tokens:
-        top = t.split("/")[0]
+        parts = t.split("/")
+        # A module written with its layout parent (frontend/wp-web) still names wp-web.
+        top = parts[1] if parts[0] in LAYOUT_PARENTS and len(parts) > 1 else parts[0]
         if top.startswith(("wp-", "packages", "testdata", "tasks", "docs")):
             prefixes.add(top)
     return prefixes or None

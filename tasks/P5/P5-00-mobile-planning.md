@@ -19,15 +19,16 @@ depends_on: [P3-24, P3-27]
 ## 参考
 - `tasks/P5/EPIC.md`
 - ADR-014、ADR-010（移动端令牌）、ADR-007（长轮询）
-- `packages/api-types`（P3-27）
+- `frontend/packages/api-types`（P3-27）及 P3-27 执行记录中的 uni-app 安装验证结果
+- `docs/02-architecture/overview.md` 第 1 节（uni-app 安装方式）
 - `.cursor/rules/31-uniapp.mdc`
 - `AGENTS.md` 第 7 节
 
 ## 产出
 - `tasks/P5/` 下的任务卡 P5-01 起；每张卡使用 `tasks/TEMPLATE.md` 的全部小节，`work_type` 为 `mobile` 或 `e2e`。
 - 每张卡写到页面（`frontend/wp-mobile/src/pages/...`）、组件、composable 和文件路径一级；涉及平台差异的地方写明条件编译范围（`#ifdef H5` / `#ifdef APP-PLUS`）。
-- 每张卡至少有一条验收命令：`pnpm --filter wp-mobile exec vitest run <文件>`、`pnpm --filter wp-mobile run build:h5` 或 H5 的 Playwright 用例。
-- P5-01（工程骨架）中验证并记录：uni-app CLI 工程在 pnpm 工作区中能否正常安装与构建（ADR-014 风险），以及 `wp-mobile` 的 `verify` 脚本内容。
+- 每张卡至少有一条验收命令：`pnpm -C frontend/wp-mobile exec vitest run <文件>`、`pnpm -C frontend/wp-mobile run build:h5` 或 H5 的 Playwright 用例。命令用目录形式而不是 `--filter`，wp-mobile 在不在工作区里都能运行。
+- P5-01（工程骨架）中写明：按 P3-27 的验证结果，wp-mobile 作为工作区成员安装，或单独安装（`pnpm -C frontend/wp-mobile install`；wp-mobile 有自己的 `pnpm-workspace.yaml`、`.npmrc` 与 `pnpm-lock.yaml`，验收中检查依赖装在 `frontend/wp-mobile/node_modules` 而不是 `frontend/node_modules`）；`@wp/api-types` 用 `"link:../packages/api-types"` 引用；不得为了 uni-app 把整个工作区改成 `node-linker=hoisted`；以及 `wp-mobile` 的 `verify` 脚本内容。
 
 ## 实现要点
 - 无特别要求，遵循 `AGENTS.md` 与 `.cursor/rules/`。

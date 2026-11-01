@@ -3,7 +3,7 @@ id: PX-NN
 title: 一句话说明交付什么
 phase: PX
 module: wp-kernel | wp-app/<模块> | wp-legacy-migrator | wp-web | wp-mobile | packages/<包> | root
-# 物理目录：backend/wp-kernel、backend/wp-app、backend/wp-legacy-migrator、frontend/wp-web、frontend/wp-mobile。module 仍写模块名，不写父目录。
+# 物理目录：backend/wp-kernel、backend/wp-app、backend/wp-legacy-migrator、frontend/wp-web、frontend/wp-mobile、frontend/packages/<包>。module 仍写模块名，不写父目录。
 type: impl            # impl | planning
 size: S               # S ≤ 200 行，M ≤ 400 行（不含测试与测试数据）
 work_type: kernel     # 取值见 tools/ecc-routing.json 的 workTypes，决定用哪些 ECC skill 和全量检查

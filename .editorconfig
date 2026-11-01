@@ -9,3 +9,7 @@ trim_trailing_whitespace = true
 [*.java]
 indent_style = space
 indent_size = 4
+
+[*.{ts,tsx,js,mjs,cjs,vue,json,yaml,yml,css,scss}]
+indent_style = space
+indent_size = 2
