@@ -45,7 +45,7 @@ depends_on: [P3-02, P1-21]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=ProjectRuntimeRegistryTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=ProjectRuntimeRegistryTest
 ```
 
 ## 完成判据

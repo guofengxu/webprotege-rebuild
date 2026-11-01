@@ -27,9 +27,9 @@ depends_on: [P0-02]
 - `testdata/ontologies/warehouse-sample.ttl`：约 30 个类的仓库领域小本体（托盘、货位、巷道、堆垛机、AGV 等），中英文标签。
 - `testdata/ontologies/formats/`：把 `warehouse-sample` 分别保存为 `.owl`（RDF/XML）、`.ttl`、`.owx`、`.ofn`、`.omn` 五种格式。
 - `testdata/README.md`：逐个文件说明用途与来源（全部为手写或由生成器生成，无第三方版权）。
-- `wp-kernel/src/test/java/wprebuild/kernel/testsupport/TestOntologies.java`：`static Path dir()`（读取系统属性 `wp.testdata.dir`，默认 `../testdata/ontologies`）、`static OWLOntology load(String relativePath)`。
-- `wp-kernel/src/test/java/wprebuild/kernel/testsupport/SyntheticOntologyGenerator.java`：参数为类数量、平均分支数、每类标签语言数、每类注解断言数、个体数、随机种子；同样的参数和种子生成完全相同的本体。
-- `wp-kernel/src/test/java/wprebuild/kernel/testsupport/TestCorpusTest.java`：所有语料文件都能解析；`axioms-all-types.ofn` 覆盖全部公理类型（如有无法覆盖的类型，在测试里用常量列出并注明原因）；生成器在相同种子下两次生成的公理集合相等。
+- `backend/wp-kernel/src/test/java/wprebuild/kernel/testsupport/TestOntologies.java`：`static Path dir()`（读取系统属性 `wp.testdata.dir`，默认 `../../testdata/ontologies`）、`static OWLOntology load(String relativePath)`。
+- `backend/wp-kernel/src/test/java/wprebuild/kernel/testsupport/SyntheticOntologyGenerator.java`：参数为类数量、平均分支数、每类标签语言数、每类注解断言数、个体数、随机种子；同样的参数和种子生成完全相同的本体。
+- `backend/wp-kernel/src/test/java/wprebuild/kernel/testsupport/TestCorpusTest.java`：所有语料文件都能解析；`axioms-all-types.ofn` 覆盖全部公理类型（如有无法覆盖的类型，在测试里用常量列出并注明原因）；生成器在相同种子下两次生成的公理集合相等。
 
 ## 实现要点
 - 配置 wp-kernel 的 surefire：`<systemPropertyVariables><wp.testdata.dir>${maven.multiModuleProjectDirectory}/testdata/ontologies</wp.testdata.dir></systemPropertyVariables>`。
@@ -44,7 +44,7 @@ depends_on: [P0-02]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=TestCorpusTest
+./mvnw -q -pl :wp-kernel test -Dtest=TestCorpusTest
 ```
 
 ## 完成判据

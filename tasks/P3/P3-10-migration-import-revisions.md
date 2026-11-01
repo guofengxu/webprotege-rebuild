@@ -41,7 +41,7 @@ depends_on: [P3-08, P2-05]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=ProjectMigratorTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=ProjectMigratorTest
 ```
 
 ## 完成判据

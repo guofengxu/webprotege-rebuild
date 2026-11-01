@@ -38,7 +38,7 @@ wp-app 的 10 个应用模块都已声明，模块边界由测试强制执行。
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dtest=ModularityTest -Dsurefire.failIfNoSpecifiedTests=false
+./mvnw -q -pl :wp-app -am test -Dtest=ModularityTest -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
 ## 完成判据

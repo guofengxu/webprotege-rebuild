@@ -23,7 +23,7 @@ depends_on: [P0-03]
 
 ## 产出
 - 依赖：`net.sourceforge.owlapi:owlapi-distribution:4.5.13`；`net.sourceforge.owlapi:binaryowl:2.0.1`（照旧工程的写法排除它自带的 `owlapi-distribution`）；`info.picocli:picocli`；`com.fasterxml.jackson.core:jackson-databind`；`org.slf4j:slf4j-simple`。版本号写在本模块 POM 的 properties 中（本模块不使用 Spring BOM）。
-- `maven-shade-plugin` 产出 `wp-legacy-migrator/target/wp-legacy-migrator.jar`，`Main-Class` 为 `wprebuild.migrator.Main`。
+- `maven-shade-plugin` 产出 `backend/wp-legacy-migrator/target/wp-legacy-migrator.jar`，`Main-Class` 为 `wprebuild.migrator.Main`。
 - `wprebuild.migrator.Main`：picocli 根命令，带 `--version`；子命令 `inspect`、`export`、`verify` 先占位，执行时输出 `not implemented` 并返回退出码 2。
 - 测试 `MainTest`：`--help` 退出码 0；`--version` 输出包含版本号。
 
@@ -40,8 +40,8 @@ depends_on: [P0-03]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-legacy-migrator test -Dtest=MainTest
-./mvnw -q -pl wp-legacy-migrator package && java -jar wp-legacy-migrator/target/wp-legacy-migrator.jar --help
+./mvnw -q -pl :wp-legacy-migrator test -Dtest=MainTest
+./mvnw -q -pl :wp-legacy-migrator package && java -jar backend/wp-legacy-migrator/target/wp-legacy-migrator.jar --help
 ```
 
 ## 完成判据

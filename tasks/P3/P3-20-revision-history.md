@@ -43,7 +43,7 @@ depends_on: [P3-08, P1-15]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=RevisionHistoryTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=RevisionHistoryTest
 ```
 
 ## 完成判据

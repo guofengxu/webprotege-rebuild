@@ -1,6 +1,6 @@
 ---
 description: 移动端（wp-mobile，uni-app Vue3 版）编码约定与平台限制
-globs: ["wp-mobile/**"]
+globs: ["frontend/wp-mobile/**"]
 alwaysApply: false
 ---
 

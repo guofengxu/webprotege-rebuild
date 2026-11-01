@@ -42,7 +42,7 @@ depends_on: [P3-13]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=ClassFrameReadTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=ClassFrameReadTest
 ```
 
 ## 完成判据

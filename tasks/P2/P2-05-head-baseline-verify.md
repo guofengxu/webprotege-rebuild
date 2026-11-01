@@ -42,8 +42,8 @@ depends_on: [P2-04]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-legacy-migrator test -Dtest=EndToEndExportTest
-./mvnw -q -pl wp-legacy-migrator package && java -jar wp-legacy-migrator/target/wp-legacy-migrator.jar verify --package testdata/migration/sample-package
+./mvnw -q -pl :wp-legacy-migrator test -Dtest=EndToEndExportTest
+./mvnw -q -pl :wp-legacy-migrator package && java -jar backend/wp-legacy-migrator/target/wp-legacy-migrator.jar verify --package testdata/migration/sample-package
 ```
 
 ## 完成判据

@@ -33,6 +33,12 @@ docs/
 tasks/
   TEMPLATE.md                     任务卡模板
   P0/ … P6/                       各阶段任务卡与候选清单（EPIC.md）
+backend/
+  wp-kernel/                    纯 Java 内核（OWL API 5）
+  wp-app/                       Spring Boot 应用
+  wp-legacy-migrator/           旧数据迁移 CLI（OWL API 4，与上面两个模块隔离）
+frontend/                       Web（wp-web）与移动端（wp-mobile）；P4、P5 才创建工程
+packages/                       共享 TypeScript 类型（P3-27）
 tools/
   task.py                         开发流程脚本（start / test / finish / commit / reject / block / next / status / ecc）
   plan_lint.py                    任务卡校验；生成 tasks/INDEX.md 与依赖图（纳入 Git，由 finish / block 自动更新）

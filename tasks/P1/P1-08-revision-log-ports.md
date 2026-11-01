@@ -27,7 +27,7 @@ depends_on: [P1-02]
 - `append` 的规则：`revision.number()` 必须等于 `expectedHead.next()`，否则抛 `IllegalArgumentException`；当前 head 不等于 `expectedHead` 时抛 `wprebuild.kernel.revision.ConcurrentAppendException`。
 - `wprebuild.kernel.revision.SnapshotStore`：`void save(ProjectId, RevisionNumber, String codecId, byte[] payload)`；`Optional<StoredSnapshot> latest(ProjectId)`；`Optional<StoredSnapshot> latestAtOrBefore(ProjectId, RevisionNumber)`；`record StoredSnapshot(RevisionNumber revision, String codecId, byte[] payload)`。
 - `InMemoryRevisionLog`、`InMemorySnapshotStore`：线程安全。
-- 契约测试 `wp-kernel/src/test/java/wprebuild/kernel/revision/RevisionLogContract.java`（抽象类，子类提供实现）：空项目 head 为 0；连续追加；`read` 的区间语义；错误修订号；并发追加——8 个线程用同一个 `expectedHead` 追加，恰好 1 个成功、7 个抛 `ConcurrentAppendException`（WP-5）。`SnapshotStoreContract.java` 同理。
+- 契约测试 `backend/wp-kernel/src/test/java/wprebuild/kernel/revision/RevisionLogContract.java`（抽象类，子类提供实现）：空项目 head 为 0；连续追加；`read` 的区间语义；错误修订号；并发追加——8 个线程用同一个 `expectedHead` 追加，恰好 1 个成功、7 个抛 `ConcurrentAppendException`（WP-5）。`SnapshotStoreContract.java` 同理。
 - `InMemoryRevisionLogTest extends RevisionLogContract`、`InMemorySnapshotStoreTest extends SnapshotStoreContract`。
 - wp-kernel 的 POM 配置 `maven-jar-plugin` 的 `test-jar` 目标，让 wp-app（P3-02）复用契约测试。
 
@@ -44,7 +44,7 @@ depends_on: [P1-02]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest='InMemory*Test'
+./mvnw -q -pl :wp-kernel test -Dtest='InMemory*Test'
 ```
 
 ## 完成判据

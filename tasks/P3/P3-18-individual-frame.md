@@ -41,7 +41,7 @@ depends_on: [P3-17]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=IndividualFrameTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=IndividualFrameTest
 ```
 
 ## 完成判据

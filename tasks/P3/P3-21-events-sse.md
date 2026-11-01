@@ -43,7 +43,7 @@ depends_on: [P3-03, P3-06]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=EventsTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=EventsTest
 ```
 
 ## 完成判据

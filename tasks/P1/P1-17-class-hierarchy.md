@@ -43,7 +43,7 @@ depends_on: [P1-09]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest='BS08_Class*'
+./mvnw -q -pl :wp-kernel test -Dtest='BS08_Class*'
 ```
 
 ## 完成判据

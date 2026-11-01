@@ -41,7 +41,7 @@ depends_on: [P3-16]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=PropertyFramesTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=PropertyFramesTest
 ```
 
 ## 完成判据

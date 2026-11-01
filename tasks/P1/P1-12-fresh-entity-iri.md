@@ -48,7 +48,7 @@ depends_on: [P1-11]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest='BS05_*'
+./mvnw -q -pl :wp-kernel test -Dtest='BS05_*'
 ```
 
 ## 完成判据

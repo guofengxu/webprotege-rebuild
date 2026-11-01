@@ -20,7 +20,7 @@ depends_on: [P1-11, P1-17, P1-19, P1-06]
 - ADR-005、ADR-011（两者都依赖本卡的测量结果）
 
 ## 产出
-- `wp-kernel/src/test/java/wprebuild/kernel/bench/KernelBenchmark.java`：`@EnabledIfSystemProperty(named = "bench", matches = "true")`，默认构建不运行。
+- `backend/wp-kernel/src/test/java/wprebuild/kernel/bench/KernelBenchmark.java`：`@EnabledIfSystemProperty(named = "bench", matches = "true")`，默认构建不运行。
 - 场景（分别用生成器生成约 10 万和约 50 万条公理的项目）：（a）快照编码与解码耗时；（b）从内存日志重放 1,000 个修订（每个 10 条变更）的吞吐；（c）通过 `ChangePipeline`（内存日志）连续 1,000 次单实体编辑的 p50 / p95 延迟，派生视图全部启用；（d）加载后的堆占用（调用 `System.gc()` 之后读取 `MemoryMXBean`）；（e）`OfnLineChangeCodec` 解码 10 万行的耗时。
 - 运行结束输出 Markdown 表格到 `docs/perf/kernel-benchmark-<yyyy-MM-dd>.md`，包含机器配置（CPU、内存、JDK 版本、`-Xmx`）。
 
@@ -38,7 +38,7 @@ depends_on: [P1-11, P1-17, P1-19, P1-06]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=KernelBenchmark -Dbench=true -DargLine=-Xmx6g
+./mvnw -q -pl :wp-kernel test -Dtest=KernelBenchmark -Dbench=true -DargLine=-Xmx6g
 ```
 
 ## 完成判据

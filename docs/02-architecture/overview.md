@@ -1,6 +1,6 @@
 # 目标架构总览
 
-> 修订记录：2026-10-28 初版；2026-10-29 前端改为 Vue，新增 uni-app 移动端，Spring Boot 固定为 4.1.1，PostgreSQL 升级为 18，补充数据放置原则（ADR-013）。
+> 修订记录：2026-10-28 初版；2026-10-29 前端改为 Vue，新增 uni-app 移动端，Spring Boot 固定为 4.1.1，PostgreSQL 升级为 18，补充数据放置原则（ADR-013）；2026-11-01 源码按运行时分到 `backend/` 与 `frontend/`（P0-08）。
 
 一句话：**一个 Spring Boot 4.1.1 模块化单体 + 一个纯 Java 内核 + 一个独立的旧数据迁移工具 + Vue 3 Web 端 + uni-app 移动端**。编辑器的数据只放在 PostgreSQL 里；运行期的大规模本体实例不进编辑器，见 ADR-013。
 
@@ -9,24 +9,26 @@
 ```
 webprotege-rebuild/
   pom.xml                       Maven 父 POM（Java 版本统一管理，见 ADR-002）
-  wp-kernel/                    纯 Java：本体变更、修订、编码、运行时、IRI 生成、层级、显示名称
-                                依赖：OWL API 5.5.x、SLF4J。禁止依赖 Spring 和 JDBC
-  wp-app/                       Spring Boot 4.1.1 应用，按 Spring Modulith 划分应用模块（见第 2 节）
-                                依赖：wp-kernel
-  wp-legacy-migrator/           独立 CLI：读取旧 BinaryOWL 日志与 mongoexport JSON，输出迁移包
-                                依赖：OWL API 4.5.13 + binaryowl 2.0.1。禁止依赖 wp-kernel / wp-app
   package.json                  前端 pnpm 工作区根（只放工作区脚本，不放运行时依赖）
-  pnpm-workspace.yaml           成员：wp-web、wp-mobile、packages/*
+  pnpm-workspace.yaml           成员：frontend/wp-web、frontend/wp-mobile、packages/*
+  backend/
+    wp-kernel/                  纯 Java：本体变更、修订、编码、运行时、IRI 生成、层级、显示名称
+                                依赖：OWL API 5.5.x、SLF4J。禁止依赖 Spring 和 JDBC
+    wp-app/                     Spring Boot 4.1.1 应用，按 Spring Modulith 划分应用模块（见第 2 节）
+                                依赖：wp-kernel
+    wp-legacy-migrator/         独立 CLI：读取旧 BinaryOWL 日志与 mongoexport JSON，输出迁移包
+                                依赖：OWL API 4.5.13 + binaryowl 2.0.1。禁止依赖 wp-kernel / wp-app
+  frontend/
+    wp-web/                     Web 端：Vue 3.5 + Vite 8 + TypeScript + Element Plus（ADR-008，P4）
+    wp-mobile/                  移动端：uni-app（Vue3 版，内部固定 Vue 3.4 + Vite 5）+ wot-design-uni（ADR-014，P5）
   packages/api-types/           由 docs/api/openapi.json 生成的 TypeScript 类型，零运行时依赖，Web 与移动端共用
-  wp-web/                       Web 端：Vue 3.5 + Vite 8 + TypeScript + Element Plus（ADR-008，P4）
-  wp-mobile/                    移动端：uni-app（Vue3 版，内部固定 Vue 3.4 + Vite 5）+ wot-design-uni（ADR-014，P5）
   testdata/                     测试用本体语料（P0-06）
   compose.yaml                  本地 PostgreSQL 18
   tools/                        plan_lint.py（任务卡校验）、task.py（任务流程）、check_ecc.py（ECC 安装检查）
 ```
 
 - 迁移工具必须独立：它要用 OWL API 4 读取 BinaryOWL，而内核用的是 OWL API 5，两者不能出现在同一个 classpath 上。两边只通过**迁移包文件格式**交换数据（`interchange-format.md`），不共享任何 jar。
-- Web 端与移动端必须是两个独立的前端工程：uni-app 固定了自己的 Vue / Vite 版本，与 Web 端的版本不同。两者只共享 `packages/api-types`（纯类型），**不共享 Vue 组件和运行时代码**。
+- Web 端与移动端必须是两个独立的前端工程：uni-app 固定了自己的 Vue / Vite 版本，与 Web 端的版本不同。两者只共享 `packages/api-types`（纯类型），**不共享 Vue 组件和运行时代码**。`frontend/` 下不要再加共用组件目录。P4、P5 建工程之前，`frontend/wp-web` 与 `frontend/wp-mobile` 可以还不存在。
 
 ## 2. wp-app 的应用模块（Spring Modulith）
 

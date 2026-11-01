@@ -23,7 +23,7 @@ depends_on: [P3-09, P3-10, P3-11, P3-12, P3-17, P3-18, P3-19, P3-20, P3-21, P3-2
 - 依赖 `org.springdoc:springdoc-openapi-starter-webmvc-api`（取支持 Spring Boot 4.1 的最新版本）。
 - 为全部控制器补齐 `@Operation` 与 `@Tag`；ProblemDetail 作为统一的错误响应模型。
 - `docs/api/openapi.json`：契约快照，提交到仓库。
-- 测试 `OpenApiContractTest`：启动应用后获取 `/v3/api-docs`，与 `docs/api/openapi.json` 比较（规范化 JSON 后比较）；不一致时失败，并提示运行 `./mvnw -pl wp-app -Dwp.openapi.update=true test -Dtest=OpenApiContractTest` 更新快照。
+- 测试 `OpenApiContractTest`：启动应用后获取 `/v3/api-docs`，与 `docs/api/openapi.json` 比较（规范化 JSON 后比较）；不一致时失败，并提示运行 `./mvnw -pl :wp-app -Dwp.openapi.update=true test -Dtest=OpenApiContractTest` 更新快照。
 - `docs/api/README.md`：说明前端如何用 `openapi-typescript` 从快照生成类型。
 
 ## 实现要点
@@ -39,7 +39,7 @@ depends_on: [P3-09, P3-10, P3-11, P3-12, P3-17, P3-18, P3-19, P3-20, P3-21, P3-2
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=OpenApiContractTest
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest=OpenApiContractTest
 ```
 
 ## 完成判据

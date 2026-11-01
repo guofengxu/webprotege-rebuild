@@ -40,7 +40,7 @@ depends_on: [P1-02]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=BS01_ChangeListMinimiserTest
+./mvnw -q -pl :wp-kernel test -Dtest=BS01_ChangeListMinimiserTest
 ```
 
 ## 完成判据

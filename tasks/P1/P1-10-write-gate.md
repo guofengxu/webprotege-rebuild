@@ -39,7 +39,7 @@ depends_on: [P1-01]
 
 ## 验收
 ```bash
-./mvnw -q -pl wp-kernel test -Dtest=ProjectWriteGateTest
+./mvnw -q -pl :wp-kernel test -Dtest=ProjectWriteGateTest
 ```
 
 ## 完成判据

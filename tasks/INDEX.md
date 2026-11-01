@@ -2,7 +2,7 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 63 张卡：完成 2，进行中 0，阻塞 0，待办 61。
+共 64 张卡：完成 3，进行中 0，阻塞 0，待办 61。
 
 ## 现在可以开工的卡（按本地文件计算）
 
@@ -21,6 +21,7 @@
 | [P0-05](P0/P0-05-ci.md) | GitHub Actions CI | root | ci-devops | S | 待办 | P0-03、P0-04 |
 | [P0-06](P0/P0-06-test-corpus.md) | 测试本体语料与合成本体生成器 | testdata, wp-kernel | test-data | M | 待办（可开工） | P0-02 |
 | [P0-07](P0/P0-07-modulith-skeleton.md) | 声明 wp-app 的 Modulith 模块与依赖规则 | wp-app | app-service | S | 待办 | P0-04 |
+| [P0-08](P0/P0-08-split-source-trees.md) | 按运行时拆分源码目录 | root | build | S | 完成 | P0-02 |
 
 ## P1
 
