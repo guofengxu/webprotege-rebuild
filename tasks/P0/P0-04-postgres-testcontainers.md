@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: db
 ecc_extra: [docker]
-status: todo
+status: done
 depends_on: [P0-02]
 ---
 
@@ -47,10 +47,18 @@ docker compose up -d postgres
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 业务表（P3-01）
+
+## 执行记录
+- 日期：2026-11-01
+- 分支：feature/p0-04-postgres-testcontainers
+- 测试：2026-11-01T21:02:20+08:00 通过（4 项）
+- 实际改动：增加 compose.yaml（postgres:18）、Flyway V1 baseline、数据源配置和 Testcontainers @ServiceConnection 测试基座；FlywayBaselineTest 用 JdbcClient 断言 app_info.schema=1。
+- 偏差：因 Spring Boot 4.1.1 模块化，额外加入 spring-boot-starter-flyway（仅 flyway-core 不会执行迁移）。Testcontainers 2.0.5 构件名为 testcontainers-postgresql / testcontainers-junit-jupiter，容器类为无泛型的 org.testcontainers.postgresql.PostgreSQLContainer。PostgreSQL 18 数据卷挂在 /var/lib/postgresql。P0-02 当时 classpath 上没有 JDBC，并不存在可删除的数据源排除，本次只是把 WpApplicationContextTest 改为 @DatabaseTest。
+- 审查：database-reviewer, java-reviewer

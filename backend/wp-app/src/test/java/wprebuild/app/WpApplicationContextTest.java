@@ -6,13 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.io.StringDocumentSource;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
-import org.springframework.test.context.TestConstructor;
-import org.springframework.test.context.TestConstructor.AutowireMode;
+import wprebuild.app.support.DatabaseTest;
 
-@SpringBootTest
-@TestConstructor(autowireMode = AutowireMode.ALL)
+@DatabaseTest
 class WpApplicationContextTest {
 
     private static final String MINIMAL_TURTLE = """
