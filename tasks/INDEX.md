@@ -2,13 +2,14 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 65 张卡：完成 4，进行中 0，阻塞 0，待办 61。
+共 65 张卡：完成 5，进行中 0，阻塞 0，待办 60。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P0-03](P0/P0-03-quality-gates.md) 质量门禁：Spotless、Enforcer、JaCoCo
 - [P0-04](P0/P0-04-postgres-testcontainers.md) 本地 PostgreSQL 与 Testcontainers 测试基座
 - [P0-06](P0/P0-06-test-corpus.md) 测试本体语料与合成本体生成器
+- [P1-01](P1/P1-01-kernel-ids.md) 内核标识类型：ProjectId、RevisionNumber、UserId
+- [P2-01](P2/P2-01-migrator-skeleton.md) 迁移工具骨架：OWL API 4 + BinaryOWL + CLI
 
 ## P0
 
@@ -16,7 +17,7 @@
 |---|---|---|---|---|---|---|
 | [P0-01](P0/P0-01-repo-skeleton.md) | 建立 Maven 多模块骨架与 Maven Wrapper | root | build | S | 完成 | — |
 | [P0-02](P0/P0-02-dependency-smoke.md) | 依赖兼容性冒烟：OWL API 5 与 Spring Boot 4.1 共存 | wp-kernel, wp-app | build | S | 完成 | P0-01 |
-| [P0-03](P0/P0-03-quality-gates.md) | 质量门禁：Spotless、Enforcer、JaCoCo | root | build | S | 待办（可开工） | P0-02 |
+| [P0-03](P0/P0-03-quality-gates.md) | 质量门禁：Spotless、Enforcer、JaCoCo | root | build | S | 完成 | P0-02 |
 | [P0-04](P0/P0-04-postgres-testcontainers.md) | 本地 PostgreSQL 与 Testcontainers 测试基座 | wp-app | db | S | 待办（可开工） | P0-02 |
 | [P0-05](P0/P0-05-ci.md) | GitHub Actions CI | root | ci-devops | S | 待办 | P0-03、P0-04 |
 | [P0-06](P0/P0-06-test-corpus.md) | 测试本体语料与合成本体生成器 | testdata, wp-kernel | test-data | M | 待办（可开工） | P0-02 |
@@ -28,7 +29,7 @@
 
 | ID | 标题 | 模块 | 类型 | 规模 | 状态 | 依赖 |
 |---|---|---|---|---|---|---|
-| [P1-01](P1/P1-01-kernel-ids.md) | 内核标识类型：ProjectId、RevisionNumber、UserId | wp-kernel | kernel | S | 待办 | P0-03 |
+| [P1-01](P1/P1-01-kernel-ids.md) | 内核标识类型：ProjectId、RevisionNumber、UserId | wp-kernel | kernel | S | 待办（可开工） | P0-03 |
 | [P1-02](P1/P1-02-change-model.md) | 本体变更模型：OntologyKey 与 7 种 OntologyChange | wp-kernel | kernel | M | 待办 | P1-01、P0-06 |
 | [P1-03](P1/P1-03-change-minimiser.md) | 变更列表最小化（BS-01） | wp-kernel | kernel | S | 待办 | P1-02 |
 | [P1-04](P1/P1-04-project-ontologies.md) | 内存本体读模型 ProjectOntologies（OWL API 5 实现） | wp-kernel | kernel | M | 待办 | P1-02 |
@@ -54,7 +55,7 @@
 
 | ID | 标题 | 模块 | 类型 | 规模 | 状态 | 依赖 |
 |---|---|---|---|---|---|---|
-| [P2-01](P2/P2-01-migrator-skeleton.md) | 迁移工具骨架：OWL API 4 + BinaryOWL + CLI | wp-legacy-migrator | migrator | S | 待办 | P0-03 |
+| [P2-01](P2/P2-01-migrator-skeleton.md) | 迁移工具骨架：OWL API 4 + BinaryOWL + CLI | wp-legacy-migrator | migrator | S | 待办（可开工） | P0-03 |
 | [P2-02](P2/P2-02-binaryowl-reader.md) | 读取旧 BinaryOWL 修订日志 | wp-legacy-migrator | migrator | M | 待办 | P2-01 |
 | [P2-03](P2/P2-03-interchange-writer.md) | 写出迁移包：manifest、revisions.jsonl、SHA256SUMS | wp-legacy-migrator | migrator | M | 待办 | P2-02 |
 | [P2-04](P2/P2-04-mongo-metadata.md) | 读取 mongoexport 元数据并映射角色 | wp-legacy-migrator | migrator | M | 待办 | P2-03 |
