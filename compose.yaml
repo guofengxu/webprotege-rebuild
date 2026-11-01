@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:18
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_DB: wp
+      POSTGRES_USER: wp
+      POSTGRES_PASSWORD: wp
+    volumes:
+      - wp-pg-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wp -d wp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  wp-pg-data:
