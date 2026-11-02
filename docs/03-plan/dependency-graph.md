@@ -20,7 +20,7 @@ flowchart LR
         P0_09["P0-09"]:::done
     end
     subgraph P1
-        P1_01["P1-01"]:::todo
+        P1_01["P1-01"]:::done
         P1_02["P1-02"]:::todo
         P1_03["P1-03"]:::todo
         P1_04["P1-04"]:::todo
