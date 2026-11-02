@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-02, P0-06]
 ---
 
@@ -46,11 +46,19 @@ depends_on: [P1-02, P0-06]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 快照编码（P1-07）
 - 批量解析优化
+
+## 执行记录
+- 日期：2026-11-02
+- 分支：feature/p1-06-ofn-line-codec
+- 测试：2026-11-02T22:36:03+08:00 通过（3 项）
+- 实际改动：实现 ofn-lines/1：规范形式变更行经行转义后按 UTF-8 gzip。匿名个体 _:b1 在关闭 OWL API 默认重编号后，单条公理以及同一修订中的两条公理往返后结构相等，不需要 ofn-lines/2。解析只使用函数式语法解析器，并拒绝导入、多余本体注解、损坏的 UTF-8，以及不能无损还原的渲染。
+- 偏差：生产代码约 610 行，超过 M 卡预期的 400 行。增加的部分是 gzip 单成员与 CRC 校验、只安装函数式语法解析器，以及渲染结果无法还原时拒绝编码。没有改动其它模块。
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter

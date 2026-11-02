@@ -1,0 +1,10 @@
++	ONTOLOGY	o1	<http://example.org/wp-test/ont> <http://example.org/wp-test/ont/1>
++	ONTOLOGY	o2	-
++	ONTOLOGY	o3	<http://example.org/wp-test/ont>
++	IMPORT	o1	<http://example.org/other>
+-	IMPORT	o1	<http://example.org/other>
++	ANNOTATION	o1	Annotation(<http://www.w3.org/2000/01/rdf-schema#comment> "demo")
+-	ANNOTATION	o2	Annotation(<http://www.w3.org/2000/01/rdf-schema#label> "人"@zh)
++	AXIOM	o1	Declaration(Class(<http://example.org/wh#Pallet>))
+-	AXIOM	o2	SubClassOf(<http://example.org/A> <http://example.org/B>)
++	AXIOM	o1	DataPropertyAssertion(<http://example.org/note> <http://example.org/e> "a\nb	\\"c\\\\d中")
