@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-02]
 ---
 
@@ -46,11 +46,19 @@ depends_on: [P1-02]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 有效变更过滤（P1-05）
 - 层级、显示名称（P1-17 ~ P1-19）
+
+## 执行记录
+- 日期：2026-11-02
+- 分支：feature/p1-04-project-ontologies
+- 测试：2026-11-02T18:41:10+08:00 通过（3 项）
+- 实际改动：在 wp-kernel 增加按 OntologyKey 存放的 OWL API 5 内存本体。AddImport 只记录导入声明；查询走 OWL API 索引，不复制公理流（ADR-005）。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
