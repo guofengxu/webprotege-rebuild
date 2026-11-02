@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P1-02]
 ---
 
@@ -44,10 +44,18 @@ depends_on: [P1-02]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 与本体状态相关的过滤（P1-05）
+
+## 执行记录
+- 日期：2026-11-02
+- 分支：feature/p1-03-change-minimiser
+- 测试：2026-11-02T16:24:39+08:00 通过（3 项）
+- 实际改动：实现 ChangeListMinimiser.minimise：按 (OntologyKey, OWLAxiom) 两遍扫描抵消公理增删，重复项只保留第一次出现的原对象；注解、导入和登记本体保持原位置。测试移植旧用例并覆盖 BS-01 表格。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
