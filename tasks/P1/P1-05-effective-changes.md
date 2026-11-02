@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: blocked
 depends_on: [P1-03, P1-04]
 ---
 
@@ -51,3 +51,7 @@ depends_on: [P1-03, P1-04]
 
 ## 不在本卡范围
 - 持久化（P1-08 之后）
+
+## 阻塞
+- 日期：2026-11-02
+- 原因：产出规定 compute = 先 ChangeListMinimiser.minimise，再按 BS-02 判断（与 docs/01-rea/behavior-specs.md 的 BS-01/BS-02、旧 RootIndexImpl.getEffectiveChanges 一致）。属性测试（1）要求：随机变更序列上，应用有效变更后的状态与「把原序列逐条按集合语义应用」后的状态相同。二者行为不同。反例 1：本体不含公理 A，序列为删除 A、添加 A。最小化后为空，有效变更为空，状态仍不含 A；逐条集合应用会先空删除再添加，状态含有 A。反例 2：本体已含 A，序列为添加 A、删除 A。最小化后为空，状态仍含 A；逐条应用会删掉 A。属性（2）（把有效变更的逆变更倒序应用后恢复原状态）对「先最小化再过滤」成立。建议保持先最小化再过滤，并把属性（1）改为：应用有效变更后的状态等于「先按 BS-01 抵消，再只把真正改变成员关系的变更作用到初始集合」。若必须满足（1）的字面含义，则不能先调用 ChangeListMinimiser。请确认采用哪一种。
