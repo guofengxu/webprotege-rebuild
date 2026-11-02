@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P0-03]
 ---
 
@@ -42,10 +42,18 @@ depends_on: [P0-03]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 用户账户、权限（P3）
+
+## 执行记录
+- 日期：2026-11-02
+- 分支：feature/p1-01-kernel-ids
+- 测试：2026-11-02T13:50:06+08:00 通过（3 项）
+- 实际改动：在 wp-kernel 增加带校验的 ProjectId、RevisionNumber、UserId，以及 IdsTest。
+- 偏差：UserId 拒绝空白但不裁剪首尾空格；RevisionNumber.next() 在 Long.MAX_VALUE 时抛 IllegalArgumentException，卡片未单列这一条。
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
