@@ -1,0 +1,541 @@
+<?xml version="1.0"?>
+<Ontology xmlns="http://www.w3.org/2002/07/owl#"
+     xml:base="http://example.org/wp-test/warehouse"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     ontologyIRI="http://example.org/wp-test/warehouse">
+    <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="xml" IRI="http://www.w3.org/XML/1998/namespace"/>
+    <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
+    <Annotation>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <Literal xml:lang="en">Hand-written warehouse ontology for webprotege-rebuild tests.</Literal>
+    </Annotation>
+    <Annotation>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <Literal xml:lang="en">Warehouse sample</Literal>
+    </Annotation>
+    <Annotation>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <Literal xml:lang="zh">仓库示例</Literal>
+    </Annotation>
+    <Declaration>
+        <Class IRI="#Agv"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Aisle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bin"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#BufferLocation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Carton"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ChargingStation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Conveyor"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Dock"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Equipment"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#HandlingUnit"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#InboundDock"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Inventory"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Location"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Lot"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Operator"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#OutboundDock"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#PackingStation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Pallet"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#PickingLocation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#PutawayTask"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Rack"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ReplenishmentTask"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#RetrievalTask"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Sku"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#StackerCrane"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#StorageLocation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Task"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Warehouse"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Workstation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Zone"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#contains"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#storedAt"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#code"/>
+    </Declaration>
+    <SubClassOf>
+        <Class IRI="#Agv"/>
+        <Class IRI="#Equipment"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Bin"/>
+        <Class IRI="#HandlingUnit"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#BufferLocation"/>
+        <Class IRI="#Location"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Carton"/>
+        <Class IRI="#HandlingUnit"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ChargingStation"/>
+        <Class IRI="#Workstation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Conveyor"/>
+        <Class IRI="#Equipment"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#InboundDock"/>
+        <Class IRI="#Dock"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#OutboundDock"/>
+        <Class IRI="#Dock"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#PackingStation"/>
+        <Class IRI="#Workstation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Pallet"/>
+        <Class IRI="#HandlingUnit"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#PickingLocation"/>
+        <Class IRI="#Location"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#PutawayTask"/>
+        <Class IRI="#Task"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ReplenishmentTask"/>
+        <Class IRI="#Task"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#RetrievalTask"/>
+        <Class IRI="#Task"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#StackerCrane"/>
+        <Class IRI="#Equipment"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#StorageLocation"/>
+        <Class IRI="#Location"/>
+    </SubClassOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#storedAt"/>
+        <Class IRI="#HandlingUnit"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#storedAt"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyRange>
+    <DataPropertyDomain>
+        <DataProperty IRI="#code"/>
+        <Class IRI="#Location"/>
+    </DataPropertyDomain>
+    <DataPropertyRange>
+        <DataProperty IRI="#code"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Agv</IRI>
+        <Literal xml:lang="en">AGV</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Agv</IRI>
+        <Literal xml:lang="zh">自动导引车</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Aisle</IRI>
+        <Literal xml:lang="en">Aisle</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Aisle</IRI>
+        <Literal xml:lang="zh">巷道</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Bin</IRI>
+        <Literal xml:lang="en">Bin</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Bin</IRI>
+        <Literal xml:lang="zh">料箱</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#BufferLocation</IRI>
+        <Literal xml:lang="en">Buffer location</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#BufferLocation</IRI>
+        <Literal xml:lang="zh">缓存货位</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Carton</IRI>
+        <Literal xml:lang="en">Carton</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Carton</IRI>
+        <Literal xml:lang="zh">纸箱</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#ChargingStation</IRI>
+        <Literal xml:lang="en">Charging station</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#ChargingStation</IRI>
+        <Literal xml:lang="zh">充电位</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Conveyor</IRI>
+        <Literal xml:lang="en">Conveyor</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Conveyor</IRI>
+        <Literal xml:lang="zh">输送机</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Dock</IRI>
+        <Literal xml:lang="en">Dock</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Dock</IRI>
+        <Literal xml:lang="zh">月台</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Equipment</IRI>
+        <Literal xml:lang="en">Equipment</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Equipment</IRI>
+        <Literal xml:lang="zh">设备</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#HandlingUnit</IRI>
+        <Literal xml:lang="en">Handling unit</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#HandlingUnit</IRI>
+        <Literal xml:lang="zh">搬运单元</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#InboundDock</IRI>
+        <Literal xml:lang="en">Inbound dock</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#InboundDock</IRI>
+        <Literal xml:lang="zh">入库月台</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Inventory</IRI>
+        <Literal xml:lang="en">Inventory</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Inventory</IRI>
+        <Literal xml:lang="zh">库存</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Location</IRI>
+        <Literal xml:lang="en">Location</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Location</IRI>
+        <Literal xml:lang="zh">货位</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Lot</IRI>
+        <Literal xml:lang="en">Lot</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Lot</IRI>
+        <Literal xml:lang="zh">批次</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Operator</IRI>
+        <Literal xml:lang="en">Operator</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Operator</IRI>
+        <Literal xml:lang="zh">作业员</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#OutboundDock</IRI>
+        <Literal xml:lang="en">Outbound dock</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#OutboundDock</IRI>
+        <Literal xml:lang="zh">出库月台</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#PackingStation</IRI>
+        <Literal xml:lang="en">Packing station</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#PackingStation</IRI>
+        <Literal xml:lang="zh">包装台</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Pallet</IRI>
+        <Literal xml:lang="en">Pallet</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Pallet</IRI>
+        <Literal xml:lang="zh">托盘</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#PickingLocation</IRI>
+        <Literal xml:lang="en">Picking location</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#PickingLocation</IRI>
+        <Literal xml:lang="zh">拣选货位</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#PutawayTask</IRI>
+        <Literal xml:lang="en">Putaway task</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#PutawayTask</IRI>
+        <Literal xml:lang="zh">上架任务</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Rack</IRI>
+        <Literal xml:lang="en">Rack</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Rack</IRI>
+        <Literal xml:lang="zh">货架</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#ReplenishmentTask</IRI>
+        <Literal xml:lang="en">Replenishment task</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#ReplenishmentTask</IRI>
+        <Literal xml:lang="zh">补货任务</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#RetrievalTask</IRI>
+        <Literal xml:lang="en">Retrieval task</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#RetrievalTask</IRI>
+        <Literal xml:lang="zh">出库任务</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Sku</IRI>
+        <Literal xml:lang="en">SKU</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Sku</IRI>
+        <Literal xml:lang="zh">货品</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#StackerCrane</IRI>
+        <Literal xml:lang="en">Stacker crane</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#StackerCrane</IRI>
+        <Literal xml:lang="zh">堆垛机</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#StorageLocation</IRI>
+        <Literal xml:lang="en">Storage location</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#StorageLocation</IRI>
+        <Literal xml:lang="zh">存储货位</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Task</IRI>
+        <Literal xml:lang="en">Task</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Task</IRI>
+        <Literal xml:lang="zh">作业任务</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Warehouse</IRI>
+        <Literal xml:lang="en">Warehouse</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Warehouse</IRI>
+        <Literal xml:lang="zh">仓库</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Workstation</IRI>
+        <Literal xml:lang="en">Workstation</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Workstation</IRI>
+        <Literal xml:lang="zh">工作站</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Zone</IRI>
+        <Literal xml:lang="en">Zone</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#Zone</IRI>
+        <Literal xml:lang="zh">库区</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#code</IRI>
+        <Literal xml:lang="en">code</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#code</IRI>
+        <Literal xml:lang="zh">编码</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#contains</IRI>
+        <Literal xml:lang="en">contains</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#contains</IRI>
+        <Literal xml:lang="zh">包含</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#storedAt</IRI>
+        <Literal xml:lang="en">stored at</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>#storedAt</IRI>
+        <Literal xml:lang="zh">存放于</Literal>
+    </AnnotationAssertion>
+</Ontology>
+
+
+
+<!-- Generated by the OWL API (version 5.5.1.2024-09-07T21:41:32Z) https://github.com/owlcs/owlapi/ -->
+
+

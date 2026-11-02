@@ -1,0 +1,320 @@
+Prefix: owl: <http://www.w3.org/2002/07/owl#>
+Prefix: rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+Prefix: rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+Prefix: xml: <http://www.w3.org/XML/1998/namespace>
+Prefix: xsd: <http://www.w3.org/2001/XMLSchema#>
+Prefix: : <http://example.org/wp-test/warehouse>
+
+
+
+Ontology: <http://example.org/wp-test/warehouse>
+
+
+Annotations: 
+    rdfs:comment "Hand-written warehouse ontology for webprotege-rebuild tests."@en,
+    rdfs:label "Warehouse sample"@en,
+    rdfs:label "仓库示例"@zh
+
+AnnotationProperty: rdfs:comment
+
+    
+AnnotationProperty: rdfs:label
+
+    
+Datatype: rdf:langString
+
+    
+Datatype: xsd:string
+
+    
+ObjectProperty: <http://example.org/wp-test/warehouse#contains>
+
+    Annotations: 
+        rdfs:label "contains"@en,
+        rdfs:label "包含"@zh
+    
+    
+ObjectProperty: <http://example.org/wp-test/warehouse#storedAt>
+
+    Annotations: 
+        rdfs:label "stored at"@en,
+        rdfs:label "存放于"@zh
+    
+    Domain: 
+        <http://example.org/wp-test/warehouse#HandlingUnit>
+    
+    Range: 
+        <http://example.org/wp-test/warehouse#Location>
+    
+    
+DataProperty: <http://example.org/wp-test/warehouse#code>
+
+    Annotations: 
+        rdfs:label "code"@en,
+        rdfs:label "编码"@zh
+    
+    Domain: 
+        <http://example.org/wp-test/warehouse#Location>
+    
+    Range: 
+        xsd:string
+    
+    
+Class: <http://example.org/wp-test/warehouse#Agv>
+
+    Annotations: 
+        rdfs:label "AGV"@en,
+        rdfs:label "自动导引车"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Equipment>
+    
+    
+Class: <http://example.org/wp-test/warehouse#Aisle>
+
+    Annotations: 
+        rdfs:label "Aisle"@en,
+        rdfs:label "巷道"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#Bin>
+
+    Annotations: 
+        rdfs:label "Bin"@en,
+        rdfs:label "料箱"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#HandlingUnit>
+    
+    
+Class: <http://example.org/wp-test/warehouse#BufferLocation>
+
+    Annotations: 
+        rdfs:label "Buffer location"@en,
+        rdfs:label "缓存货位"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Location>
+    
+    
+Class: <http://example.org/wp-test/warehouse#Carton>
+
+    Annotations: 
+        rdfs:label "Carton"@en,
+        rdfs:label "纸箱"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#HandlingUnit>
+    
+    
+Class: <http://example.org/wp-test/warehouse#ChargingStation>
+
+    Annotations: 
+        rdfs:label "Charging station"@en,
+        rdfs:label "充电位"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Workstation>
+    
+    
+Class: <http://example.org/wp-test/warehouse#Conveyor>
+
+    Annotations: 
+        rdfs:label "Conveyor"@en,
+        rdfs:label "输送机"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Equipment>
+    
+    
+Class: <http://example.org/wp-test/warehouse#Dock>
+
+    Annotations: 
+        rdfs:label "Dock"@en,
+        rdfs:label "月台"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#Equipment>
+
+    Annotations: 
+        rdfs:label "Equipment"@en,
+        rdfs:label "设备"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#HandlingUnit>
+
+    Annotations: 
+        rdfs:label "Handling unit"@en,
+        rdfs:label "搬运单元"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#InboundDock>
+
+    Annotations: 
+        rdfs:label "Inbound dock"@en,
+        rdfs:label "入库月台"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Dock>
+    
+    
+Class: <http://example.org/wp-test/warehouse#Inventory>
+
+    Annotations: 
+        rdfs:label "Inventory"@en,
+        rdfs:label "库存"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#Location>
+
+    Annotations: 
+        rdfs:label "Location"@en,
+        rdfs:label "货位"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#Lot>
+
+    Annotations: 
+        rdfs:label "Lot"@en,
+        rdfs:label "批次"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#Operator>
+
+    Annotations: 
+        rdfs:label "Operator"@en,
+        rdfs:label "作业员"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#OutboundDock>
+
+    Annotations: 
+        rdfs:label "Outbound dock"@en,
+        rdfs:label "出库月台"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Dock>
+    
+    
+Class: <http://example.org/wp-test/warehouse#PackingStation>
+
+    Annotations: 
+        rdfs:label "Packing station"@en,
+        rdfs:label "包装台"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Workstation>
+    
+    
+Class: <http://example.org/wp-test/warehouse#Pallet>
+
+    Annotations: 
+        rdfs:label "Pallet"@en,
+        rdfs:label "托盘"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#HandlingUnit>
+    
+    
+Class: <http://example.org/wp-test/warehouse#PickingLocation>
+
+    Annotations: 
+        rdfs:label "Picking location"@en,
+        rdfs:label "拣选货位"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Location>
+    
+    
+Class: <http://example.org/wp-test/warehouse#PutawayTask>
+
+    Annotations: 
+        rdfs:label "Putaway task"@en,
+        rdfs:label "上架任务"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Task>
+    
+    
+Class: <http://example.org/wp-test/warehouse#Rack>
+
+    Annotations: 
+        rdfs:label "Rack"@en,
+        rdfs:label "货架"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#ReplenishmentTask>
+
+    Annotations: 
+        rdfs:label "Replenishment task"@en,
+        rdfs:label "补货任务"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Task>
+    
+    
+Class: <http://example.org/wp-test/warehouse#RetrievalTask>
+
+    Annotations: 
+        rdfs:label "Retrieval task"@en,
+        rdfs:label "出库任务"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Task>
+    
+    
+Class: <http://example.org/wp-test/warehouse#Sku>
+
+    Annotations: 
+        rdfs:label "SKU"@en,
+        rdfs:label "货品"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#StackerCrane>
+
+    Annotations: 
+        rdfs:label "Stacker crane"@en,
+        rdfs:label "堆垛机"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Equipment>
+    
+    
+Class: <http://example.org/wp-test/warehouse#StorageLocation>
+
+    Annotations: 
+        rdfs:label "Storage location"@en,
+        rdfs:label "存储货位"@zh
+    
+    SubClassOf: 
+        <http://example.org/wp-test/warehouse#Location>
+    
+    
+Class: <http://example.org/wp-test/warehouse#Task>
+
+    Annotations: 
+        rdfs:label "Task"@en,
+        rdfs:label "作业任务"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#Warehouse>
+
+    Annotations: 
+        rdfs:label "Warehouse"@en,
+        rdfs:label "仓库"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#Workstation>
+
+    Annotations: 
+        rdfs:label "Workstation"@en,
+        rdfs:label "工作站"@zh
+    
+    
+Class: <http://example.org/wp-test/warehouse#Zone>
+
+    Annotations: 
+        rdfs:label "Zone"@en,
+        rdfs:label "库区"@zh
+    
+    
