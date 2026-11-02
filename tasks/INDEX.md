@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 65 张卡：完成 7，进行中 0，阻塞 0，待办 58。
+共 65 张卡：完成 8，进行中 0，阻塞 0，待办 57。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P0-06](P0/P0-06-test-corpus.md) 测试本体语料与合成本体生成器
 - [P0-07](P0/P0-07-modulith-skeleton.md) 声明 wp-app 的 Modulith 模块与依赖规则
 - [P1-01](P1/P1-01-kernel-ids.md) 内核标识类型：ProjectId、RevisionNumber、UserId
 - [P2-01](P2/P2-01-migrator-skeleton.md) 迁移工具骨架：OWL API 4 + BinaryOWL + CLI
@@ -20,7 +19,7 @@
 | [P0-03](P0/P0-03-quality-gates.md) | 质量门禁：Spotless、Enforcer、JaCoCo | root | build | S | 完成 | P0-02 |
 | [P0-04](P0/P0-04-postgres-testcontainers.md) | 本地 PostgreSQL 与 Testcontainers 测试基座 | wp-app | db | S | 完成 | P0-02 |
 | [P0-05](P0/P0-05-ci.md) | GitHub Actions CI | root | ci-devops | S | 完成 | P0-03、P0-04 |
-| [P0-06](P0/P0-06-test-corpus.md) | 测试本体语料与合成本体生成器 | testdata, wp-kernel | test-data | M | 待办（可开工） | P0-02 |
+| [P0-06](P0/P0-06-test-corpus.md) | 测试本体语料与合成本体生成器 | testdata, wp-kernel | test-data | M | 完成 | P0-02 |
 | [P0-07](P0/P0-07-modulith-skeleton.md) | 声明 wp-app 的 Modulith 模块与依赖规则 | wp-app | app-service | S | 待办（可开工） | P0-04 |
 | [P0-08](P0/P0-08-split-source-trees.md) | 按运行时拆分源码目录 | root | build | S | 完成 | P0-02 |
 | [P0-09](P0/P0-09-frontend-workspace-layout.md) | 前端工作区收进 frontend/，补齐跨端构建约定 | root | build | S | 完成 | P0-08 |

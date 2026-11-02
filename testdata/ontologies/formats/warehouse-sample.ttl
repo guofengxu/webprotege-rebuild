@@ -1,0 +1,244 @@
+@prefix : <http://example.org/wp-test/warehouse#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://example.org/wp-test/warehouse#> .
+
+<http://example.org/wp-test/warehouse> rdf:type owl:Ontology ;
+                                        rdfs:comment "Hand-written warehouse ontology for webprotege-rebuild tests."@en ;
+                                        rdfs:label "Warehouse sample"@en ,
+                                                   "仓库示例"@zh .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://example.org/wp-test/warehouse#contains
+:contains rdf:type owl:ObjectProperty ;
+          rdfs:label "contains"@en ,
+                     "包含"@zh .
+
+
+###  http://example.org/wp-test/warehouse#storedAt
+:storedAt rdf:type owl:ObjectProperty ;
+          rdfs:domain :HandlingUnit ;
+          rdfs:range :Location ;
+          rdfs:label "stored at"@en ,
+                     "存放于"@zh .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://example.org/wp-test/warehouse#code
+:code rdf:type owl:DatatypeProperty ;
+      rdfs:domain :Location ;
+      rdfs:range xsd:string ;
+      rdfs:label "code"@en ,
+                 "编码"@zh .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://example.org/wp-test/warehouse#Agv
+:Agv rdf:type owl:Class ;
+     rdfs:subClassOf :Equipment ;
+     rdfs:label "AGV"@en ,
+                "自动导引车"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Aisle
+:Aisle rdf:type owl:Class ;
+       rdfs:label "Aisle"@en ,
+                  "巷道"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Bin
+:Bin rdf:type owl:Class ;
+     rdfs:subClassOf :HandlingUnit ;
+     rdfs:label "Bin"@en ,
+                "料箱"@zh .
+
+
+###  http://example.org/wp-test/warehouse#BufferLocation
+:BufferLocation rdf:type owl:Class ;
+                rdfs:subClassOf :Location ;
+                rdfs:label "Buffer location"@en ,
+                           "缓存货位"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Carton
+:Carton rdf:type owl:Class ;
+        rdfs:subClassOf :HandlingUnit ;
+        rdfs:label "Carton"@en ,
+                   "纸箱"@zh .
+
+
+###  http://example.org/wp-test/warehouse#ChargingStation
+:ChargingStation rdf:type owl:Class ;
+                 rdfs:subClassOf :Workstation ;
+                 rdfs:label "Charging station"@en ,
+                            "充电位"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Conveyor
+:Conveyor rdf:type owl:Class ;
+          rdfs:subClassOf :Equipment ;
+          rdfs:label "Conveyor"@en ,
+                     "输送机"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Dock
+:Dock rdf:type owl:Class ;
+      rdfs:label "Dock"@en ,
+                 "月台"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Equipment
+:Equipment rdf:type owl:Class ;
+           rdfs:label "Equipment"@en ,
+                      "设备"@zh .
+
+
+###  http://example.org/wp-test/warehouse#HandlingUnit
+:HandlingUnit rdf:type owl:Class ;
+              rdfs:label "Handling unit"@en ,
+                         "搬运单元"@zh .
+
+
+###  http://example.org/wp-test/warehouse#InboundDock
+:InboundDock rdf:type owl:Class ;
+             rdfs:subClassOf :Dock ;
+             rdfs:label "Inbound dock"@en ,
+                        "入库月台"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Inventory
+:Inventory rdf:type owl:Class ;
+           rdfs:label "Inventory"@en ,
+                      "库存"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Location
+:Location rdf:type owl:Class ;
+          rdfs:label "Location"@en ,
+                     "货位"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Lot
+:Lot rdf:type owl:Class ;
+     rdfs:label "Lot"@en ,
+                "批次"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Operator
+:Operator rdf:type owl:Class ;
+          rdfs:label "Operator"@en ,
+                     "作业员"@zh .
+
+
+###  http://example.org/wp-test/warehouse#OutboundDock
+:OutboundDock rdf:type owl:Class ;
+              rdfs:subClassOf :Dock ;
+              rdfs:label "Outbound dock"@en ,
+                         "出库月台"@zh .
+
+
+###  http://example.org/wp-test/warehouse#PackingStation
+:PackingStation rdf:type owl:Class ;
+                rdfs:subClassOf :Workstation ;
+                rdfs:label "Packing station"@en ,
+                           "包装台"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Pallet
+:Pallet rdf:type owl:Class ;
+        rdfs:subClassOf :HandlingUnit ;
+        rdfs:label "Pallet"@en ,
+                   "托盘"@zh .
+
+
+###  http://example.org/wp-test/warehouse#PickingLocation
+:PickingLocation rdf:type owl:Class ;
+                 rdfs:subClassOf :Location ;
+                 rdfs:label "Picking location"@en ,
+                            "拣选货位"@zh .
+
+
+###  http://example.org/wp-test/warehouse#PutawayTask
+:PutawayTask rdf:type owl:Class ;
+             rdfs:subClassOf :Task ;
+             rdfs:label "Putaway task"@en ,
+                        "上架任务"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Rack
+:Rack rdf:type owl:Class ;
+      rdfs:label "Rack"@en ,
+                 "货架"@zh .
+
+
+###  http://example.org/wp-test/warehouse#ReplenishmentTask
+:ReplenishmentTask rdf:type owl:Class ;
+                   rdfs:subClassOf :Task ;
+                   rdfs:label "Replenishment task"@en ,
+                              "补货任务"@zh .
+
+
+###  http://example.org/wp-test/warehouse#RetrievalTask
+:RetrievalTask rdf:type owl:Class ;
+               rdfs:subClassOf :Task ;
+               rdfs:label "Retrieval task"@en ,
+                          "出库任务"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Sku
+:Sku rdf:type owl:Class ;
+     rdfs:label "SKU"@en ,
+                "货品"@zh .
+
+
+###  http://example.org/wp-test/warehouse#StackerCrane
+:StackerCrane rdf:type owl:Class ;
+              rdfs:subClassOf :Equipment ;
+              rdfs:label "Stacker crane"@en ,
+                         "堆垛机"@zh .
+
+
+###  http://example.org/wp-test/warehouse#StorageLocation
+:StorageLocation rdf:type owl:Class ;
+                 rdfs:subClassOf :Location ;
+                 rdfs:label "Storage location"@en ,
+                            "存储货位"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Task
+:Task rdf:type owl:Class ;
+      rdfs:label "Task"@en ,
+                 "作业任务"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Warehouse
+:Warehouse rdf:type owl:Class ;
+           rdfs:label "Warehouse"@en ,
+                      "仓库"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Workstation
+:Workstation rdf:type owl:Class ;
+             rdfs:label "Workstation"@en ,
+                        "工作站"@zh .
+
+
+###  http://example.org/wp-test/warehouse#Zone
+:Zone rdf:type owl:Class ;
+      rdfs:label "Zone"@en ,
+                 "库区"@zh .
+
+
+###  Generated by the OWL API (version 5.5.1.2024-09-07T21:41:32Z) https://github.com/owlcs/owlapi/

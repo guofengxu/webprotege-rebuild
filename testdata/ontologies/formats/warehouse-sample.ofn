@@ -1,0 +1,249 @@
+Prefix(:=<http://example.org/wp-test/warehouse#>)
+Prefix(owl:=<http://www.w3.org/2002/07/owl#>)
+Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)
+Prefix(xml:=<http://www.w3.org/XML/1998/namespace>)
+Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
+
+
+Ontology(<http://example.org/wp-test/warehouse>
+Annotation(rdfs:comment "Hand-written warehouse ontology for webprotege-rebuild tests."@en)
+Annotation(rdfs:label "Warehouse sample"@en)
+Annotation(rdfs:label "仓库示例"@zh)
+
+Declaration(Class(:Agv))
+Declaration(Class(:Aisle))
+Declaration(Class(:Bin))
+Declaration(Class(:BufferLocation))
+Declaration(Class(:Carton))
+Declaration(Class(:ChargingStation))
+Declaration(Class(:Conveyor))
+Declaration(Class(:Dock))
+Declaration(Class(:Equipment))
+Declaration(Class(:HandlingUnit))
+Declaration(Class(:InboundDock))
+Declaration(Class(:Inventory))
+Declaration(Class(:Location))
+Declaration(Class(:Lot))
+Declaration(Class(:Operator))
+Declaration(Class(:OutboundDock))
+Declaration(Class(:PackingStation))
+Declaration(Class(:Pallet))
+Declaration(Class(:PickingLocation))
+Declaration(Class(:PutawayTask))
+Declaration(Class(:Rack))
+Declaration(Class(:ReplenishmentTask))
+Declaration(Class(:RetrievalTask))
+Declaration(Class(:Sku))
+Declaration(Class(:StackerCrane))
+Declaration(Class(:StorageLocation))
+Declaration(Class(:Task))
+Declaration(Class(:Warehouse))
+Declaration(Class(:Workstation))
+Declaration(Class(:Zone))
+Declaration(ObjectProperty(:contains))
+Declaration(ObjectProperty(:storedAt))
+Declaration(DataProperty(:code))
+
+############################
+#   Object Properties
+############################
+
+# Object Property: <http://example.org/wp-test/warehouse#contains> (contains)
+
+AnnotationAssertion(rdfs:label :contains "contains"@en)
+AnnotationAssertion(rdfs:label :contains "包含"@zh)
+
+# Object Property: <http://example.org/wp-test/warehouse#storedAt> (stored at)
+
+AnnotationAssertion(rdfs:label :storedAt "stored at"@en)
+AnnotationAssertion(rdfs:label :storedAt "存放于"@zh)
+ObjectPropertyDomain(:storedAt :HandlingUnit)
+ObjectPropertyRange(:storedAt :Location)
+
+
+############################
+#   Data Properties
+############################
+
+# Data Property: <http://example.org/wp-test/warehouse#code> (code)
+
+AnnotationAssertion(rdfs:label :code "code"@en)
+AnnotationAssertion(rdfs:label :code "编码"@zh)
+DataPropertyDomain(:code :Location)
+DataPropertyRange(:code xsd:string)
+
+
+
+############################
+#   Classes
+############################
+
+# Class: <http://example.org/wp-test/warehouse#Agv> (AGV)
+
+AnnotationAssertion(rdfs:label :Agv "AGV"@en)
+AnnotationAssertion(rdfs:label :Agv "自动导引车"@zh)
+SubClassOf(:Agv :Equipment)
+
+# Class: <http://example.org/wp-test/warehouse#Aisle> (Aisle)
+
+AnnotationAssertion(rdfs:label :Aisle "Aisle"@en)
+AnnotationAssertion(rdfs:label :Aisle "巷道"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#Bin> (Bin)
+
+AnnotationAssertion(rdfs:label :Bin "Bin"@en)
+AnnotationAssertion(rdfs:label :Bin "料箱"@zh)
+SubClassOf(:Bin :HandlingUnit)
+
+# Class: <http://example.org/wp-test/warehouse#BufferLocation> (Buffer location)
+
+AnnotationAssertion(rdfs:label :BufferLocation "Buffer location"@en)
+AnnotationAssertion(rdfs:label :BufferLocation "缓存货位"@zh)
+SubClassOf(:BufferLocation :Location)
+
+# Class: <http://example.org/wp-test/warehouse#Carton> (Carton)
+
+AnnotationAssertion(rdfs:label :Carton "Carton"@en)
+AnnotationAssertion(rdfs:label :Carton "纸箱"@zh)
+SubClassOf(:Carton :HandlingUnit)
+
+# Class: <http://example.org/wp-test/warehouse#ChargingStation> (Charging station)
+
+AnnotationAssertion(rdfs:label :ChargingStation "Charging station"@en)
+AnnotationAssertion(rdfs:label :ChargingStation "充电位"@zh)
+SubClassOf(:ChargingStation :Workstation)
+
+# Class: <http://example.org/wp-test/warehouse#Conveyor> (Conveyor)
+
+AnnotationAssertion(rdfs:label :Conveyor "Conveyor"@en)
+AnnotationAssertion(rdfs:label :Conveyor "输送机"@zh)
+SubClassOf(:Conveyor :Equipment)
+
+# Class: <http://example.org/wp-test/warehouse#Dock> (Dock)
+
+AnnotationAssertion(rdfs:label :Dock "Dock"@en)
+AnnotationAssertion(rdfs:label :Dock "月台"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#Equipment> (Equipment)
+
+AnnotationAssertion(rdfs:label :Equipment "Equipment"@en)
+AnnotationAssertion(rdfs:label :Equipment "设备"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#HandlingUnit> (Handling unit)
+
+AnnotationAssertion(rdfs:label :HandlingUnit "Handling unit"@en)
+AnnotationAssertion(rdfs:label :HandlingUnit "搬运单元"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#InboundDock> (Inbound dock)
+
+AnnotationAssertion(rdfs:label :InboundDock "Inbound dock"@en)
+AnnotationAssertion(rdfs:label :InboundDock "入库月台"@zh)
+SubClassOf(:InboundDock :Dock)
+
+# Class: <http://example.org/wp-test/warehouse#Inventory> (Inventory)
+
+AnnotationAssertion(rdfs:label :Inventory "Inventory"@en)
+AnnotationAssertion(rdfs:label :Inventory "库存"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#Location> (Location)
+
+AnnotationAssertion(rdfs:label :Location "Location"@en)
+AnnotationAssertion(rdfs:label :Location "货位"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#Lot> (Lot)
+
+AnnotationAssertion(rdfs:label :Lot "Lot"@en)
+AnnotationAssertion(rdfs:label :Lot "批次"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#Operator> (Operator)
+
+AnnotationAssertion(rdfs:label :Operator "Operator"@en)
+AnnotationAssertion(rdfs:label :Operator "作业员"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#OutboundDock> (Outbound dock)
+
+AnnotationAssertion(rdfs:label :OutboundDock "Outbound dock"@en)
+AnnotationAssertion(rdfs:label :OutboundDock "出库月台"@zh)
+SubClassOf(:OutboundDock :Dock)
+
+# Class: <http://example.org/wp-test/warehouse#PackingStation> (Packing station)
+
+AnnotationAssertion(rdfs:label :PackingStation "Packing station"@en)
+AnnotationAssertion(rdfs:label :PackingStation "包装台"@zh)
+SubClassOf(:PackingStation :Workstation)
+
+# Class: <http://example.org/wp-test/warehouse#Pallet> (Pallet)
+
+AnnotationAssertion(rdfs:label :Pallet "Pallet"@en)
+AnnotationAssertion(rdfs:label :Pallet "托盘"@zh)
+SubClassOf(:Pallet :HandlingUnit)
+
+# Class: <http://example.org/wp-test/warehouse#PickingLocation> (Picking location)
+
+AnnotationAssertion(rdfs:label :PickingLocation "Picking location"@en)
+AnnotationAssertion(rdfs:label :PickingLocation "拣选货位"@zh)
+SubClassOf(:PickingLocation :Location)
+
+# Class: <http://example.org/wp-test/warehouse#PutawayTask> (Putaway task)
+
+AnnotationAssertion(rdfs:label :PutawayTask "Putaway task"@en)
+AnnotationAssertion(rdfs:label :PutawayTask "上架任务"@zh)
+SubClassOf(:PutawayTask :Task)
+
+# Class: <http://example.org/wp-test/warehouse#Rack> (Rack)
+
+AnnotationAssertion(rdfs:label :Rack "Rack"@en)
+AnnotationAssertion(rdfs:label :Rack "货架"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#ReplenishmentTask> (Replenishment task)
+
+AnnotationAssertion(rdfs:label :ReplenishmentTask "Replenishment task"@en)
+AnnotationAssertion(rdfs:label :ReplenishmentTask "补货任务"@zh)
+SubClassOf(:ReplenishmentTask :Task)
+
+# Class: <http://example.org/wp-test/warehouse#RetrievalTask> (Retrieval task)
+
+AnnotationAssertion(rdfs:label :RetrievalTask "Retrieval task"@en)
+AnnotationAssertion(rdfs:label :RetrievalTask "出库任务"@zh)
+SubClassOf(:RetrievalTask :Task)
+
+# Class: <http://example.org/wp-test/warehouse#Sku> (SKU)
+
+AnnotationAssertion(rdfs:label :Sku "SKU"@en)
+AnnotationAssertion(rdfs:label :Sku "货品"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#StackerCrane> (Stacker crane)
+
+AnnotationAssertion(rdfs:label :StackerCrane "Stacker crane"@en)
+AnnotationAssertion(rdfs:label :StackerCrane "堆垛机"@zh)
+SubClassOf(:StackerCrane :Equipment)
+
+# Class: <http://example.org/wp-test/warehouse#StorageLocation> (Storage location)
+
+AnnotationAssertion(rdfs:label :StorageLocation "Storage location"@en)
+AnnotationAssertion(rdfs:label :StorageLocation "存储货位"@zh)
+SubClassOf(:StorageLocation :Location)
+
+# Class: <http://example.org/wp-test/warehouse#Task> (Task)
+
+AnnotationAssertion(rdfs:label :Task "Task"@en)
+AnnotationAssertion(rdfs:label :Task "作业任务"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#Warehouse> (Warehouse)
+
+AnnotationAssertion(rdfs:label :Warehouse "Warehouse"@en)
+AnnotationAssertion(rdfs:label :Warehouse "仓库"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#Workstation> (Workstation)
+
+AnnotationAssertion(rdfs:label :Workstation "Workstation"@en)
+AnnotationAssertion(rdfs:label :Workstation "工作站"@zh)
+
+# Class: <http://example.org/wp-test/warehouse#Zone> (Zone)
+
+AnnotationAssertion(rdfs:label :Zone "Zone"@en)
+AnnotationAssertion(rdfs:label :Zone "库区"@zh)
+
+
+)

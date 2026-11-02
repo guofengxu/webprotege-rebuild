@@ -1,0 +1,60 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix wh: <http://example.org/wp-test/warehouse#> .
+
+<http://example.org/wp-test/warehouse> a owl:Ontology ;
+    rdfs:label "仓库示例"@zh , "Warehouse sample"@en ;
+    rdfs:comment "Hand-written warehouse ontology for webprotege-rebuild tests."@en .
+
+wh:contains a owl:ObjectProperty ;
+    rdfs:label "包含"@zh , "contains"@en .
+
+wh:storedAt a owl:ObjectProperty ;
+    rdfs:label "存放于"@zh , "stored at"@en ;
+    rdfs:domain wh:HandlingUnit ;
+    rdfs:range wh:Location .
+
+wh:code a owl:DatatypeProperty ;
+    rdfs:label "编码"@zh , "code"@en ;
+    rdfs:domain wh:Location ;
+    rdfs:range xsd:string .
+
+wh:Warehouse a owl:Class ; rdfs:label "仓库"@zh , "Warehouse"@en .
+wh:Zone a owl:Class ; rdfs:label "库区"@zh , "Zone"@en .
+wh:Aisle a owl:Class ; rdfs:label "巷道"@zh , "Aisle"@en .
+wh:Rack a owl:Class ; rdfs:label "货架"@zh , "Rack"@en .
+
+wh:Location a owl:Class ; rdfs:label "货位"@zh , "Location"@en .
+wh:StorageLocation a owl:Class ; rdfs:subClassOf wh:Location ; rdfs:label "存储货位"@zh , "Storage location"@en .
+wh:PickingLocation a owl:Class ; rdfs:subClassOf wh:Location ; rdfs:label "拣选货位"@zh , "Picking location"@en .
+wh:BufferLocation a owl:Class ; rdfs:subClassOf wh:Location ; rdfs:label "缓存货位"@zh , "Buffer location"@en .
+
+wh:Dock a owl:Class ; rdfs:label "月台"@zh , "Dock"@en .
+wh:InboundDock a owl:Class ; rdfs:subClassOf wh:Dock ; rdfs:label "入库月台"@zh , "Inbound dock"@en .
+wh:OutboundDock a owl:Class ; rdfs:subClassOf wh:Dock ; rdfs:label "出库月台"@zh , "Outbound dock"@en .
+
+wh:Equipment a owl:Class ; rdfs:label "设备"@zh , "Equipment"@en .
+wh:StackerCrane a owl:Class ; rdfs:subClassOf wh:Equipment ; rdfs:label "堆垛机"@zh , "Stacker crane"@en .
+wh:Agv a owl:Class ; rdfs:subClassOf wh:Equipment ; rdfs:label "自动导引车"@zh , "AGV"@en .
+wh:Conveyor a owl:Class ; rdfs:subClassOf wh:Equipment ; rdfs:label "输送机"@zh , "Conveyor"@en .
+
+wh:HandlingUnit a owl:Class ; rdfs:label "搬运单元"@zh , "Handling unit"@en .
+wh:Pallet a owl:Class ; rdfs:subClassOf wh:HandlingUnit ; rdfs:label "托盘"@zh , "Pallet"@en .
+wh:Bin a owl:Class ; rdfs:subClassOf wh:HandlingUnit ; rdfs:label "料箱"@zh , "Bin"@en .
+wh:Carton a owl:Class ; rdfs:subClassOf wh:HandlingUnit ; rdfs:label "纸箱"@zh , "Carton"@en .
+
+wh:Sku a owl:Class ; rdfs:label "货品"@zh , "SKU"@en .
+wh:Lot a owl:Class ; rdfs:label "批次"@zh , "Lot"@en .
+wh:Inventory a owl:Class ; rdfs:label "库存"@zh , "Inventory"@en .
+
+wh:Task a owl:Class ; rdfs:label "作业任务"@zh , "Task"@en .
+wh:PutawayTask a owl:Class ; rdfs:subClassOf wh:Task ; rdfs:label "上架任务"@zh , "Putaway task"@en .
+wh:RetrievalTask a owl:Class ; rdfs:subClassOf wh:Task ; rdfs:label "出库任务"@zh , "Retrieval task"@en .
+wh:ReplenishmentTask a owl:Class ; rdfs:subClassOf wh:Task ; rdfs:label "补货任务"@zh , "Replenishment task"@en .
+
+wh:Operator a owl:Class ; rdfs:label "作业员"@zh , "Operator"@en .
+
+wh:Workstation a owl:Class ; rdfs:label "工作站"@zh , "Workstation"@en .
+wh:PackingStation a owl:Class ; rdfs:subClassOf wh:Workstation ; rdfs:label "包装台"@zh , "Packing station"@en .
+wh:ChargingStation a owl:Class ; rdfs:subClassOf wh:Workstation ; rdfs:label "充电位"@zh , "Charging station"@en .

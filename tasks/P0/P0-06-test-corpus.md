@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: test-data
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P0-02]
 ---
 
@@ -48,10 +48,18 @@ depends_on: [P0-02]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 性能基准（P1-20）
+
+## 执行记录
+- 日期：2026-11-02
+- 分支：feature/p0-06-test-corpus
+- 测试：2026-11-02T12:40:27+08:00 通过（3 项）
+- 实际改动：新增覆盖全部 OWL 公理类型的手写语料、仓库样本的五种序列化，以及相同种子生成同一组公理的合成本体生成器。导入 IRI 只解析到语料目录里的本地文件，formats 副本不作为导入目标。
+- 偏差：无
+- 审查：code-reviewer

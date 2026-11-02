@@ -1,0 +1,31 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix ex: <http://example.org/wp-test/labels#> .
+
+<http://example.org/wp-test/labels> a owl:Ontology ;
+    rdfs:label "多语言标签语料"@zh , "Multilingual label corpus"@en .
+
+ex:C01 a owl:Class ; rdfs:label "类01"@zh , "Class 01"@en ; skos:prefLabel "首选01"@zh , "Preferred 01"@en .
+ex:C02 a owl:Class ; rdfs:label "类02"@zh , "Class 02"@en ; skos:prefLabel "首选02"@zh , "Preferred 02"@en .
+ex:C03 a owl:Class ; rdfs:label "类03"@zh , "Class 03"@en ; skos:prefLabel "首选03"@zh , "Preferred 03"@en .
+ex:C04 a owl:Class ; rdfs:label "类04"@zh , "Class 04"@en ; skos:prefLabel "首选04"@zh , "Preferred 04"@en .
+ex:C05 a owl:Class ; rdfs:label "类05"@zh , "Class 05"@en ; skos:prefLabel "首选05"@zh , "Preferred 05"@en .
+ex:C06 a owl:Class ; rdfs:label "类06"@zh , "Class 06"@en ; skos:prefLabel "首选06"@zh , "Preferred 06"@en .
+ex:C07 a owl:Class ; rdfs:label "类07"@zh , "Class 07"@en ; skos:prefLabel "首选07"@zh , "Preferred 07"@en .
+ex:C08 a owl:Class ; rdfs:label "类08"@zh , "Class 08"@en ; skos:prefLabel "首选08"@zh , "Preferred 08"@en .
+ex:C09 a owl:Class ; rdfs:label "类09"@zh , "Class 09"@en ; skos:prefLabel "首选09"@zh , "Preferred 09"@en .
+ex:C10 a owl:Class ; rdfs:label "类10"@zh , "Class 10"@en ; skos:prefLabel "首选10"@zh , "Preferred 10"@en .
+
+ex:C11 a owl:Class ; rdfs:label "类11"@zh , "Class 11"@en .
+ex:C12 a owl:Class ; rdfs:label "类12"@zh , "Class 12"@en .
+ex:C13 a owl:Class ; rdfs:label "类13"@zh , "Class 13"@en .
+ex:C14 a owl:Class ; rdfs:label "类14"@zh , "Class 14"@en .
+
+ex:C15 a owl:Class ; skos:prefLabel "首选15"@zh , "Preferred 15"@en .
+ex:C16 a owl:Class ; skos:prefLabel "首选16"@zh , "Preferred 16"@en .
+
+ex:C17 a owl:Class ; rdfs:label "类17"@zh .
+ex:C18 a owl:Class ; rdfs:label "Class 18"@en .
+ex:C19 a owl:Class ; skos:prefLabel "首选19"@zh .
+ex:C20 a owl:Class ; skos:prefLabel "Preferred 20"@en .

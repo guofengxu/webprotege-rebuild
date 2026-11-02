@@ -1,0 +1,406 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://example.org/wp-test/warehouse#"
+     xml:base="http://example.org/wp-test/warehouse"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://example.org/wp-test/warehouse">
+        <rdfs:comment xml:lang="en">Hand-written warehouse ontology for webprotege-rebuild tests.</rdfs:comment>
+        <rdfs:label xml:lang="en">Warehouse sample</rdfs:label>
+        <rdfs:label xml:lang="zh">仓库示例</rdfs:label>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#contains -->
+
+
+    <owl:ObjectProperty rdf:about="http://example.org/wp-test/warehouse#contains">
+        <rdfs:label xml:lang="en">contains</rdfs:label>
+        <rdfs:label xml:lang="zh">包含</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#storedAt -->
+
+
+    <owl:ObjectProperty rdf:about="http://example.org/wp-test/warehouse#storedAt">
+        <rdfs:domain rdf:resource="http://example.org/wp-test/warehouse#HandlingUnit"/>
+        <rdfs:range rdf:resource="http://example.org/wp-test/warehouse#Location"/>
+        <rdfs:label xml:lang="en">stored at</rdfs:label>
+        <rdfs:label xml:lang="zh">存放于</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#code -->
+
+
+    <owl:DatatypeProperty rdf:about="http://example.org/wp-test/warehouse#code">
+        <rdfs:domain rdf:resource="http://example.org/wp-test/warehouse#Location"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">code</rdfs:label>
+        <rdfs:label xml:lang="zh">编码</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Agv -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Agv">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Equipment"/>
+        <rdfs:label xml:lang="en">AGV</rdfs:label>
+        <rdfs:label xml:lang="zh">自动导引车</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Aisle -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Aisle">
+        <rdfs:label xml:lang="en">Aisle</rdfs:label>
+        <rdfs:label xml:lang="zh">巷道</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Bin -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Bin">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#HandlingUnit"/>
+        <rdfs:label xml:lang="en">Bin</rdfs:label>
+        <rdfs:label xml:lang="zh">料箱</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#BufferLocation -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#BufferLocation">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Location"/>
+        <rdfs:label xml:lang="en">Buffer location</rdfs:label>
+        <rdfs:label xml:lang="zh">缓存货位</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Carton -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Carton">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#HandlingUnit"/>
+        <rdfs:label xml:lang="en">Carton</rdfs:label>
+        <rdfs:label xml:lang="zh">纸箱</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#ChargingStation -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#ChargingStation">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Workstation"/>
+        <rdfs:label xml:lang="en">Charging station</rdfs:label>
+        <rdfs:label xml:lang="zh">充电位</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Conveyor -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Conveyor">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Equipment"/>
+        <rdfs:label xml:lang="en">Conveyor</rdfs:label>
+        <rdfs:label xml:lang="zh">输送机</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Dock -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Dock">
+        <rdfs:label xml:lang="en">Dock</rdfs:label>
+        <rdfs:label xml:lang="zh">月台</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Equipment -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Equipment">
+        <rdfs:label xml:lang="en">Equipment</rdfs:label>
+        <rdfs:label xml:lang="zh">设备</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#HandlingUnit -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#HandlingUnit">
+        <rdfs:label xml:lang="en">Handling unit</rdfs:label>
+        <rdfs:label xml:lang="zh">搬运单元</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#InboundDock -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#InboundDock">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Dock"/>
+        <rdfs:label xml:lang="en">Inbound dock</rdfs:label>
+        <rdfs:label xml:lang="zh">入库月台</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Inventory -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Inventory">
+        <rdfs:label xml:lang="en">Inventory</rdfs:label>
+        <rdfs:label xml:lang="zh">库存</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Location -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Location">
+        <rdfs:label xml:lang="en">Location</rdfs:label>
+        <rdfs:label xml:lang="zh">货位</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Lot -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Lot">
+        <rdfs:label xml:lang="en">Lot</rdfs:label>
+        <rdfs:label xml:lang="zh">批次</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Operator -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Operator">
+        <rdfs:label xml:lang="en">Operator</rdfs:label>
+        <rdfs:label xml:lang="zh">作业员</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#OutboundDock -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#OutboundDock">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Dock"/>
+        <rdfs:label xml:lang="en">Outbound dock</rdfs:label>
+        <rdfs:label xml:lang="zh">出库月台</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#PackingStation -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#PackingStation">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Workstation"/>
+        <rdfs:label xml:lang="en">Packing station</rdfs:label>
+        <rdfs:label xml:lang="zh">包装台</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Pallet -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Pallet">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#HandlingUnit"/>
+        <rdfs:label xml:lang="en">Pallet</rdfs:label>
+        <rdfs:label xml:lang="zh">托盘</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#PickingLocation -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#PickingLocation">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Location"/>
+        <rdfs:label xml:lang="en">Picking location</rdfs:label>
+        <rdfs:label xml:lang="zh">拣选货位</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#PutawayTask -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#PutawayTask">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Task"/>
+        <rdfs:label xml:lang="en">Putaway task</rdfs:label>
+        <rdfs:label xml:lang="zh">上架任务</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Rack -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Rack">
+        <rdfs:label xml:lang="en">Rack</rdfs:label>
+        <rdfs:label xml:lang="zh">货架</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#ReplenishmentTask -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#ReplenishmentTask">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Task"/>
+        <rdfs:label xml:lang="en">Replenishment task</rdfs:label>
+        <rdfs:label xml:lang="zh">补货任务</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#RetrievalTask -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#RetrievalTask">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Task"/>
+        <rdfs:label xml:lang="en">Retrieval task</rdfs:label>
+        <rdfs:label xml:lang="zh">出库任务</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Sku -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Sku">
+        <rdfs:label xml:lang="en">SKU</rdfs:label>
+        <rdfs:label xml:lang="zh">货品</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#StackerCrane -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#StackerCrane">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Equipment"/>
+        <rdfs:label xml:lang="en">Stacker crane</rdfs:label>
+        <rdfs:label xml:lang="zh">堆垛机</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#StorageLocation -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#StorageLocation">
+        <rdfs:subClassOf rdf:resource="http://example.org/wp-test/warehouse#Location"/>
+        <rdfs:label xml:lang="en">Storage location</rdfs:label>
+        <rdfs:label xml:lang="zh">存储货位</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Task -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Task">
+        <rdfs:label xml:lang="en">Task</rdfs:label>
+        <rdfs:label xml:lang="zh">作业任务</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Warehouse -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Warehouse">
+        <rdfs:label xml:lang="en">Warehouse</rdfs:label>
+        <rdfs:label xml:lang="zh">仓库</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Workstation -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Workstation">
+        <rdfs:label xml:lang="en">Workstation</rdfs:label>
+        <rdfs:label xml:lang="zh">工作站</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://example.org/wp-test/warehouse#Zone -->
+
+
+    <owl:Class rdf:about="http://example.org/wp-test/warehouse#Zone">
+        <rdfs:label xml:lang="en">Zone</rdfs:label>
+        <rdfs:label xml:lang="zh">库区</rdfs:label>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 5.5.1.2024-09-07T21:41:32Z) https://github.com/owlcs/owlapi/ -->
+
+
