@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: app-service
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P0-04]
 ---
 
@@ -42,11 +42,19 @@ wp-app 的 10 个应用模块都已声明，模块边界由测试强制执行。
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录中有反向验证的结果
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录中有反向验证的结果
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 任何业务类
+
+## 执行记录
+- 日期：2026-11-02
+- 分支：feature/p0-07-modulith-skeleton
+- 测试：2026-11-02T13:36:07+08:00 通过（3 项）
+- 实际改动：在 wprebuild.app 下声明 shared、access、bus、project、revision、ontology、search、events、migration、web 十个 Spring Modulith 模块。shared 为 OPEN 且 allowedDependencies 为空数组，其余允许依赖按 overview 第 2 节，web 依赖其余全部模块。ModularityTest 核对注解上的 displayName、type 与 allowedDependencies 并调用 verify()；Documenter 把模块图写到 target/spring-modulith-docs/components.puml。反向验证：revision 临时引用 ontology.OntologyMarker 后 verify() 失败，信息为 Module 'revision' depends on module 'ontology' via RevisionBoundaryProbe -> OntologyMarker，Allowed targets: shared。两个临时类已删除，测试恢复通过。审查指出解析后的空依赖流无法区分显式空列表和默认开放标记，已改为断言注解数组本身。
+- 偏差：displayName 使用表中的模块名，没有把「职责」列整段写入注解。职责文本含标点时，Documenter 会生成无法阅读的组件 id。
+- 审查：java-reviewer, code-reviewer
