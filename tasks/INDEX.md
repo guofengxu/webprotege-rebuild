@@ -2,11 +2,14 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 65 张卡：完成 10，进行中 0，阻塞 0，待办 55。
+共 65 张卡：完成 11，进行中 0，阻塞 0，待办 54。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P1-02](P1/P1-02-change-model.md) 本体变更模型：OntologyKey 与 7 种 OntologyChange
+- [P1-03](P1/P1-03-change-minimiser.md) 变更列表最小化（BS-01）
+- [P1-04](P1/P1-04-project-ontologies.md) 内存本体读模型 ProjectOntologies（OWL API 5 实现）
+- [P1-06](P1/P1-06-ofn-line-codec.md) 变更编码 ofn-lines/1（ADR-011）
+- [P1-08](P1/P1-08-revision-log-ports.md) 修订与修订日志端口（含内存实现和契约测试）
 - [P1-10](P1/P1-10-write-gate.md) ProjectWriteGate：生成锁 + 读写锁
 - [P2-01](P2/P2-01-migrator-skeleton.md) 迁移工具骨架：OWL API 4 + BinaryOWL + CLI
 - [P3-01](P3/P3-01-core-schema.md) 核心数据库表结构（Flyway V2）
@@ -30,13 +33,13 @@
 | ID | 标题 | 模块 | 类型 | 规模 | 状态 | 依赖 |
 |---|---|---|---|---|---|---|
 | [P1-01](P1/P1-01-kernel-ids.md) | 内核标识类型：ProjectId、RevisionNumber、UserId | wp-kernel | kernel | S | 完成 | P0-03 |
-| [P1-02](P1/P1-02-change-model.md) | 本体变更模型：OntologyKey 与 7 种 OntologyChange | wp-kernel | kernel | M | 待办（可开工） | P1-01、P0-06 |
-| [P1-03](P1/P1-03-change-minimiser.md) | 变更列表最小化（BS-01） | wp-kernel | kernel | S | 待办 | P1-02 |
-| [P1-04](P1/P1-04-project-ontologies.md) | 内存本体读模型 ProjectOntologies（OWL API 5 实现） | wp-kernel | kernel | M | 待办 | P1-02 |
+| [P1-02](P1/P1-02-change-model.md) | 本体变更模型：OntologyKey 与 7 种 OntologyChange | wp-kernel | kernel | M | 完成 | P1-01、P0-06 |
+| [P1-03](P1/P1-03-change-minimiser.md) | 变更列表最小化（BS-01） | wp-kernel | kernel | S | 待办（可开工） | P1-02 |
+| [P1-04](P1/P1-04-project-ontologies.md) | 内存本体读模型 ProjectOntologies（OWL API 5 实现） | wp-kernel | kernel | M | 待办（可开工） | P1-02 |
 | [P1-05](P1/P1-05-effective-changes.md) | 有效变更过滤（BS-02） | wp-kernel | kernel | S | 待办 | P1-03、P1-04 |
-| [P1-06](P1/P1-06-ofn-line-codec.md) | 变更编码 ofn-lines/1（ADR-011） | wp-kernel | kernel | M | 待办 | P1-02、P0-06 |
+| [P1-06](P1/P1-06-ofn-line-codec.md) | 变更编码 ofn-lines/1（ADR-011） | wp-kernel | kernel | M | 待办（可开工） | P1-02、P0-06 |
 | [P1-07](P1/P1-07-snapshot-codec.md) | 快照编码 ofn-zip/1 | wp-kernel | kernel | M | 待办 | P1-04 |
-| [P1-08](P1/P1-08-revision-log-ports.md) | 修订与修订日志端口（含内存实现和契约测试） | wp-kernel | kernel | M | 待办 | P1-02 |
+| [P1-08](P1/P1-08-revision-log-ports.md) | 修订与修订日志端口（含内存实现和契约测试） | wp-kernel | kernel | M | 待办（可开工） | P1-02 |
 | [P1-09](P1/P1-09-project-runtime-loader.md) | ProjectRuntime 与加载器（快照 + 重放） | wp-kernel | kernel | M | 待办 | P1-05、P1-07、P1-08 |
 | [P1-10](P1/P1-10-write-gate.md) | ProjectWriteGate：生成锁 + 读写锁 | wp-kernel | kernel | S | 待办（可开工） | P1-01 |
 | [P1-11](P1/P1-11-change-pipeline.md) | ChangePipeline：先持久化后应用的写入流水线 | wp-kernel | kernel | M | 待办 | P1-09、P1-10 |

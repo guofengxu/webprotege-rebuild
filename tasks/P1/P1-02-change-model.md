@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-01, P0-06]
 ---
 
@@ -46,11 +46,19 @@ depends_on: [P1-01, P0-06]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 变更列表最小化（P1-03）
 - 编码（P1-06）
+
+## 执行记录
+- 日期：2026-11-02
+- 分支：feature/p1-02-change-model
+- 测试：2026-11-02T15:12:53+08:00 通过（3 项）
+- 实际改动：在 wp-kernel 增加 OntologyKey 与 7 种不可变 OntologyChange，以及 OntologyChangeTest。公理分量名为 owlAxiom，因为接口 axiom() 返回 Optional。
+- 偏差：AddAxiom 与 RemoveAxiom 的公理分量名为 owlAxiom。接口方法 axiom() 必须返回 Optional，record 不能再用同名访问器返回 OWLAxiom。
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
