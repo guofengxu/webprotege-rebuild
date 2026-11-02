@@ -88,7 +88,7 @@ python tools/repo_setup.py protect
 ```
 
 - `init`：删除规划改版留下的空壳文件（内容只有 `<!-- superseded… -->`）→ 从 `tools/repo-templates/github/` 生成 `.github/`（PR 模板、`CODEOWNERS`、`branch-protection.json`；建仓后以 `.github/` 为准）→ `git init -b main` → 暂存全部文件并给钩子脚本加可执行位 → 基线提交 → 用 `gh` 在 GitHub 上建仓（默认私有）→ 推送 `main` → 启用 `.githooks`。只能在交互式终端运行，Cursor 钩子也会拒绝 Agent 执行。
-- `protect`：按 `.github/branch-protection.json`（单人维护配置）设置 `main` 的分支保护：`main` 只能经 PR 合并、**管理员也不例外**（禁止直接推送）、禁止强推与删除、PR 上的评论必须全部解决；不要求批准人数和代码负责人评审，因为单人维护时没有第二个人能批准（PR 作者不能批准自己的 PR）。人工确认环节（`task.py commit`）仍然保留，相当于每个提交都由你本人审过。P0-05 合并后，把 CI 任务名加入 `required_status_checks` 并重新运行 `protect`。
+- `protect`：按 `.github/branch-protection.json`（单人维护配置）设置 `main` 的分支保护：`main` 只能经 PR 合并、**管理员也不例外**（禁止直接推送）、禁止强推与删除、PR 上的评论必须全部解决；不要求批准人数和代码负责人评审，因为单人维护时没有第二个人能批准（PR 作者不能批准自己的 PR）。人工确认环节（`task.py commit`）仍然保留，相当于每个提交都由你本人审过。P0-05 已把 `required_status_checks` 写成汇总 job `ci-gate`；合并该卡后由人重新运行 `protect` 生效。后续新增的 job 仍由 `ci-gate` 汇总，不要逐个写入 `contexts`。
 - 多人协作时改用 `python tools/repo_setup.py protect --team`（`.github/branch-protection.team.json`：至少 1 人批准、标准文件需 `CODEOWNERS` 中的维护者批准）。GitHub 免费账户只有公开仓库支持分支保护。
 - 然后在仓库设置中邀请同事，把 `CONTRIBUTING.md` 发给他们；按其第 5 节把 ECC 安装进仓库并提交。
 
