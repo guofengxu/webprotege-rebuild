@@ -2,12 +2,13 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 65 张卡：完成 17，进行中 0，阻塞 0，待办 48。
+共 65 张卡：完成 18，进行中 0，阻塞 0，待办 47。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P1-09](P1/P1-09-project-runtime-loader.md) ProjectRuntime 与加载器（快照 + 重放）
 - [P1-10](P1/P1-10-write-gate.md) ProjectWriteGate：生成锁 + 读写锁
+- [P1-17](P1/P1-17-class-hierarchy.md) 类层级视图（BS-08）
+- [P1-19](P1/P1-19-display-names.md) 显示名称视图（BS-09）
 - [P2-01](P2/P2-01-migrator-skeleton.md) 迁移工具骨架：OWL API 4 + BinaryOWL + CLI
 - [P3-01](P3/P3-01-core-schema.md) 核心数据库表结构（Flyway V2）
 
@@ -37,7 +38,7 @@
 | [P1-06](P1/P1-06-ofn-line-codec.md) | 变更编码 ofn-lines/1（ADR-011） | wp-kernel | kernel | M | 完成 | P1-02、P0-06 |
 | [P1-07](P1/P1-07-snapshot-codec.md) | 快照编码 ofn-zip/1 | wp-kernel | kernel | M | 完成 | P1-04 |
 | [P1-08](P1/P1-08-revision-log-ports.md) | 修订与修订日志端口（含内存实现和契约测试） | wp-kernel | kernel | M | 完成 | P1-02 |
-| [P1-09](P1/P1-09-project-runtime-loader.md) | ProjectRuntime 与加载器（快照 + 重放） | wp-kernel | kernel | M | 待办（可开工） | P1-05、P1-07、P1-08 |
+| [P1-09](P1/P1-09-project-runtime-loader.md) | ProjectRuntime 与加载器（快照 + 重放） | wp-kernel | kernel | M | 完成 | P1-05、P1-07、P1-08 |
 | [P1-10](P1/P1-10-write-gate.md) | ProjectWriteGate：生成锁 + 读写锁 | wp-kernel | kernel | S | 待办（可开工） | P1-01 |
 | [P1-11](P1/P1-11-change-pipeline.md) | ChangePipeline：先持久化后应用的写入流水线 | wp-kernel | kernel | M | 待办 | P1-09、P1-10 |
 | [P1-12](P1/P1-12-fresh-entity-iri.md) | 临时实体 IRI 协议与 IRI 替换（BS-05） | wp-kernel | kernel | M | 待办 | P1-11 |
@@ -45,9 +46,9 @@
 | [P1-14](P1/P1-14-crudkit-obo.md) | 实体 IRI 生成：OBO 风格（BS-06） | wp-kernel | kernel | S | 待办 | P1-13 |
 | [P1-15](P1/P1-15-revert-generator.md) | 回滚修订生成器（BS-04） | wp-kernel | kernel | S | 待办 | P1-11 |
 | [P1-16](P1/P1-16-create-delete-generators.md) | 创建实体与删除实体生成器（BS-07） | wp-kernel | kernel | M | 待办 | P1-13、P1-05 |
-| [P1-17](P1/P1-17-class-hierarchy.md) | 类层级视图（BS-08） | wp-kernel | kernel | M | 待办 | P1-09 |
+| [P1-17](P1/P1-17-class-hierarchy.md) | 类层级视图（BS-08） | wp-kernel | kernel | M | 待办（可开工） | P1-09 |
 | [P1-18](P1/P1-18-property-hierarchies.md) | 对象 / 数据 / 注解属性层级视图（BS-08） | wp-kernel | kernel | M | 待办 | P1-17 |
-| [P1-19](P1/P1-19-display-names.md) | 显示名称视图（BS-09） | wp-kernel | kernel | M | 待办 | P1-09 |
+| [P1-19](P1/P1-19-display-names.md) | 显示名称视图（BS-09） | wp-kernel | kernel | M | 待办（可开工） | P1-09 |
 | [P1-20](P1/P1-20-kernel-benchmark.md) | 内核性能基准与门禁 | wp-kernel | benchmark | S | 待办 | P1-11、P1-17、P1-19、P1-06 |
 | [P1-21](P1/P1-21-kernel-vertical-slice.md) | 内核竖切验收（里程碑 M1） | wp-kernel | kernel | M | 待办 | P1-15、P1-16、P1-18、P1-19、P1-06 |
 

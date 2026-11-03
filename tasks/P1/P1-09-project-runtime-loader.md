@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-05, P1-07, P1-08]
 ---
 
@@ -44,11 +44,19 @@ depends_on: [P1-05, P1-07, P1-08]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 写入流水线（P1-11）
 - 并发控制（P1-10）
+
+## 执行记录
+- 日期：2026-11-03
+- 分支：feature/p1-09-project-runtime-loader
+- 测试：2026-11-03T10:09:48+08:00 通过（3 项）
+- 实际改动：在 wp-kernel 增加 ProjectRuntime：没有快照时从空项目重放全部修订，有快照时只重放其后到 head 的修订，加载结束时对每个派生视图 rebuild 一次。日志里的变更直接 apply，不再过滤。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter, code-reviewer
