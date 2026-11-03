@@ -26,7 +26,7 @@ flowchart LR
         P1_04["P1-04"]:::done
         P1_05["P1-05"]:::done
         P1_06["P1-06"]:::done
-        P1_07["P1-07"]:::todo
+        P1_07["P1-07"]:::done
         P1_08["P1-08"]:::todo
         P1_09["P1-09"]:::todo
         P1_10["P1-10"]:::todo

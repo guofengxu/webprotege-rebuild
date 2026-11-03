@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-04]
 ---
 
@@ -43,10 +43,18 @@ depends_on: [P1-04]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 何时生成快照（P3-03）
+
+## 执行记录
+- 日期：2026-11-03
+- 分支：feature/p1-07-snapshot-codec
+- 测试：2026-11-03T00:58:40+08:00 通过（3 项）
+- 实际改动：在 wp-kernel 增加 ofn-zip/1：registry.tsv 按 key 编号记录本体 IRI，每个本体一份函数式语法文档。解码不访问网络；无法无损往返的公理拒绝写入。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
