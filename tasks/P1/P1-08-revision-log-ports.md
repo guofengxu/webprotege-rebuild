@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-02]
 ---
 
@@ -48,11 +48,19 @@ depends_on: [P1-02]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - PostgreSQL 实现（P3-02）
 - 修订编码（实现类不需要编码，内存里直接存对象）
+
+## 执行记录
+- 日期：2026-11-03
+- 分支：feature/p1-08-revision-log-ports
+- 测试：2026-11-03T09:37:49+08:00 通过（3 项）
+- 实际改动：在 wp-kernel 增加 Revision、RevisionLog、SnapshotStore 端口与线程安全内存实现，以及可被 P3-02 复用的契约测试和 test-jar。审查后 StoredSnapshot.payload() 每次返回副本，get 改为按修订号扫描。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
