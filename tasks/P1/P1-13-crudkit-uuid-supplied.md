@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P1-12]
 ---
 
@@ -49,11 +49,19 @@ depends_on: [P1-12]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - OBO 方式（P1-14）
 - 设置的持久化与 API（P3-22）
+
+## 执行记录
+- 日期：2026-11-04
+- 分支：feature/p1-13-crudkit-uuid-supplied
+- 测试：2026-11-04T11:59:17+08:00 通过（3 项）
+- 实际改动：Added UUID and supplied-name entity IRI kits, prefix expansion, and KitEntityCreator. UUID suffixes are R plus unsigned base62; supplied names become the suffix after camel case or underscores.
+- 偏差：Supplied-name labels follow the BS-06 local-name rule, so My Class is labelled MyClass or My_Class. The old handler kept the raw supplied name for ordinary input. The old assertions this card asks to port still hold. Suffixes are the treated name, not form-urlencoded.
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
