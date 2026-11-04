@@ -39,6 +39,9 @@ public final class ProjectRuntime {
 
     private RevisionNumber head;
 
+    /** WP-8: set when applying a committed revision to memory fails. Sticky until reload. */
+    private volatile boolean corrupted;
+
     ProjectRuntime(
             ProjectId projectId, MutableProjectOntologies ontologies, RevisionNumber head, List<DerivedView> views) {
         this.projectId = Objects.requireNonNull(projectId, "project id");
@@ -54,6 +57,11 @@ public final class ProjectRuntime {
 
     public RevisionNumber head() {
         return head;
+    }
+
+    /** WP-8: further writes are refused after memory apply fails. */
+    public boolean isCorrupted() {
+        return corrupted;
     }
 
     public <V extends DerivedView> V view(Class<V> type) {
@@ -97,6 +105,11 @@ public final class ProjectRuntime {
         for (DerivedView view : views) {
             view.onApplied(revision.changes(), readable);
         }
+    }
+
+    /** WP-8: the write pipeline calls this when memory apply throws. The flag stays set. */
+    void markCorrupted() {
+        corrupted = true;
     }
 
     /** Stops callers from casting {@link ProjectRuntime#ontologies()} back to a mutable model. */
