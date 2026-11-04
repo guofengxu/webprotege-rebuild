@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P1-17]
 ---
 
@@ -44,10 +44,18 @@ depends_on: [P1-17]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 属性特征、定义域与值域的展示（P3-17）
+
+## 执行记录
+- 日期：2026-11-04
+- 分支：feature/p1-18-property-hierarchies
+- 测试：2026-11-04T16:58:58+08:00 通过（3 项）
+- 实际改动：新增对象、数据、注解属性层级视图，并抽出与类层级共用的 AbstractHierarchyView。对象属性根为 owl:topObjectProperty，数据属性根为 owl:topDataProperty，无命名父属性时挂在该根下。注解属性没有统一根，roots() 是项目签名里没有父属性的注解属性，不预置内置注解属性。父子边只来自命名的 SubObjectPropertyOf、SubDataPropertyOf、SubAnnotationPropertyOf。onApplied 只重算变更签名中的对应实体，增量结果与 rebuild 一致，lastDelta 记录本次边增删。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
