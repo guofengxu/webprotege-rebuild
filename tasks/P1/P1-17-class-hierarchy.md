@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P1-09]
 ---
 
@@ -47,11 +47,19 @@ depends_on: [P1-09]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 属性层级（P1-18）
 - 推理机推导出的层级
+
+## 执行记录
+- 日期：2026-11-04
+- 分支：feature/p1-17-class-hierarchy
+- 测试：2026-11-04T15:40:15+08:00 通过（3 项）
+- 实际改动：新增类层级视图：owl:Thing 为唯一根；父子边来自命名 SubClassOf 以及等价交集的直接命名操作数；无命名父类挂在 Thing 下。onApplied 只重算变更签名里的类，lastDelta 记录本次边增删，rebuild 后与全量结果一致且 delta 为空。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
