@@ -32,7 +32,7 @@ flowchart LR
         P1_10["P1-10"]:::done
         P1_11["P1-11"]:::done
         P1_12["P1-12"]:::done
-        P1_13["P1-13"]:::todo
+        P1_13["P1-13"]:::done
         P1_14["P1-14"]:::todo
         P1_15["P1-15"]:::todo
         P1_16["P1-16"]:::todo
