@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P1-11]
 ---
 
@@ -45,10 +45,18 @@ depends_on: [P1-11]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 回滚 API 与权限（P3-20）
+
+## 执行记录
+- 日期：2026-11-04
+- 分支：feature/p1-15-revert-generator
+- 测试：2026-11-04T13:46:26+08:00 通过（3 项）
+- 实际改动：新增 RevertRevisionGenerator：把目标修订的逆变更倒序写成新修订；目标不存在或含 DeclareOntology 时返回失败原因且不产生变更。回滚经过 BS-02 过滤，已不存在的公理不会再次删除。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
