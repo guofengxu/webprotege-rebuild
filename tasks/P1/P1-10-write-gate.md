@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: kernel
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P1-01]
 ---
 
@@ -43,10 +43,18 @@ depends_on: [P1-01]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 流水线逻辑（P1-11）
+
+## 执行记录
+- 日期：2026-11-03
+- 分支：feature/p1-10-write-gate
+- 测试：2026-11-03T18:33:34+08:00 通过（3 项）
+- 实际改动：新增 ProjectWriteGate：生成锁串行且对持有线程可重入；applyExclusive 仅在当前线程已持有生成锁时获取写锁；read 只持读锁，生成期间仍可并发。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
