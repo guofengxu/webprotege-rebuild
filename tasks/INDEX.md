@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 65 张卡：完成 23，进行中 0，阻塞 0，待办 42。
+共 65 张卡：完成 24，进行中 0，阻塞 0，待办 41。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P1-15](P1/P1-15-revert-generator.md) 回滚修订生成器（BS-04）
 - [P1-16](P1/P1-16-create-delete-generators.md) 创建实体与删除实体生成器（BS-07）
 - [P1-17](P1/P1-17-class-hierarchy.md) 类层级视图（BS-08）
 - [P1-19](P1/P1-19-display-names.md) 显示名称视图（BS-09）
@@ -45,7 +44,7 @@
 | [P1-12](P1/P1-12-fresh-entity-iri.md) | 临时实体 IRI 协议与 IRI 替换（BS-05） | wp-kernel | kernel | M | 完成 | P1-11 |
 | [P1-13](P1/P1-13-crudkit-uuid-supplied.md) | 实体 IRI 生成：UUID 与用户输入名称两种方式（BS-06） | wp-kernel | kernel | M | 完成 | P1-12 |
 | [P1-14](P1/P1-14-crudkit-obo.md) | 实体 IRI 生成：OBO 风格（BS-06） | wp-kernel | kernel | S | 完成 | P1-13 |
-| [P1-15](P1/P1-15-revert-generator.md) | 回滚修订生成器（BS-04） | wp-kernel | kernel | S | 待办（可开工） | P1-11 |
+| [P1-15](P1/P1-15-revert-generator.md) | 回滚修订生成器（BS-04） | wp-kernel | kernel | S | 完成 | P1-11 |
 | [P1-16](P1/P1-16-create-delete-generators.md) | 创建实体与删除实体生成器（BS-07） | wp-kernel | kernel | M | 待办（可开工） | P1-13、P1-05 |
 | [P1-17](P1/P1-17-class-hierarchy.md) | 类层级视图（BS-08） | wp-kernel | kernel | M | 待办（可开工） | P1-09 |
 | [P1-18](P1/P1-18-property-hierarchies.md) | 对象 / 数据 / 注解属性层级视图（BS-08） | wp-kernel | kernel | M | 待办 | P1-17 |
