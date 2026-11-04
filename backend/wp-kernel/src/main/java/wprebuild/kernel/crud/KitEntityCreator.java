@@ -12,8 +12,9 @@ import wprebuild.kernel.ontology.ProjectOntologies;
 /**
  * {@link EntityCreator} that follows the project's current settings (BS-06).
  *
- * <p>The user and the project ontologies are part of the port. UUID and supplied-name minting do
- * not read them; the OBO kit (P1-14) will.
+ * <p>UUID and supplied-name minting ignore the user and the project ontologies. The OBO kit reads
+ * both, and one allocator is kept for the life of this creator so ids minted in a single change
+ * list stay distinct before they appear in the signature.
  */
 public final class KitEntityCreator implements EntityCreator {
 
@@ -24,6 +25,8 @@ public final class KitEntityCreator implements EntityCreator {
     private final UuidEntityCrudKit uuidKit = new UuidEntityCrudKit();
 
     private final SuppliedNameEntityCrudKit suppliedNameKit = new SuppliedNameEntityCrudKit();
+
+    private final OboIdAllocator oboIds = new OboIdAllocator();
 
     public KitEntityCreator(Supplier<NewEntitySettings> settings, Supplier<PrefixedNameExpander> prefixes) {
         this.settings = Objects.requireNonNull(settings, "settings");
@@ -39,14 +42,11 @@ public final class KitEntityCreator implements EntityCreator {
         NewEntitySettings current = Objects.requireNonNull(settings.get(), "settings");
         PrefixedNameExpander expander = Objects.requireNonNull(prefixes.get(), "prefixes");
         Optional<String> lang = fresh.langTag().isBlank() ? Optional.empty() : Optional.of(fresh.langTag());
-        return select(current.kit()).create(type, fresh.suppliedName(), lang, current, expander);
-    }
-
-    private EntityCrudKit select(KitSettings kit) {
-        return switch (kit) {
+        EntityCrudKit kit = switch (current.kit()) {
             case UuidKitSettings ignored -> uuidKit;
             case SuppliedNameKitSettings ignored -> suppliedNameKit;
-            case OboKitSettings ignored -> throw new IllegalArgumentException("OBO entity IRIs are not available yet");
+            case OboKitSettings ignored -> new OboIdEntityCrudKit(user, ontologies, oboIds);
         };
+        return kit.create(type, fresh.suppliedName(), lang, current, expander);
     }
 }
