@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P1-09, P1-10]
 ---
 
@@ -50,11 +50,19 @@ depends_on: [P1-09, P1-10]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 临时 IRI 处理（P1-12）
 - 具体的生成器（P1-15、P1-16）
+
+## 执行记录
+- 日期：2026-11-04
+- 分支：feature/p1-11-change-pipeline
+- 测试：2026-11-04T09:17:56+08:00 通过（3 项）
+- 实际改动：实现 ChangePipeline：有效变更先写入修订日志，再在写锁内应用到内存。空变更不产生修订；监听器异常只记日志且不回滚；内存应用失败则把运行时标为损坏并拒绝后续写入。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
