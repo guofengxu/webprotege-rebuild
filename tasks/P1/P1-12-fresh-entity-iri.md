@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P1-11]
 ---
 
@@ -52,10 +52,18 @@ depends_on: [P1-11]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - IRI 后缀的生成规则（P1-13、P1-14）
+
+## 执行记录
+- 日期：2026-11-04
+- 分支：feature/p1-12-fresh-entity-iri
+- 测试：2026-11-04T10:54:33+08:00 通过（3 项）
+- 实际改动：Added the fresh-entity IRI text form, IRI replacement that keeps blank-node ids, and DefaultFreshIriMinter. A fresh annotation subject still needs a typed entity in the same batch.
+- 偏差：ChangePipeline already called the injected minter and renameResult (P1-11), so this card did not edit it. MintResult was not changed to reject fresh targets, to avoid a dependency from the runtime package back to the iri package; the minter rejects those results before building the record.
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
