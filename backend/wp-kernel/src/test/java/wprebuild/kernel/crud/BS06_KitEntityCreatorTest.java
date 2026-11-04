@@ -2,8 +2,8 @@ package wprebuild.kernel.crud;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatObject;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -67,12 +67,22 @@ class BS06_KitEntityCreatorTest {
     }
 
     @Test
-    void obo_settings_are_rejected_until_that_kit_exists() {
-        settings.set(new NewEntitySettings(PREFIX, new OboKitSettings(), NewEntitySettings.RDFS_LABEL, "", ONTOLOGY));
+    void obo_settings_mint_the_id_after_the_range_start_and_keep_the_typed_name() {
+        settings.set(new NewEntitySettings(
+                PREFIX,
+                new OboKitSettings(3, List.of(new UserIdRange(USER, 10, 12))),
+                NewEntitySettings.RDFS_LABEL,
+                "en",
+                ONTOLOGY));
         FreshEntityIri fresh = new FreshEntityIri("Person", "en", "disc", Set.of());
 
-        assertThatThrownBy(() -> creator.create(EntityType.CLASS, fresh, USER, ONTOLOGIES))
-                .isInstanceOf(IllegalArgumentException.class);
+        CreatedEntity first = creator.create(EntityType.CLASS, fresh, USER, ONTOLOGIES);
+        CreatedEntity second = creator.create(EntityType.CLASS, fresh, USER, ONTOLOGIES);
+
+        assertThatObject(first.entity().getIRI()).isEqualTo(IRI.create(PREFIX + "011"));
+        assertThatObject(second.entity().getIRI()).isEqualTo(IRI.create(PREFIX + "012"));
+        assertThat(label(first).getLiteral()).isEqualTo("Person");
+        assertThat(label(first).getLang()).isEqualTo("en");
     }
 
     private static OWLLiteral label(CreatedEntity created) {

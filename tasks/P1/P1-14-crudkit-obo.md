@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P1-13]
 ---
 
@@ -45,10 +45,18 @@ depends_on: [P1-13]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 区间的管理界面
+
+## 执行记录
+- 日期：2026-11-04
+- 分支：feature/p1-14-crudkit-obo
+- 测试：2026-11-04T13:09:10+08:00 通过（3 项）
+- 实际改动：Added OBO id ranges and OboIdEntityCrudKit. A range issues the next id after its start through its end, zero-padded, and users without a range share a counter from 1.
+- 偏差：The card text says the smallest unused id in the range. The old handler increments first, so [start, end] issues start+1 through end and a single-point range is already exhausted. The IRI prefix stays on NewEntitySettings, matching OboIdSuffixSettings. Quoted IRIs and prefixed names are used directly, which the old OBO handler did not do; BS-06 applies that rule to every kit. oboInOwl created_by and creation_date are not emitted. IRIs minted by one allocator stay reserved for its lifetime, including after a prefix or range change, so a change list cannot reuse them before they reach the signature.
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
