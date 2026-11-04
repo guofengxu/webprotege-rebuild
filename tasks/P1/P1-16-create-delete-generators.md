@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P1-13, P1-05]
 ---
 
@@ -45,11 +45,19 @@ depends_on: [P1-13, P1-05]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - Frame 编辑（P3-15 ~ P3-18）
 - 合并实体（P6）
+
+## 执行记录
+- 日期：2026-11-04
+- 分支：feature/p1-16-create-delete-generators
+- 测试：2026-11-04T14:18:57+08:00 通过（3 项）
+- 实际改动：新增 CreateEntitiesGenerator 与 DeleteEntitiesGenerator。创建为每个名称生成 UUID 区分符的临时 IRI 和父关系公理，声明与标签由 KitEntityCreator 在铸造时补上。删除清掉项目内所有本体中引用这些实体的公理，以及以其实体 IRI 为主语或注解值的注解。
+- 偏差：父实体为 owl:Thing 时不生成 SubClassOf 或 ClassAssertion（与旧 CreateClassesChangeGenerator 一致）；没有父公理时补一条声明，让临时 IRI 进入签名以便铸造。删除时还按旧 EntityDeleter 去掉定义域、值域和本体注解里的实体 IRI；挂在逻辑公理上的注解值不删。
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
