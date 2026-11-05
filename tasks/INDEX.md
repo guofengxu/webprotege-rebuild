@@ -2,14 +2,17 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 65 张卡：完成 28，进行中 0，阻塞 0，待办 37。
+共 65 张卡：完成 28，进行中 0，阻塞 1，待办 36。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P1-20](P1/P1-20-kernel-benchmark.md) 内核性能基准与门禁
 - [P1-21](P1/P1-21-kernel-vertical-slice.md) 内核竖切验收（里程碑 M1）
 - [P2-01](P2/P2-01-migrator-skeleton.md) 迁移工具骨架：OWL API 4 + BinaryOWL + CLI
 - [P3-01](P3/P3-01-core-schema.md) 核心数据库表结构（Flyway V2）
+
+## 阻塞中
+
+- [P1-20](P1/P1-20-kernel-benchmark.md) 内核性能基准与门禁
 
 ## P0
 
@@ -48,7 +51,7 @@
 | [P1-17](P1/P1-17-class-hierarchy.md) | 类层级视图（BS-08） | wp-kernel | kernel | M | 完成 | P1-09 |
 | [P1-18](P1/P1-18-property-hierarchies.md) | 对象 / 数据 / 注解属性层级视图（BS-08） | wp-kernel | kernel | M | 完成 | P1-17 |
 | [P1-19](P1/P1-19-display-names.md) | 显示名称视图（BS-09） | wp-kernel | kernel | M | 完成 | P1-09 |
-| [P1-20](P1/P1-20-kernel-benchmark.md) | 内核性能基准与门禁 | wp-kernel | benchmark | S | 待办（可开工） | P1-11、P1-17、P1-19、P1-06 |
+| [P1-20](P1/P1-20-kernel-benchmark.md) | 内核性能基准与门禁 | wp-kernel | benchmark | S | 阻塞 | P1-11、P1-17、P1-19、P1-06 |
 | [P1-21](P1/P1-21-kernel-vertical-slice.md) | 内核竖切验收（里程碑 M1） | wp-kernel | kernel | M | 待办（可开工） | P1-15、P1-16、P1-18、P1-19、P1-06 |
 
 ## P2

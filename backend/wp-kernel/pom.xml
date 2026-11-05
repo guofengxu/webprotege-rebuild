@@ -15,6 +15,11 @@
     <packaging>jar</packaging>
     <name>wp-kernel</name>
 
+    <properties>
+        <!-- P1-20：验收命令的 -Dbench=true 要进入测试 JVM。默认 false，普通构建不跑基准。 -->
+        <bench>false</bench>
+    </properties>
+
     <!-- OWL API 5.5.1 的传递依赖版本不一致。钉住 Maven 当前选中的版本，不改变解析结果。 -->
     <dependencyManagement>
         <dependencies>
@@ -137,6 +142,7 @@
                 <configuration>
                     <systemPropertyVariables>
                         <wp.testdata.dir>${maven.multiModuleProjectDirectory}/testdata/ontologies</wp.testdata.dir>
+                        <bench>${bench}</bench>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
