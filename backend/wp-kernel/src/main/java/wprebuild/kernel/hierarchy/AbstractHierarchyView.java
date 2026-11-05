@@ -23,7 +23,9 @@ import wprebuild.kernel.ontology.ProjectOntologies;
  * is always present and is never recomputed. An entity with no named parent is linked to that
  * root. Annotation properties have no structural root, so an entity with no named parent is itself
  * a root. {@code pathsToRoot} stops when it repeats a node, so a cycle cannot loop.
- * {@code onApplied} recomputes only entities in the change signature.
+ * {@code onApplied} recomputes only entities in the change signature and asks
+ * {@link ProjectOntologies#containsEntity} whether each one is still present, so the cost stays
+ * with the change instead of materialising {@link ProjectOntologies#signature()}.
  */
 public abstract class AbstractHierarchyView<E extends OWLEntity> implements HierarchyView<E> {
 
@@ -74,13 +76,12 @@ public abstract class AbstractHierarchyView<E extends OWLEntity> implements Hier
     public final void onApplied(List<OntologyChange> effectiveChanges, ProjectOntologies after) {
         Objects.requireNonNull(effectiveChanges, "effectiveChanges");
         Objects.requireNonNull(after, "ontologies");
-        Set<E> present = entitiesIn(after);
         EdgeChanges<E> changes = EdgeChanges.recording();
         for (E entity : affectedEntities(effectiveChanges)) {
             if (isStructuralRoot(entity)) {
                 continue;
             }
-            if (present.contains(entity)) {
+            if (after.containsEntity(entity)) {
                 replaceParents(entity, resolvedParents(after, entity), changes);
             } else {
                 detach(entity, changes);
