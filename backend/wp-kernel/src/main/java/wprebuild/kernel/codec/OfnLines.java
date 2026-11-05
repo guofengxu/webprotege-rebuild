@@ -1,30 +1,17 @@
 package wprebuild.kernel.codec;
 
 import java.io.StringWriter;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.formats.FunctionalSyntaxDocumentFormat;
-import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxOWLParserFactory;
 import org.semanticweb.owlapi.functional.renderer.FunctionalSyntaxObjectRenderer;
-import org.semanticweb.owlapi.io.OWLParserFactory;
-import org.semanticweb.owlapi.io.StringDocumentSource;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.OWLRuntimeException;
-import uk.ac.manchester.cs.owl.owlapi.OWLOntologyManagerImpl;
 import wprebuild.kernel.change.AddAxiom;
 import wprebuild.kernel.change.AddImport;
 import wprebuild.kernel.change.AddOntologyAnnotation;
@@ -56,23 +43,30 @@ public final class OfnLines {
 
     private static final String ANONYMOUS_ONTOLOGY = "-";
 
-    /** Document IRI used only as a wrapper so one expression can be parsed. It is not stored. */
-    private static final String CODEC_ONTOLOGY = "urn:wp:codec";
-
     private OfnLines() {}
 
     public static String encodeLine(OntologyChange change) {
         Objects.requireNonNull(change, "change");
-        return op(change) + "\t" + kind(change) + "\t" + change.ontology().value() + "\t" + ofn(change);
+        return encodeLine(change, new OfnLineDecoder(OWLManager.getOWLDataFactory()));
+    }
+
+    static String encodeLine(OntologyChange change, OfnLineDecoder checker) {
+        Objects.requireNonNull(change, "change");
+        Objects.requireNonNull(checker, "checker");
+        return op(change) + "\t" + kind(change) + "\t" + change.ontology().value() + "\t" + ofn(change, checker);
     }
 
     public static OntologyChange decodeLine(String line, OWLDataFactory dataFactory) {
         Objects.requireNonNull(line, "line");
         Objects.requireNonNull(dataFactory, "dataFactory");
+        return new OfnLineDecoder(dataFactory).decode(line);
+    }
+
+    static OntologyChange decodeWith(String line, OfnLineDecoder decoder) {
         ParsedLine parsed = split(line);
         return switch (parsed.kind()) {
-            case KIND_AXIOM -> axiom(parsed, dataFactory);
-            case KIND_ANNOTATION -> annotation(parsed, dataFactory);
+            case KIND_AXIOM -> axiom(parsed, decoder);
+            case KIND_ANNOTATION -> annotation(parsed, decoder);
             case KIND_IMPORT -> importChange(parsed);
             case KIND_ONTOLOGY -> ontology(parsed);
             default -> throw new IllegalArgumentException("unknown change kind: " + parsed.kind());
@@ -175,12 +169,12 @@ public final class OfnLines {
         };
     }
 
-    private static String ofn(OntologyChange change) {
+    private static String ofn(OntologyChange change, OfnLineDecoder checker) {
         return switch (change) {
-            case AddAxiom add -> renderChecked(add.owlAxiom());
-            case RemoveAxiom remove -> renderChecked(remove.owlAxiom());
-            case AddOntologyAnnotation add -> renderChecked(add.annotation());
-            case RemoveOntologyAnnotation remove -> renderChecked(remove.annotation());
+            case AddAxiom add -> renderChecked(add.owlAxiom(), checker);
+            case RemoveAxiom remove -> renderChecked(remove.owlAxiom(), checker);
+            case AddOntologyAnnotation add -> renderChecked(add.annotation(), checker);
+            case RemoveOntologyAnnotation remove -> renderChecked(remove.annotation(), checker);
             case AddImport add -> quoted(add.iri());
             case RemoveImport remove -> quoted(remove.iri());
             case DeclareOntology declared -> renderOntology(declared);
@@ -217,28 +211,27 @@ public final class OfnLines {
      * OWL API omits the constructor when an n-ary expression has one operand, so the parsed object
      * would differ. Refuse that render instead of storing a different axiom.
      */
-    private static String renderChecked(OWLObject object) {
+    private static String renderChecked(OWLObject object, OfnLineDecoder checker) {
         String rendered = renderFunctional(object);
-        OWLDataFactory factory = OWLManager.getOWLDataFactory();
         OWLObject parsed = object instanceof OWLAxiom
-                ? oneAxiom(parseDocument(rendered, factory), rendered)
-                : oneAnnotation(parseDocument(rendered, factory), rendered);
+                ? oneAxiom(checker.parse(rendered), rendered)
+                : oneAnnotation(checker.parse(rendered), rendered);
         if (!object.equals(parsed)) {
             throw new IllegalArgumentException("functional syntax render is not lossless: " + preview(rendered));
         }
         return rendered;
     }
 
-    private static OntologyChange axiom(ParsedLine parsed, OWLDataFactory dataFactory) {
-        OWLAxiom axiom = oneAxiom(parseDocument(parsed.ofn(), dataFactory), parsed.ofn());
+    private static OntologyChange axiom(ParsedLine parsed, OfnLineDecoder decoder) {
+        OWLAxiom axiom = oneAxiom(decoder.parse(parsed.ofn()), parsed.ofn());
         if (parsed.add()) {
             return new AddAxiom(parsed.ontology(), axiom);
         }
         return new RemoveAxiom(parsed.ontology(), axiom);
     }
 
-    private static OntologyChange annotation(ParsedLine parsed, OWLDataFactory dataFactory) {
-        OWLAnnotation annotation = oneAnnotation(parseDocument(parsed.ofn(), dataFactory), parsed.ofn());
+    private static OntologyChange annotation(ParsedLine parsed, OfnLineDecoder decoder) {
+        OWLAnnotation annotation = oneAnnotation(decoder.parse(parsed.ofn()), parsed.ofn());
         if (parsed.add()) {
             return new AddOntologyAnnotation(parsed.ontology(), annotation);
         }
@@ -297,62 +290,10 @@ public final class OfnLines {
         return annotations.get(0);
     }
 
-    private static OWLOntologyLoaderConfiguration loader() {
-        return new OWLOntologyLoaderConfiguration()
-                .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
-    }
-
-    private static OWLOntology parseDocument(String ofn, OWLDataFactory dataFactory) {
-        String document = "Ontology(<" + CODEC_ONTOLOGY + "> " + ofn + ")";
-        try {
-            OWLOntology ontology =
-                    manager(dataFactory).loadOntologyFromOntologyDocument(new StringDocumentSource(document), loader());
-            if (!(ontology.getOWLOntologyManager().getOntologyFormat(ontology)
-                    instanceof FunctionalSyntaxDocumentFormat)) {
-                throw new IllegalArgumentException("expected functional syntax: " + preview(ofn));
-            }
-            return ontology;
-        } catch (OWLOntologyCreationException | OWLRuntimeException ex) {
-            throw new IllegalArgumentException("cannot parse functional syntax: " + preview(ofn), ex);
-        }
-    }
-
     private static void rejectImports(OWLOntology ontology, String ofn) {
         if (ontology.importsDeclarations().findAny().isPresent()) {
             throw new IllegalArgumentException("change line must not import another ontology: " + preview(ofn));
         }
-    }
-
-    /**
-     * The stock manager's ontology factory is copied onto a manager that uses the caller's data
-     * factory. Only the functional-syntax parser is installed. Remapping is off so {@code _:b1}
-     * keeps its node id (ADR-011).
-     */
-    private static OWLOntologyManager manager(OWLDataFactory dataFactory) {
-        OWLOntologyManager template = OWLManager.createOWLOntologyManager();
-        OWLOntologyManager manager = new OWLOntologyManagerImpl(dataFactory, new ReentrantReadWriteLock());
-        // Only the functional parser. The stock set includes OBO, which accepts arbitrary text.
-        Set<OWLParserFactory> parsers = new LinkedHashSet<>();
-        parsers.add(new OWLFunctionalSyntaxOWLParserFactory());
-        manager.setOntologyParsers(parsers);
-        manager.setOntologyFactories(copy(template.getOntologyFactories()));
-        manager.getOntologyConfigurator().withRemapAllAnonymousIndividualsIds(false);
-        manager.getIRIMappers().add(OfnLines::blockDocumentFetch);
-        return manager;
-    }
-
-    private static <T> Set<T> copy(Iterable<T> items) {
-        Set<T> copy = new LinkedHashSet<>();
-        items.forEach(copy::add);
-        return copy;
-    }
-
-    /** The wrapper document is supplied as a string. Every other document IRI is not loaded. */
-    private static IRI blockDocumentFetch(IRI iri) {
-        if (CODEC_ONTOLOGY.equals(iri.toString())) {
-            return null;
-        }
-        return IRI.create("urn:wp:codec:blocked-import");
     }
 
     private static ParsedLine split(String line) {
@@ -386,7 +327,7 @@ public final class OfnLines {
         return IRI.create(iri);
     }
 
-    private static String preview(String ofn) {
+    static String preview(String ofn) {
         String flat = ofn.replace('\n', ' ').replace('\r', ' ');
         if (flat.length() <= 160) {
             return flat;

@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-06]
 ---
 
@@ -61,13 +61,21 @@ depends_on: [P1-06]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - `ofn-lines/2` 或任何行格式变化（ADR-011）
 - 快照编解码（P1-22）
 - 迁移包导入是否改用 `OfnLineDecoder` 批量解码（由 P3-10 决定）
 - 运行 `KernelBenchmark` 或更新 `docs/perf/` 下的报告（由 P1-20 重跑时统一测量）
+
+## 执行记录
+- 日期：2026-11-06
+- 分支：feature/p1-23-line-codec-shared-parser
+- 测试：2026-11-06T00:39:46+08:00 通过（3 项）
+- 实际改动：新增 OfnLineDecoder，每次 encode 或 decode 共用一个解析上下文；每行解析前清空暂存本体。ofn-lines/1 行格式不变。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
