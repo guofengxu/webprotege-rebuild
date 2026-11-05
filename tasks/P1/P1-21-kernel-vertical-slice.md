@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: [milestone]
-status: todo
+status: done
 depends_on: [P1-15, P1-16, P1-18, P1-19, P1-06]
 ---
 
@@ -46,11 +46,19 @@ depends_on: [P1-15, P1-16, P1-18, P1-19, P1-06]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] M1 的其余条件（P1-20 报告）已满足，或已在执行记录中说明
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] M1 的其余条件（P1-20 报告）已满足，或已在执行记录中说明
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 上传文件的解析与格式识别（P3-09）
+
+## 执行记录
+- 日期：2026-11-05
+- 分支：feature/p1-21-kernel-vertical-slice
+- 测试：2026-11-05T17:35:13+08:00 通过（3 项）
+- 实际改动：新增 InitialImportGenerator：按输入顺序从 o1 起为每个已解析本体生成 DeclareOntology、全部 AddAxiom、本体注解和导入声明，描述为 Imported <n> ontologies；项目已有本体时拒绝。竖切测试导入 warehouse-sample.ttl，在托盘下用 UUID 创建周转托盘，删除另一个类，回滚第 3 号修订，打快照后从同一份内存日志和快照重新加载；另一变体把修订日志经 ofn-lines/1 编解码后再加载，本体、类层级和显示名称保持一致。
+- 偏差：描述按卡片写成 Imported <n> ontologies，n 为 1 时也用复数。重复的文档 IRI（有版本 IRI 时取版本 IRI，否则取本体 IRI）在返回变更前拒绝，避免修订已经写入后 OWL API 创建本体失败并把 runtime 标成损坏；匿名本体没有文档 IRI，可以有多份；同一本体 IRI 的不同版本可以共存。M1 的基准门禁未由本卡满足：P1-20 仍在 feature/p1-20-kernel-benchmark，尚未合并，本卡不产出基准报告。差距清单不另建文档：上传解析仍是 P3-09；显示语言由调用方传入，项目设置在后续卡；一组公理的顺序跟随 OWL API 集合迭代，测试按集合断言。这些留在后续卡。
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter

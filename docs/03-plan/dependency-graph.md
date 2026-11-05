@@ -40,7 +40,7 @@ flowchart LR
         P1_18["P1-18"]:::done
         P1_19["P1-19"]:::done
         P1_20["P1-20"]:::todo
-        P1_21["P1-21"]:::todo
+        P1_21["P1-21"]:::done
         P1_22["P1-22"]:::todo
         P1_23["P1-23"]:::todo
         P1_24["P1-24"]:::todo
