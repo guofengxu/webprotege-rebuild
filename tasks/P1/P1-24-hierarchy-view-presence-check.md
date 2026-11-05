@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-18]
 ---
 
@@ -49,13 +49,21 @@ depends_on: [P1-18]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 显示名称视图（P1-25）
 - 修改 `ProjectOntologies` 接口或 `OwlApiProjectOntologies`
 - 为层级查询新建索引（ADR-005：只有 P1-20 重跑后仍不达标时才考虑）
 - 运行 `KernelBenchmark` 或更新 `docs/perf/` 下的报告（由 P1-20 重跑时统一测量）
+
+## 执行记录
+- 日期：2026-11-06
+- 分支：feature/p1-24-hierarchy-view-presence-check
+- 测试：2026-11-06T07:15:56+08:00 通过（3 项）
+- 实际改动：四个层级视图的 onApplied 改为对变更涉及的实体调用 containsEntity，不再物化全项目签名。新增 CountingProjectOntologies，以及覆盖新增父子关系和删除最后一条引用的 BS08 增量开销测试。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
