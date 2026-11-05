@@ -13,10 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -168,6 +172,45 @@ class OfnZipSnapshotCodecTest {
     }
 
     @Test
+    void import_iris_lists_only_import_declarations() {
+        byte[] document = """
+                Ontology(<http://example.org/ont> <http://example.org/ont/1>
+                    Declaration(Class(<http://example.org/Entity>))
+                    AnnotationAssertion(<http://www.w3.org/2000/01/rdf-schema#comment> <http://example.org/Entity> "<http://example.org/in-literal>")
+                    Import(<http://example.org/first>)
+                    Import(
+                        <http://example.org/second>
+                    )
+                    Import(<>)
+                    Import(<http://example.org/first>)
+                )
+                """.getBytes(StandardCharsets.UTF_8);
+
+        Set<IRI> iris = OfnZipSnapshotCodec.importIris(document);
+
+        assertThat(iris)
+                .containsExactly(IRI.create("http://example.org/first"), IRI.create("http://example.org/second"));
+        assertThatThrownBy(() -> iris.add(IRI.create("http://example.org/extra")))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
+    @Timeout(value = 15, unit = TimeUnit.SECONDS)
+    void round_trips_sixty_thousand_axioms_within_fifteen_seconds() {
+        OWLOntology synthetic =
+                SyntheticOntologyGenerator.generate(new SyntheticOntologyGenerator.Parameters(20_000, 4, 1, 0, 0, 20L));
+        assertThat(synthetic.getAxiomCount()).isBetween(50_000, 70_000);
+
+        MutableProjectOntologies source = OwlApiProjectOntologies.empty();
+        source.apply(List.of(declare(SYNTHETIC, synthetic)));
+        source.apply(axiomsOf(SYNTHETIC, synthetic));
+
+        MutableProjectOntologies decoded = codec.decode(codec.encode(source));
+
+        assertSameStructure(source, decoded);
+    }
+
+    @Test
     void rejects_a_render_that_would_drop_a_one_operand_constructor() {
         MutableProjectOntologies source = OwlApiProjectOntologies.empty();
         OWLDataFactory data = source.dataFactory();
@@ -215,14 +258,20 @@ class OfnZipSnapshotCodecTest {
         assertThat(actual.keys()).containsExactlyInAnyOrderElementsOf(expected.keys());
         for (OntologyKey key : expected.keys()) {
             assertThat(actual.info(key)).as("info %s", key.value()).isEqualTo(expected.info(key));
-            assertThat(actual.axioms(key))
+            // Set equality stays linear. AssertJ's any-order comparison is quadratic in the
+            // axiom count and would exceed the 60k-axiom timeout even when the codec is fast.
+            assertThat(axiomSet(actual.axioms(key)))
                     .as("axioms %s", key.value())
-                    .containsExactlyInAnyOrderElementsOf(expected.axioms(key).toList());
+                    .isEqualTo(axiomSet(expected.axioms(key)));
             assertThat(actual.annotations(key))
                     .as("annotations %s", key.value())
                     .isEqualTo(expected.annotations(key));
             assertThat(actual.imports(key)).as("imports %s", key.value()).isEqualTo(expected.imports(key));
         }
+    }
+
+    private static Set<OWLAxiom> axiomSet(Stream<OWLAxiom> axioms) {
+        return axioms.collect(Collectors.toSet());
     }
 
     private static DeclareOntology declare(OntologyKey key, OWLOntology ontology) {

@@ -9,6 +9,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -69,7 +70,8 @@ public final class OfnZipSnapshotCodec implements SnapshotCodec {
 
     private static final Pattern DOCUMENT_NAME = Pattern.compile("o[1-9][0-9]*\\.ofn");
 
-    private static final Pattern BRACKET_IRI = Pattern.compile("<([^>\\s]*)>");
+    /** {@code Import(<iri>)}, with whitespace allowed between the keyword, '(', and '<'. */
+    private static final Pattern IMPORT_DECLARATION = Pattern.compile("Import\\s*\\(\\s*<([^>\\s]*)>");
 
     /** Not a document. Import loads fail here instead of opening the import IRI. */
     private static final IRI BLOCKED_IMPORT = IRI.create("urn:wp:snapshot:blocked-import");
@@ -216,7 +218,15 @@ public final class OfnZipSnapshotCodec implements SnapshotCodec {
         Objects.requireNonNull(document, "ontology document");
         try {
             OWLOntologyManager manager = readingManager();
-            ignoreBracketIris(manager, document);
+            // Import declarations are recorded and not loaded. makeLoadImportRequest reads the
+            // loader configuration, not the configurator. Only those IRIs are ignored: each
+            // addIgnoredImport copies the ignored set, so ignoring every bracket IRI is quadratic.
+            OWLOntologyLoaderConfiguration config =
+                    manager.getOntologyConfigurator().buildLoaderConfiguration();
+            for (IRI iri : importIris(document)) {
+                config = config.addIgnoredImport(iri);
+            }
+            manager.setOntologyLoaderConfiguration(config);
             OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new ByteArrayInputStream(document));
             if (!(manager.getOntologyFormat(ontology) instanceof FunctionalSyntaxDocumentFormat)) {
                 throw new IllegalArgumentException("snapshot ontology is not functional syntax");
@@ -228,20 +238,20 @@ public final class OfnZipSnapshotCodec implements SnapshotCodec {
     }
 
     /**
-     * Import declarations are recorded and not loaded. The loader configuration, not the
-     * configurator, is what {@code makeLoadImportRequest} reads.
+     * IRIs of functional-syntax {@code Import(<iri>)} declarations, in first-seen order.
+     * A literal that happens to contain the same text only adds an extra ignored IRI.
      */
-    private static void ignoreBracketIris(OWLOntologyManager manager, byte[] document) {
-        OWLOntologyLoaderConfiguration config =
-                manager.getOntologyConfigurator().buildLoaderConfiguration();
-        Matcher matcher = BRACKET_IRI.matcher(new String(document, StandardCharsets.UTF_8));
+    static Set<IRI> importIris(byte[] document) {
+        Objects.requireNonNull(document, "ontology document");
+        Matcher matcher = IMPORT_DECLARATION.matcher(new String(document, StandardCharsets.UTF_8));
+        Set<IRI> iris = new LinkedHashSet<>();
         while (matcher.find()) {
             String iri = matcher.group(1);
             if (!iri.isBlank()) {
-                config = config.addIgnoredImport(IRI.create(iri));
+                iris.add(IRI.create(iri));
             }
         }
-        manager.setOntologyLoaderConfiguration(config);
+        return Collections.unmodifiableSet(iris);
     }
 
     private static OWLOntologyManager writingManager() {

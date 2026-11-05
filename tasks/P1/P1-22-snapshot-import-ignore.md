@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-07]
 ---
 
@@ -54,12 +54,20 @@ depends_on: [P1-07]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 逐行编码 `ofn-lines/1` 的性能（P1-23）
 - 快照格式的任何改动（仍是 `ofn-zip/1`，不新增格式版本）
 - 运行 `KernelBenchmark` 或更新 `docs/perf/` 下的报告（由 P1-20 重跑时统一测量）
+
+## 执行记录
+- 日期：2026-11-05
+- 分支：feature/p1-22-snapshot-import-ignore
+- 测试：2026-11-05T23:50:35+08:00 通过（3 项）
+- 实际改动：快照解析只忽略函数式语法 Import(<iri>) 声明里的 IRI，按首次出现顺序去重。约 6 万公理的编码再解码在 15 秒内完成且结构相等。
+- 偏差：assertSameStructure 的公理比较从 AssertJ 无序包含改为集合相等。无序包含对 6 万公理是平方级，编解码本身约 4 秒时整段测试仍会超过 15 秒。比较语义仍是忽略顺序的公理集合相等。
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
