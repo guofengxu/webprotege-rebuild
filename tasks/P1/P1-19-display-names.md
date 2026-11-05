@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P1-09]
 ---
 
@@ -44,11 +44,19 @@ depends_on: [P1-09]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 搜索索引（P3-19）
 - 显示语言设置的持久化（P3-22）
+
+## 执行记录
+- 日期：2026-11-04
+- 分支：feature/p1-19-display-names
+- 测试：2026-11-04T23:07:10+08:00 通过（3 项）
+- 实际改动：新增 DisplayNameSetting 与 DisplayNameView：按语言列表取第一个命中的注解，否则用 IRI 本地名；内置实体保持 owl:Thing 这类前缀名，并在 onApplied 后报告显示名变化的实体。
+- 偏差：空列表使用 skos:prefLabel、rdfs:label、dc:title、dcterms:title 且语言标签为空，只匹配无语言标签的字面量。同一设置的多个字面量取字典序最小者。内置前缀名优先于注解。lastChanged 比较本体签名里实体的显示名字符串；未声明、只作为注解主语的实体不进入该集合。
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
