@@ -41,9 +41,10 @@ public final class OfnLineChangeCodec implements ChangeCodec {
     @Override
     public byte[] encode(List<OntologyChange> changes) {
         Objects.requireNonNull(changes, "changes");
+        OfnLineDecoder checker = new OfnLineDecoder(OWLManager.getOWLDataFactory());
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (GZIPOutputStream gzip = new GZIPOutputStream(bytes)) {
-            gzip.write(text(changes).getBytes(StandardCharsets.UTF_8));
+            gzip.write(text(changes, checker).getBytes(StandardCharsets.UTF_8));
         } catch (IOException ex) {
             throw new IllegalStateException("failed to gzip ofn-lines/1 payload", ex);
         }
@@ -57,6 +58,7 @@ public final class OfnLineChangeCodec implements ChangeCodec {
         if (text.isEmpty()) {
             return List.of();
         }
+        OfnLineDecoder decoder = new OfnLineDecoder(dataFactory);
         String[] lines = text.split("\n", -1);
         List<OntologyChange> changes = new ArrayList<>();
         for (int i = 0; i < lines.length; i++) {
@@ -69,18 +71,19 @@ public final class OfnLineChangeCodec implements ChangeCodec {
             if (lines[i].indexOf('\r') >= 0) {
                 throw new IllegalArgumentException("raw carriage return in change line " + i);
             }
-            changes.add(OfnLines.decodeLine(OfnLines.unescapeLine(lines[i]), dataFactory));
+            changes.add(decoder.decode(OfnLines.unescapeLine(lines[i])));
         }
         return List.copyOf(changes);
     }
 
-    private static String text(List<OntologyChange> changes) {
+    private static String text(List<OntologyChange> changes, OfnLineDecoder checker) {
         if (changes.isEmpty()) {
             return "";
         }
         StringBuilder text = new StringBuilder();
         for (OntologyChange change : changes) {
-            text.append(OfnLines.escapeLine(OfnLines.encodeLine(change))).append('\n');
+            text.append(OfnLines.escapeLine(OfnLines.encodeLine(change, checker)))
+                    .append('\n');
         }
         return text.toString();
     }

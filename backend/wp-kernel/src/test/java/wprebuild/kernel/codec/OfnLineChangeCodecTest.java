@@ -9,13 +9,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
@@ -272,6 +275,60 @@ class OfnLineChangeCodecTest {
     @Test
     void round_trips_a_carriage_return_inside_a_literal() {
         roundTrip(new AddAxiom(KEY, DATA.getOWLDataPropertyAssertionAxiom(NOTE, ENTITY, DATA.getOWLLiteral("a\rb"))));
+    }
+
+    @Test
+    void decoder_matches_decode_line_for_a_thousand_distinct_axioms() {
+        OfnLineDecoder decoder = new OfnLineDecoder(DATA);
+
+        for (int i = 0; i < 1_000; i++) {
+            String line = "+\tAXIOM\to1\tDeclaration(Class(<http://example.org/C" + i + ">))";
+
+            assertThat(decoder.decode(line)).isEqualTo(OfnLines.decodeLine(line, DATA));
+        }
+    }
+
+    @Test
+    void decoder_rejects_a_bad_line_and_still_decodes_the_next() {
+        OfnLineDecoder decoder = new OfnLineDecoder(DATA);
+        String good = "+\tAXIOM\to1\tDeclaration(Class(<http://example.org/A>))";
+
+        assertThatThrownBy(() -> decoder.decode("+\tAXIOM\to1\tSubClassOf(<http://example.org/A>"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThat(decoder.decode(good)).isEqualTo(OfnLines.decodeLine(good, DATA));
+    }
+
+    @Test
+    void decoder_keeps_anonymous_individual_node_ids_across_lines() {
+        OfnLineDecoder decoder = new OfnLineDecoder(DATA);
+        OWLAnonymousIndividual anon = DATA.getOWLAnonymousIndividual("b1");
+
+        OntologyChange member = decoder.decode("+\tAXIOM\to1\tClassAssertion(<http://example.org/A> _:b1)");
+        OntologyChange link =
+                decoder.decode("+\tAXIOM\to1\tObjectPropertyAssertion(<http://example.org/knows> _:b1 _:b1)");
+
+        assertThat(anonymousIndividuals(member)).containsExactly(anon);
+        assertThat(anonymousIndividuals(link)).containsExactly(anon);
+    }
+
+    @Test
+    @Timeout(value = 15, unit = TimeUnit.SECONDS)
+    void round_trips_fifty_thousand_lines_within_fifteen_seconds() {
+        List<OntologyChange> changes = new ArrayList<>(50_000);
+        for (int i = 0; i < 50_000; i++) {
+            OWLClass current = DATA.getOWLClass(IRI.create("http://example.org/C_" + i));
+            if (i % 2 == 0) {
+                OWLClass parent = DATA.getOWLClass(IRI.create("http://example.org/C_" + (i / 4)));
+                changes.add(new AddAxiom(KEY, DATA.getOWLSubClassOfAxiom(current, parent)));
+            } else {
+                changes.add(new AddAxiom(
+                        KEY,
+                        DATA.getOWLAnnotationAssertionAxiom(
+                                DATA.getRDFSLabel(), current.getIRI(), DATA.getOWLLiteral("c-" + i, "en"))));
+            }
+        }
+
+        assertThat(codec.decode(codec.encode(changes))).isEqualTo(changes);
     }
 
     @Test
