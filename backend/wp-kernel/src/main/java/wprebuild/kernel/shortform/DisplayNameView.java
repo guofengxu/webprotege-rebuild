@@ -2,6 +2,7 @@ package wprebuild.kernel.shortform;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -15,6 +16,7 @@ import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.EntityType;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLLiteral;
@@ -22,7 +24,14 @@ import org.semanticweb.owlapi.vocab.DublinCoreVocabulary;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 import org.semanticweb.owlapi.vocab.SKOSVocabulary;
+import wprebuild.kernel.change.AddAxiom;
+import wprebuild.kernel.change.AddImport;
+import wprebuild.kernel.change.AddOntologyAnnotation;
+import wprebuild.kernel.change.DeclareOntology;
 import wprebuild.kernel.change.OntologyChange;
+import wprebuild.kernel.change.RemoveAxiom;
+import wprebuild.kernel.change.RemoveImport;
+import wprebuild.kernel.change.RemoveOntologyAnnotation;
 import wprebuild.kernel.ontology.ProjectOntologies;
 import wprebuild.kernel.runtime.DerivedView;
 
@@ -37,7 +46,17 @@ import wprebuild.kernel.runtime.DerivedView;
  * {@code rdfs:label}, and the same sets the legacy dictionary loaded). Several literals for one
  * setting resolve to the lowest lexical form so a later batch does not flicker.
  * {@link #lastChanged()} is signature entities whose display-name string differs after the latest
- * {@code onApplied}; {@code rebuild} clears it. Queries throw until {@code rebuild} or
+ * {@code onApplied}; {@code rebuild} clears it.
+ *
+ * <p>{@code rebuild} still collects every annotation assertion and indexes the whole signature.
+ * {@code onApplied} recomputes only IRIs the change can affect: the IRI subject of each added or
+ * removed annotation assertion, plus every entity IRI in {@link OntologyChange#signature()}.
+ * Import changes and {@code DeclareOntology} contribute an empty signature. Entities named by an
+ * ontology annotation are included through that signature; an extra IRI is harmless and a missing
+ * one is not (BS-09, P1-25). For each affected IRI the six entity types are refreshed from
+ * {@code annotationAssertions} and {@code containsEntity}. An entity whose IRI was not affected
+ * keeps its name, because neither its annotations nor its presence in the signature changed. The
+ * maps are mutated in place under the project write lock. Queries throw until {@code rebuild} or
  * {@code onApplied} has taken a snapshot.
  */
 public final class DisplayNameView implements DerivedView {
@@ -50,13 +69,15 @@ public final class DisplayNameView implements DerivedView {
 
     private static final Map<OWLEntity, String> BUILT_IN = builtInNames();
 
+    private static final List<EntityType<?>> ENTITY_TYPES = List.copyOf(EntityType.values());
+
     private final List<DisplayNameSetting> settings;
 
     private boolean ready;
 
-    private Map<IRI, Map<DisplayNameSetting, String>> annotations = Map.of();
+    private Map<IRI, Map<DisplayNameSetting, String>> annotations = new HashMap<>();
 
-    private Map<OWLEntity, String> names = Map.of();
+    private Map<OWLEntity, String> names = new HashMap<>();
 
     private Set<OWLEntity> lastChanged = Set.of();
 
@@ -68,14 +89,21 @@ public final class DisplayNameView implements DerivedView {
 
     @Override
     public void rebuild(ProjectOntologies ontologies) {
-        install(Objects.requireNonNull(ontologies, "ontologies"), false);
+        Objects.requireNonNull(ontologies, "ontologies");
+        Map<IRI, Map<DisplayNameSetting, String>> collected = collect(ontologies);
+        annotations = new HashMap<>(collected);
+        names = index(ontologies, collected);
+        lastChanged = Set.of();
+        ready = true;
     }
 
     @Override
     public void onApplied(List<OntologyChange> effectiveChanges, ProjectOntologies after) {
         Objects.requireNonNull(effectiveChanges, "effectiveChanges");
         effectiveChanges.forEach(change -> Objects.requireNonNull(change, "change"));
-        install(Objects.requireNonNull(after, "ontologies"), true);
+        Objects.requireNonNull(after, "ontologies");
+        applyIncremental(effectiveChanges, after);
+        ready = true;
     }
 
     /** Chosen display name, including the local-name and built-in fallbacks (BS-09). */
@@ -101,14 +129,107 @@ public final class DisplayNameView implements DerivedView {
         return lastChanged;
     }
 
-    private void install(ProjectOntologies ontologies, boolean reportChanges) {
-        Map<IRI, Map<DisplayNameSetting, String>> nextAnnotations = collect(ontologies);
-        Map<OWLEntity, String> nextNames = index(ontologies, nextAnnotations);
-        Set<OWLEntity> nextChanged = reportChanges ? diff(names, nextNames, annotations, nextAnnotations) : Set.of();
-        this.annotations = nextAnnotations;
-        this.names = nextNames;
-        this.lastChanged = nextChanged;
-        this.ready = true;
+    private void applyIncremental(List<OntologyChange> changes, ProjectOntologies after) {
+        Set<IRI> affected = affectedIris(changes);
+        // Reads finish before the maps change, so a failed lookup leaves the previous snapshot intact.
+        List<TrackedEntity> tracked = trackedEntities(after, affected);
+        Map<IRI, Map<DisplayNameSetting, String>> refreshed = refreshedAnnotations(after, affected);
+        refreshed.forEach(this::replaceAnnotations);
+        for (TrackedEntity trackedEntity : tracked) {
+            if (trackedEntity.present()) {
+                names.put(trackedEntity.entity(), resolve(trackedEntity.entity(), annotations));
+            } else {
+                names.remove(trackedEntity.entity());
+            }
+        }
+        lastChanged = changedEntities(tracked);
+    }
+
+    private List<TrackedEntity> trackedEntities(ProjectOntologies after, Set<IRI> affected) {
+        List<TrackedEntity> tracked = new ArrayList<>();
+        OWLDataFactory data = after.dataFactory();
+        for (IRI iri : affected) {
+            for (EntityType<?> type : ENTITY_TYPES) {
+                OWLEntity entity = entity(data, type, iri);
+                boolean present = after.containsEntity(entity);
+                if (names.containsKey(entity) || present) {
+                    tracked.add(new TrackedEntity(entity, nameOf(entity, names, annotations), present));
+                }
+            }
+        }
+        return tracked;
+    }
+
+    private Map<IRI, Map<DisplayNameSetting, String>> refreshedAnnotations(ProjectOntologies after, Set<IRI> affected) {
+        Map<IRI, Map<DisplayNameSetting, String>> refreshed = new HashMap<>();
+        for (IRI iri : affected) {
+            refreshed.put(iri, annotationsOf(after, iri));
+        }
+        return refreshed;
+    }
+
+    private Set<OWLEntity> changedEntities(List<TrackedEntity> tracked) {
+        Set<OWLEntity> changed = new LinkedHashSet<>();
+        for (TrackedEntity trackedEntity : tracked) {
+            String current = nameOf(trackedEntity.entity(), names, annotations);
+            if (!trackedEntity.previousName().equals(current)) {
+                changed.add(trackedEntity.entity());
+            }
+        }
+        return Set.copyOf(changed);
+    }
+
+    private void replaceAnnotations(IRI iri, Map<DisplayNameSetting, String> refreshed) {
+        if (refreshed.isEmpty()) {
+            annotations.remove(iri);
+        } else {
+            annotations.put(iri, refreshed);
+        }
+    }
+
+    private static Set<IRI> affectedIris(List<OntologyChange> changes) {
+        Set<IRI> iris = new LinkedHashSet<>();
+        for (OntologyChange change : changes) {
+            addAnnotationSubject(change, iris);
+            for (OWLEntity entity : change.signature()) {
+                iris.add(entity.getIRI());
+            }
+        }
+        return iris;
+    }
+
+    private static void addAnnotationSubject(OntologyChange change, Set<IRI> iris) {
+        switch (change) {
+            case AddAxiom add -> addSubject(add.owlAxiom(), iris);
+            case RemoveAxiom remove -> addSubject(remove.owlAxiom(), iris);
+            case AddOntologyAnnotation ignored -> {}
+            case RemoveOntologyAnnotation ignored -> {}
+            case AddImport ignored -> {}
+            case RemoveImport ignored -> {}
+            case DeclareOntology ignored -> {}
+        }
+    }
+
+    private static void addSubject(OWLAxiom axiom, Set<IRI> iris) {
+        if (axiom instanceof OWLAnnotationAssertionAxiom assertion && assertion.getSubject() instanceof IRI subject) {
+            iris.add(subject);
+        }
+    }
+
+    private Map<DisplayNameSetting, String> annotationsOf(ProjectOntologies ontologies, IRI iri) {
+        Map<IRI, Map<DisplayNameSetting, String>> best = new HashMap<>();
+        ontologies.annotationAssertions(iri).forEach(axiom -> remember(best, axiom));
+        return inSettingOrder(best.getOrDefault(iri, Map.of()));
+    }
+
+    private static OWLEntity entity(OWLDataFactory data, EntityType<?> type, IRI iri) {
+        // EntityType.values() is a wildcard list, so the type argument is recovered for getOWLEntity.
+        return data.getOWLEntity(asEntityType(type), iri);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static EntityType<OWLEntity> asEntityType(EntityType<?> type) {
+        return (EntityType<OWLEntity>) type;
     }
 
     private void requireReady() {
@@ -119,30 +240,11 @@ public final class DisplayNameView implements DerivedView {
 
     private Map<OWLEntity, String> index(
             ProjectOntologies ontologies, Map<IRI, Map<DisplayNameSetting, String>> annotations) {
-        Map<OWLEntity, String> indexed = new LinkedHashMap<>();
+        Map<OWLEntity, String> indexed = new HashMap<>();
         for (OWLEntity entity : ontologies.signature().toList()) {
             indexed.put(entity, resolve(entity, annotations));
         }
-        return Map.copyOf(indexed);
-    }
-
-    private Set<OWLEntity> diff(
-            Map<OWLEntity, String> beforeNames,
-            Map<OWLEntity, String> afterNames,
-            Map<IRI, Map<DisplayNameSetting, String>> beforeAnnotations,
-            Map<IRI, Map<DisplayNameSetting, String>> afterAnnotations) {
-        Set<OWLEntity> seen = new LinkedHashSet<>();
-        seen.addAll(beforeNames.keySet());
-        seen.addAll(afterNames.keySet());
-        Set<OWLEntity> changed = new LinkedHashSet<>();
-        for (OWLEntity entity : seen) {
-            String before = nameOf(entity, beforeNames, beforeAnnotations);
-            String after = nameOf(entity, afterNames, afterAnnotations);
-            if (!before.equals(after)) {
-                changed.add(entity);
-            }
-        }
-        return Set.copyOf(changed);
+        return indexed;
     }
 
     private String nameOf(
@@ -282,4 +384,7 @@ public final class DisplayNameView implements DerivedView {
             OWLDataFactory data, Map<OWLEntity, String> names, OWLRDFVocabulary vocab) {
         names.put(data.getOWLAnnotationProperty(vocab.getIRI()), vocab.getPrefixedName());
     }
+
+    /** One signature entity touched by this batch, with the name it had before the maps changed. */
+    private record TrackedEntity(OWLEntity entity, String previousName, boolean present) {}
 }
