@@ -213,9 +213,7 @@ public final class OfnLines {
      */
     private static String renderChecked(OWLObject object, OfnLineDecoder checker) {
         String rendered = renderFunctional(object);
-        OWLObject parsed = object instanceof OWLAxiom
-                ? oneAxiom(checker.parse(rendered), rendered)
-                : oneAnnotation(checker.parse(rendered), rendered);
+        OWLObject parsed = object instanceof OWLAxiom ? checker.axiom(rendered) : checker.annotation(rendered);
         if (!object.equals(parsed)) {
             throw new IllegalArgumentException("functional syntax render is not lossless: " + preview(rendered));
         }
@@ -223,7 +221,7 @@ public final class OfnLines {
     }
 
     private static OntologyChange axiom(ParsedLine parsed, OfnLineDecoder decoder) {
-        OWLAxiom axiom = oneAxiom(decoder.parse(parsed.ofn()), parsed.ofn());
+        OWLAxiom axiom = decoder.axiom(parsed.ofn());
         if (parsed.add()) {
             return new AddAxiom(parsed.ontology(), axiom);
         }
@@ -231,7 +229,7 @@ public final class OfnLines {
     }
 
     private static OntologyChange annotation(ParsedLine parsed, OfnLineDecoder decoder) {
-        OWLAnnotation annotation = oneAnnotation(decoder.parse(parsed.ofn()), parsed.ofn());
+        OWLAnnotation annotation = decoder.annotation(parsed.ofn());
         if (parsed.add()) {
             return new AddOntologyAnnotation(parsed.ontology(), annotation);
         }
@@ -265,7 +263,7 @@ public final class OfnLines {
                 "ontology registration must be -, <iri>, or <iri> <versionIri>: " + parsed.ofn());
     }
 
-    private static OWLAxiom oneAxiom(OWLOntology ontology, String ofn) {
+    static OWLAxiom oneAxiom(OWLOntology ontology, String ofn) {
         rejectImports(ontology, ofn);
         if (!ontology.annotations().toList().isEmpty()) {
             throw new IllegalArgumentException("axiom line contains an ontology annotation: " + preview(ofn));
@@ -277,7 +275,7 @@ public final class OfnLines {
         return axioms.get(0);
     }
 
-    private static OWLAnnotation oneAnnotation(OWLOntology ontology, String ofn) {
+    static OWLAnnotation oneAnnotation(OWLOntology ontology, String ofn) {
         rejectImports(ontology, ofn);
         if (ontology.getAxiomCount() != 0) {
             throw new IllegalArgumentException("annotation line contains axioms: " + preview(ofn));
