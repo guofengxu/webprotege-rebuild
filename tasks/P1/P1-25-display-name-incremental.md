@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-19, P1-24]
 ---
 
@@ -64,13 +64,21 @@ depends_on: [P1-19, P1-24]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 层级视图（P1-24）
 - 修改 `DisplayNameSetting`、BS-09 的语义或默认设置顺序
 - 修改 `ProjectOntologies` 接口或 `OwlApiProjectOntologies`
 - 运行 `KernelBenchmark` 或更新 `docs/perf/` 下的报告（由 P1-20 重跑时统一测量）
+
+## 执行记录
+- 日期：2026-11-06
+- 分支：feature/p1-25-display-name-incremental
+- 测试：2026-11-06T07:56:44+08:00 通过（3 项）
+- 实际改动：DisplayNameView.onApplied 只按本次变更涉及的 IRI 重算注解和显示名，不再扫描全项目签名或按公理类型遍历。新增 BS09 增量属性测试和单次改标签的代价测试。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
