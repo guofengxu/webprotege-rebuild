@@ -15,6 +15,7 @@ import org.semanticweb.owlapi.io.StringDocumentSource;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
 import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDocumentFormat;
 import org.semanticweb.owlapi.model.OWLImportsDeclaration;
@@ -50,15 +51,36 @@ public final class OfnLineDecoder {
     private final OWLOntologyLoaderConfiguration loader =
             new OWLOntologyLoaderConfiguration().setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
 
+    private final OfnExpressionParser expressions;
+
     public OfnLineDecoder(OWLDataFactory dataFactory) {
         this.manager = manager(Objects.requireNonNull(dataFactory, "dataFactory"));
         this.staging = stagingOntology(manager);
+        this.expressions = new OfnExpressionParser(staging, loader);
     }
 
     /** Same input, output, and exceptions as {@link OfnLines#decodeLine(String, OWLDataFactory)}. */
     public OntologyChange decode(String line) {
         Objects.requireNonNull(line, "line");
         return OfnLines.decodeWith(line, this);
+    }
+
+    /**
+     * One axiom. A declined fast path uses {@link #parse(String)} so rejection messages stay on the
+     * staging parser.
+     */
+    OWLAxiom axiom(String ofn) {
+        Objects.requireNonNull(ofn, "ofn");
+        return expressions.axiom(ofn).orElseGet(() -> OfnLines.oneAxiom(parse(ofn), ofn));
+    }
+
+    /**
+     * One ontology annotation. A declined fast path uses {@link #parse(String)} so rejection
+     * messages stay on the staging parser.
+     */
+    OWLAnnotation annotation(String ofn) {
+        Objects.requireNonNull(ofn, "ofn");
+        return expressions.annotation(ofn).orElseGet(() -> OfnLines.oneAnnotation(parse(ofn), ofn));
     }
 
     /**

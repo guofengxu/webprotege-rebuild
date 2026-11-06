@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: kernel
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P1-23]
 ---
 
@@ -97,10 +97,10 @@ depends_on: [P1-23]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - `ofn-lines/2` 或任何行格式变化（ADR-011）。黄金文件 `src/test/resources/codec/ofn-lines-v1-golden.txt` 不改，编码输出逐字节不变。
@@ -110,3 +110,11 @@ depends_on: [P1-23]
 - 新增计时断言，或修改 `round_trips_fifty_thousand_lines_within_fifteen_seconds`
 - 运行 `KernelBenchmark` 或更新 `docs/perf/` 下的报告（由 P1-20 重跑时统一测量）
 - 调整门禁阈值（由人决定）；升级 OWL API
+
+## 执行记录
+- 日期：2026-11-06
+- 分支：feature/p1-26-line-codec-direct-parser
+- 测试：2026-11-06T16:06:52+08:00 通过（3 项）
+- 实际改动：新增 OfnExpressionParser：每个 encode/decode 复用一个函数式语法解析器，每行 ReInit 后直接调用 Axiom() 或 Annotation()，并用哨兵右括号确认没有多余记号。快路径返回空时仍走原来的暂存本体解析，拒绝类型和消息不变。
+- 偏差：生产代码约 185 行（新类 151 行加上接入），高于卡片预估的 120–160 行，多出来的是一次性反射解析。未写吞吐断言，也未改行格式。
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
