@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: migrator
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P0-03]
 ---
 
@@ -45,10 +45,18 @@ depends_on: [P0-03]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 读取旧数据（P2-02）
+
+## 执行记录
+- 日期：2026-11-06
+- 分支：feature/p2-01-migrator-skeleton
+- 测试：2026-11-06T16:50:10+08:00 通过（4 项）
+- 实际改动：可执行 jar 在独立 classpath 上加载 OWL API 4.5.13 与 BinaryOWL 2.0.1。picocli 根命令提供 --help 和 --version；inspect、export、verify 输出 not implemented 并返回退出码 2。
+- 偏差：无
+- 审查：java-reviewer, silent-failure-hunter
