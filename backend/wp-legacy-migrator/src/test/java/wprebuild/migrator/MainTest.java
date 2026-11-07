@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.binaryowl.BinaryOWLOntologyChangeLog;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -29,13 +28,19 @@ class MainTest {
     }
 
     @Test
-    void export_and_verify_report_not_implemented() {
-        for (String name : List.of("export", "verify")) {
-            Capture capture = run(name);
+    void verify_reports_not_implemented() {
+        Capture capture = run("verify");
 
-            assertThat(capture.exitCode()).as(name).isEqualTo(2);
-            assertThat(capture.out()).as(name).contains("not implemented");
-        }
+        assertThat(capture.exitCode()).isEqualTo(2);
+        assertThat(capture.out()).contains("not implemented");
+    }
+
+    @Test
+    void export_requires_data_dir() {
+        Capture capture = run("export");
+
+        assertThat(capture.exitCode()).isEqualTo(2);
+        assertThat(capture.err()).contains("--data-dir");
     }
 
     @Test

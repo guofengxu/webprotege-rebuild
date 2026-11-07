@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: migrator
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P2-02]
 ---
 
@@ -46,11 +46,19 @@ depends_on: [P2-02]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - Mongo 元数据（P2-04）
 - head 基准文件（P2-05）
+
+## 执行记录
+- 日期：2026-11-07
+- 分支：feature/p2-03-interchange-writer
+- 测试：2026-11-07T15:26:45+08:00 通过（3 项）
+- 实际改动：旧项目修订可导出为 manifest.json、revisions.jsonl 和 SHA256SUMS。变更行与 ADR-011 一致，JSON 内不做行转义。已用内核 OfnLines.decodeLine 解析黄金文件的 12 条变更，全部成功。
+- 偏差：生产代码约 768 行，超过卡片 400 行预期：OWL API 4 的函数式渲染、回读和校验都在本卡的三个类里。BinaryOWL 不保留匿名本体 internal id，跨 run 的匿名本体各分一个 key；匿名个体标签会被重写成 _:0 这类标签，OWL API 4 解析时换成新的 genid，文本里保留日志中的标签。SHA256SUMS 目前只含本卡写出的 manifest.json 和 revisions.jsonl。
+- 审查：java-reviewer, silent-failure-hunter
