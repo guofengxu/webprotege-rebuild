@@ -26,11 +26,12 @@ import wprebuild.migrator.legacy.LegacyDataDir;
 import wprebuild.migrator.legacy.LegacyProjectLocation;
 import wprebuild.migrator.legacy.LegacyRevision;
 import wprebuild.migrator.legacy.LegacyRevisionReader;
+import wprebuild.migrator.mongo.MongoMetadata;
 
 /**
- * Writes {@code projects/<projectId>/manifest.json}, {@code revisions.jsonl}, and {@code SHA256SUMS}.
- * {@code details} and the other Mongo fields are left for P2-04. {@code head.ofn-lines.gz} is left
- * for P2-05. Change lines are JSON strings with no ADR-011 line escaping.
+ * Writes {@code users.json}, {@code projects/<projectId>/manifest.json}, {@code revisions.jsonl}, and
+ * {@code SHA256SUMS}. A loaded mongo export also writes {@code migration-report.json}.
+ * {@code head.ofn-lines.gz} is left for P2-05. Change lines are JSON strings with no ADR-011 line escaping.
  */
 public final class ProjectExporter {
 
@@ -39,6 +40,8 @@ public final class ProjectExporter {
     private static final String MANIFEST = "manifest.json";
     private static final String REVISIONS = "revisions.jsonl";
     private static final String CHECKSUMS = "SHA256SUMS";
+    private static final String USERS = "users.json";
+    private static final String REPORT = "migration-report.json";
     private static final String VERSION_RESOURCE = "/wprebuild/migrator/version.properties";
     private static final String TOOL_VERSION = readToolVersion();
     private static final ObjectMapper JSON = new ObjectMapper().disable(SerializationFeature.INDENT_OUTPUT);
@@ -56,18 +59,27 @@ public final class ProjectExporter {
     }
 
     public void export(Path dataDirectory, Path outputDirectory) {
-        exportSelected(dataDirectory, outputDirectory, null);
+        export(dataDirectory, outputDirectory, MongoMetadata.empty());
     }
 
     public void export(Path dataDirectory, Path outputDirectory, String projectId) {
+        export(dataDirectory, outputDirectory, projectId, MongoMetadata.empty());
+    }
+
+    public void export(Path dataDirectory, Path outputDirectory, MongoMetadata metadata) {
+        exportSelected(dataDirectory, outputDirectory, null, Objects.requireNonNull(metadata, "metadata"));
+    }
+
+    public void export(Path dataDirectory, Path outputDirectory, String projectId, MongoMetadata metadata) {
         Objects.requireNonNull(projectId, "projectId");
+        Objects.requireNonNull(metadata, "metadata");
         if (projectId.isBlank()) {
             throw new IllegalArgumentException("projectId is blank");
         }
-        exportSelected(dataDirectory, outputDirectory, projectId);
+        exportSelected(dataDirectory, outputDirectory, projectId, metadata);
     }
 
-    private void exportSelected(Path dataDirectory, Path outputDirectory, String projectId) {
+    private void exportSelected(Path dataDirectory, Path outputDirectory, String projectId, MongoMetadata metadata) {
         Objects.requireNonNull(dataDirectory, "dataDirectory");
         Objects.requireNonNull(outputDirectory, "outputDirectory");
         List<LegacyProjectLocation> projects = select(new LegacyDataDir(dataDirectory).projects(), projectId);
@@ -78,8 +90,9 @@ public final class ProjectExporter {
             drafts.add(render(project, legacyDataDir, exportedAt));
         }
         for (PackageDraft draft : drafts) {
-            write(outputDirectory, draft);
+            write(outputDirectory, draft, metadata);
         }
+        writePackageFiles(outputDirectory, metadata, drafts);
     }
 
     private static List<LegacyProjectLocation> select(List<LegacyProjectLocation> projects, String projectId) {
@@ -171,11 +184,11 @@ public final class ProjectExporter {
         }
     }
 
-    private void write(Path outputDirectory, PackageDraft draft) {
+    private void write(Path outputDirectory, PackageDraft draft, MongoMetadata metadata) {
         Path projectDir = outputDirectory.resolve("projects").resolve(draft.projectId());
         try {
             Files.createDirectories(projectDir);
-            Files.writeString(projectDir.resolve(MANIFEST), manifestJson(draft), StandardCharsets.UTF_8);
+            Files.writeString(projectDir.resolve(MANIFEST), manifestJson(draft, metadata), StandardCharsets.UTF_8);
             Files.writeString(projectDir.resolve(REVISIONS), revisionsJson(draft.revisions()), StandardCharsets.UTF_8);
             Files.writeString(projectDir.resolve(CHECKSUMS), checksums(projectDir), StandardCharsets.UTF_8);
         } catch (IOException exception) {
@@ -183,21 +196,58 @@ public final class ProjectExporter {
         }
     }
 
-    private static String manifestJson(PackageDraft draft) throws JsonProcessingException {
+    private void writePackageFiles(Path outputDirectory, MongoMetadata metadata, List<PackageDraft> drafts) {
+        try {
+            Files.createDirectories(outputDirectory);
+            Files.writeString(outputDirectory.resolve(USERS), pretty(metadata.users()), StandardCharsets.UTF_8);
+            if (metadata.loaded()) {
+                Files.writeString(
+                        outputDirectory.resolve(REPORT), pretty(report(metadata, drafts)), StandardCharsets.UTF_8);
+            }
+        } catch (IOException exception) {
+            throw new UncheckedIOException("cannot write migration package: " + outputDirectory, exception);
+        }
+    }
+
+    private static String manifestJson(PackageDraft draft, MongoMetadata metadata) throws JsonProcessingException {
         Map<String, Object> manifest = new LinkedHashMap<>();
         manifest.put("formatVersion", FORMAT_VERSION);
         manifest.put("projectId", draft.projectId());
         manifest.put("exportedAt", draft.exportedAt());
         manifest.put("source", source(draft.legacyDataDir()));
+        manifest.put("details", metadata.details(draft.projectId()));
         manifest.put(
                 "ontologies",
                 draft.ontologies().stream().map(ProjectExporter::ontology).toList());
         manifest.put("stats", stats(draft));
-        String pretty = JSON.writerWithDefaultPrettyPrinter().writeValueAsString(manifest);
-        if (pretty.endsWith("\n")) {
-            return pretty;
+        manifest.put("prefixes", metadata.prefixes(draft.projectId()));
+        manifest.put("entityCrudKitSettings", metadata.entityCrudKitSettings(draft.projectId()));
+        manifest.put("displayNameSettings", metadata.displayNameSettings(draft.projectId()));
+        manifest.put("roleAssignments", metadata.roleAssignments(draft.projectId()));
+        return pretty(manifest);
+    }
+
+    /**
+     * P2-05 adds per-project status. Until then the report only carries metadata warnings.
+     */
+    private static Map<String, Object> report(MongoMetadata metadata, List<PackageDraft> drafts) {
+        List<String> warnings = new ArrayList<>(metadata.warnings());
+        for (PackageDraft draft : drafts) {
+            if (!metadata.hasDetails(draft.projectId())) {
+                warnings.add("no ProjectDetails document for project " + draft.projectId());
+            }
         }
-        return pretty + "\n";
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("warnings", List.copyOf(warnings));
+        return report;
+    }
+
+    private static String pretty(Object value) throws JsonProcessingException {
+        String body = JSON.writerWithDefaultPrettyPrinter().writeValueAsString(value);
+        if (body.endsWith("\n")) {
+            return body;
+        }
+        return body + "\n";
     }
 
     private static Map<String, Object> source(String legacyDataDir) {
