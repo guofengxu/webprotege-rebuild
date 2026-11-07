@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: migrator
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P2-01]
 ---
 
@@ -48,10 +48,18 @@ depends_on: [P2-01]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 输出迁移包（P2-03）
+
+## 执行记录
+- 日期：2026-11-07
+- 分支：feature/p2-02-binaryowl-reader
+- 测试：2026-11-07T14:28:30+08:00 通过（3 项）
+- 实际改动：能逐修订读取 change-data.binary。解析失败、非块标记和 SetOntologyID 都会立刻失败，并带上项目、最后成功修订和实际读到的字节偏移。inspect 按项目输出修订数、head、变更数和本体数。
+- 偏差：恰好切在修订块边界的截断与正常结束无法区分，BinaryOWL 都是 EOF，这种情况不会抛错。缺少 revision 元数据会失败，不沿用旧系统默认为 0 的做法。
+- 审查：java-reviewer, silent-failure-hunter
