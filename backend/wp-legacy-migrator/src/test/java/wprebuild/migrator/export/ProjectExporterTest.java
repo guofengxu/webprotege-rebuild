@@ -114,7 +114,23 @@ class ProjectExporterTest {
                 .isEqualTo(golden());
         JsonNode manifest = json.readTree(Files.readString(projectDir.resolve("manifest.json")));
         assertThat(fieldNames(manifest))
-                .containsExactly("formatVersion", "projectId", "exportedAt", "source", "ontologies", "stats");
+                .containsExactly(
+                        "formatVersion",
+                        "projectId",
+                        "exportedAt",
+                        "source",
+                        "details",
+                        "ontologies",
+                        "stats",
+                        "prefixes",
+                        "entityCrudKitSettings",
+                        "displayNameSettings",
+                        "roleAssignments");
+        assertThat(manifest.get("details").get("displayName").asText()).isEmpty();
+        assertThat(manifest.get("prefixes")).isEmpty();
+        assertThat(manifest.get("roleAssignments")).isEmpty();
+        assertThat(manifest.get("entityCrudKitSettings").get("raw")).isEmpty();
+        assertThat(manifest.get("displayNameSettings").get("raw")).isEmpty();
         assertThat(manifest.get("formatVersion").intValue()).isEqualTo(1);
         assertThat(manifest.get("projectId").asText()).isEqualTo(PROJECT_ID);
         assertThat(manifest.get("exportedAt").asText()).isEqualTo("2026-11-05T08:00:00Z");

@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: migrator
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P2-03]
 ---
 
@@ -49,11 +49,19 @@ depends_on: [P2-03]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 直接连接 MongoDB
 - 迁移密码
+
+## 执行记录
+- 日期：2026-11-07
+- 分支：feature/p2-04-mongo-metadata
+- 测试：2026-11-07T16:15:01+08:00 通过（3 项）
+- 实际改动：从 mongoexport JSON 读取项目详情、用户、角色、前缀和新实体设置，写入 manifest.json 与 users.json。多个旧角色取最高的 MVP 角色；缺失文件和未知角色写入 migration-report.json 的警告；不迁移盐值和密码摘要。
+- 偏差：主代码大约 900 行，超过卡片预期的 400 行。多出来的是卡片要求的每个集合一个读取器，以及角色映射和 manifest 组装，没有做直接连接 MongoDB 或迁移密码。
+- 审查：java-reviewer, silent-failure-hunter
