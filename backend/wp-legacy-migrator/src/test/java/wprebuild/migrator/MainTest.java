@@ -29,13 +29,21 @@ class MainTest {
     }
 
     @Test
-    void subcommands_report_not_implemented() {
-        for (String name : List.of("inspect", "export", "verify")) {
+    void export_and_verify_report_not_implemented() {
+        for (String name : List.of("export", "verify")) {
             Capture capture = run(name);
 
             assertThat(capture.exitCode()).as(name).isEqualTo(2);
             assertThat(capture.out()).as(name).contains("not implemented");
         }
+    }
+
+    @Test
+    void inspect_requires_data_dir() {
+        Capture capture = run("inspect");
+
+        assertThat(capture.exitCode()).isEqualTo(2);
+        assertThat(capture.err()).contains("--data-dir");
     }
 
     @Test
