@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-06]
 ---
 
@@ -47,10 +47,18 @@ depends_on: [P3-06]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 任何具体的业务命令
+
+## 执行记录
+- 日期：2026-11-08
+- 分支：feature/p3-07-command-bus
+- 测试：2026-11-08T19:21:44+08:00 通过（3 项）
+- 实际改动：新增命令总线：启动时登记唯一处理器，执行前依次检查项目是否存在、是否在回收站、调用方是否有所需动作，并为每种命令记录 Micrometer timer。ProblemDetailsAdvice 把 NotFound、PermissionDenied、Conflict、并发追加和参数校验映射为带 code 的 ProblemDetail。
+- 偏差：回收站冲突的 code 是 PROJECT_TRASHED，用来和其它 409 区分。请求参数校验是 400；处理器返回值校验按服务端错误映射为 500。P3-08 之前没有 ProjectExistenceCheck 实现时，不带项目的命令仍可执行。
+- 审查：java-reviewer, code-reviewer
