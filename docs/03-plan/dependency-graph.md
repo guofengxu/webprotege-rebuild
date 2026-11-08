@@ -55,7 +55,7 @@ flowchart LR
         P2_05["P2-05"]:::done
     end
     subgraph P3
-        P3_01["P3-01"]:::todo
+        P3_01["P3-01"]:::done
         P3_02["P3-02"]:::todo
         P3_03["P3-03"]:::todo
         P3_04["P3-04"]:::todo
