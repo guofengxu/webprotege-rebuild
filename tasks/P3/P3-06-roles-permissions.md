@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-04]
 ---
 
@@ -45,10 +45,18 @@ depends_on: [P3-04]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 共享设置 API（P3-22）
+
+## 执行记录
+- 日期：2026-11-08
+- 分支：feature/p3-06-roles-permissions
+- 测试：2026-11-08T18:26:23+08:00 通过（3 项）
+- 实际改动：新增 BS-10 的动作、四级累积项目角色和两个应用角色；JDBC 保存项目角色分配；AccessService 判断 can/require，创建者获得 CAN_MANAGE，系统管理员对所有项目视为 CAN_MANAGE。
+- 偏差：三个公共异常共用包内 sealed 基类 CodedException。权限拒绝消息固定为 permission denied，用户和动作只写入日志。权限检查只查询 app_roles。无法识别的项目角色按无权限处理。
+- 审查：security-reviewer, java-reviewer

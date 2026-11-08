@@ -34,6 +34,16 @@ public class JdbcUserRepository {
                         """).param(userId.value()).query((rs, row) -> map(rs)).optional();
     }
 
+    /** Role names only. Permission checks must not load {@code password_hash}. */
+    List<String> appRoles(UserId userId) {
+        Objects.requireNonNull(userId, "user id");
+        return jdbc.sql("select app_roles from users where user_id = ?")
+                .param(userId.value())
+                .query((rs, row) -> readRoles(rs))
+                .optional()
+                .orElse(List.of());
+    }
+
     boolean isEmpty() {
         return jdbc.sql("select not exists (select 1 from users) as empty")
                 .query((rs, row) -> rs.getBoolean("empty"))
@@ -75,13 +85,17 @@ public class JdbcUserRepository {
     }
 
     private static UserAccount map(ResultSet rs) throws SQLException {
-        Array roles = rs.getArray("app_roles");
-        String[] values = roles == null ? new String[0] : (String[]) roles.getArray();
         return new UserAccount(
                 new UserId(rs.getString("user_id")),
                 rs.getString("display_name"),
                 rs.getString("email"),
                 rs.getString("password_hash"),
-                List.of(values));
+                readRoles(rs));
+    }
+
+    private static List<String> readRoles(ResultSet rs) throws SQLException {
+        Array roles = rs.getArray("app_roles");
+        String[] values = roles == null ? new String[0] : (String[]) roles.getArray();
+        return List.of(values);
     }
 }
