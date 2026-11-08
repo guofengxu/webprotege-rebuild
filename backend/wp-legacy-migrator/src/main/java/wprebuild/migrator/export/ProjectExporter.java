@@ -9,37 +9,36 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import org.semanticweb.owlapi.change.OWLOntologyChangeRecord;
+import org.semanticweb.owlapi.model.OWLOntologyID;
 import wprebuild.migrator.MigratorInfo;
 import wprebuild.migrator.legacy.LegacyDataDir;
 import wprebuild.migrator.legacy.LegacyProjectLocation;
+import wprebuild.migrator.legacy.LegacyReadException;
 import wprebuild.migrator.legacy.LegacyRevision;
 import wprebuild.migrator.legacy.LegacyRevisionReader;
 import wprebuild.migrator.mongo.MongoMetadata;
 
 /**
- * Writes {@code users.json}, {@code projects/<projectId>/manifest.json}, {@code revisions.jsonl}, and
- * {@code SHA256SUMS}. A loaded mongo export also writes {@code migration-report.json}.
- * {@code head.ofn-lines.gz} is left for P2-05. Change lines are JSON strings with no ADR-011 line escaping.
+ * Writes one migration package: {@code users.json}, per-project manifest, revisions, head baseline,
+ * checksums, and {@code migration-report.json}.
+ *
+ * <p>Change lines in {@code revisions.jsonl} are JSON strings with no ADR-011 line escaping.
+ * {@code head.ofn-lines.gz} is the head state under OWL API 4: one escaped {@code +} line per axiom,
+ * ontology annotation, or import, sorted as text.
  */
 public final class ProjectExporter {
 
     static final int FORMAT_VERSION = 1;
 
-    private static final String MANIFEST = "manifest.json";
-    private static final String REVISIONS = "revisions.jsonl";
-    private static final String CHECKSUMS = "SHA256SUMS";
     private static final String USERS = "users.json";
     private static final String REPORT = "migration-report.json";
     private static final String VERSION_RESOURCE = "/wprebuild/migrator/version.properties";
@@ -85,14 +84,46 @@ public final class ProjectExporter {
         List<LegacyProjectLocation> projects = select(new LegacyDataDir(dataDirectory).projects(), projectId);
         String legacyDataDir = dataDirectory.toAbsolutePath().normalize().toString();
         String exportedAt = DateTimeFormatter.ISO_INSTANT.format(clock.instant());
+        List<ExportOutcome> outcomes = new ArrayList<>();
         List<PackageDraft> drafts = new ArrayList<>();
+        RuntimeException firstFailure = null;
         for (LegacyProjectLocation project : projects) {
-            drafts.add(render(project, legacyDataDir, exportedAt));
+            try {
+                PackageDraft draft = render(project, legacyDataDir, exportedAt);
+                drafts.add(draft);
+                outcomes.add(draft);
+            } catch (IllegalArgumentException | LegacyReadException exception) {
+                outcomes.add(new ProjectFailure(project.projectId(), exception.getMessage()));
+                if (firstFailure == null) {
+                    firstFailure = exception;
+                }
+            }
         }
-        for (PackageDraft draft : drafts) {
-            write(outputDirectory, draft, metadata);
+        UncheckedIOException writeError = null;
+        try {
+            for (PackageDraft draft : drafts) {
+                write(outputDirectory, draft, metadata);
+            }
+        } catch (UncheckedIOException exception) {
+            writeError = exception;
         }
-        writePackageFiles(outputDirectory, metadata, drafts);
+        try {
+            writePackageFiles(outputDirectory, metadata, outcomes);
+        } catch (UncheckedIOException exception) {
+            if (writeError != null) {
+                exception.addSuppressed(writeError);
+            }
+            throw exception;
+        }
+        if (writeError != null) {
+            if (firstFailure != null) {
+                writeError.addSuppressed(firstFailure);
+            }
+            throw writeError;
+        }
+        if (firstFailure != null) {
+            throw firstFailure;
+        }
     }
 
     private static List<LegacyProjectLocation> select(List<LegacyProjectLocation> projects, String projectId) {
@@ -110,7 +141,7 @@ public final class ProjectExporter {
 
     private PackageDraft render(LegacyProjectLocation project, String legacyDataDir, String exportedAt) {
         requireSafeProjectId(project.projectId());
-        List<LegacyRevision> revisions = readRevisions(project);
+        List<LegacyRevision> revisions = shareAnonymousOntology(readRevisions(project));
         OntologyKeyAssigner assigner = new OntologyKeyAssigner();
         OfnLineRenderer renderer = new OfnLineRenderer();
         List<Map<String, Object>> lines = new ArrayList<>();
@@ -122,6 +153,7 @@ public final class ProjectExporter {
         }
         long headRevision =
                 revisions.isEmpty() ? 0 : revisions.get(revisions.size() - 1).revision();
+        HeadBaseline.Result head = headOf(project.projectId(), revisions, assigner);
         return new PackageDraft(
                 project.projectId(),
                 legacyDataDir,
@@ -130,7 +162,55 @@ public final class ProjectExporter {
                 assigner.ontologies(),
                 revisions.size(),
                 headRevision,
-                changeCount);
+                changeCount,
+                head.gzip(),
+                head.axiomCounts());
+    }
+
+    private static HeadBaseline.Result headOf(
+            String projectId, List<LegacyRevision> revisions, OntologyKeyAssigner assigner) {
+        try {
+            return HeadBaseline.capture(revisions, assigner);
+        } catch (RuntimeException exception) {
+            throw new IllegalArgumentException("project %s: %s".formatted(projectId, detail(exception)), exception);
+        }
+    }
+
+    /**
+     * BinaryOWL stores every anonymous ontology as the same marker, so each read mints a new id.
+     * The legacy editor replays all of those ids as one ontology. Do that before keys and the head
+     * baseline, or a remove in a later revision misses the axiom added earlier.
+     */
+    private static List<LegacyRevision> shareAnonymousOntology(List<LegacyRevision> revisions) {
+        OWLOntologyID shared = null;
+        List<LegacyRevision> rewritten = new ArrayList<>(revisions.size());
+        for (LegacyRevision revision : revisions) {
+            List<OWLOntologyChangeRecord> records =
+                    new ArrayList<>(revision.records().size());
+            boolean changed = false;
+            for (OWLOntologyChangeRecord record : revision.records()) {
+                OWLOntologyID ontologyId = record.getOntologyID();
+                if (ontologyId.isAnonymous()) {
+                    if (shared == null) {
+                        shared = ontologyId;
+                    } else if (!shared.equals(ontologyId)) {
+                        record = new OWLOntologyChangeRecord(shared, record.getData());
+                        changed = true;
+                    }
+                }
+                records.add(record);
+            }
+            rewritten.add(
+                    changed
+                            ? new LegacyRevision(
+                                    revision.revision(),
+                                    revision.username(),
+                                    revision.timestamp(),
+                                    revision.description(),
+                                    records)
+                            : revision);
+        }
+        return List.copyOf(rewritten);
     }
 
     private List<LegacyRevision> readRevisions(LegacyProjectLocation project) {
@@ -188,22 +268,26 @@ public final class ProjectExporter {
         Path projectDir = outputDirectory.resolve("projects").resolve(draft.projectId());
         try {
             Files.createDirectories(projectDir);
-            Files.writeString(projectDir.resolve(MANIFEST), manifestJson(draft, metadata), StandardCharsets.UTF_8);
-            Files.writeString(projectDir.resolve(REVISIONS), revisionsJson(draft.revisions()), StandardCharsets.UTF_8);
-            Files.writeString(projectDir.resolve(CHECKSUMS), checksums(projectDir), StandardCharsets.UTF_8);
+            Files.writeString(
+                    projectDir.resolve(PackageFiles.MANIFEST), manifestJson(draft, metadata), StandardCharsets.UTF_8);
+            Files.writeString(
+                    projectDir.resolve(PackageFiles.REVISIONS),
+                    revisionsJson(draft.revisions()),
+                    StandardCharsets.UTF_8);
+            Files.write(projectDir.resolve(PackageFiles.HEAD), draft.headGzip());
+            Files.writeString(
+                    projectDir.resolve(PackageFiles.CHECKSUMS), checksums(projectDir), StandardCharsets.UTF_8);
         } catch (IOException exception) {
             throw new UncheckedIOException("cannot write migration package: " + projectDir, exception);
         }
     }
 
-    private void writePackageFiles(Path outputDirectory, MongoMetadata metadata, List<PackageDraft> drafts) {
+    private void writePackageFiles(Path outputDirectory, MongoMetadata metadata, List<ExportOutcome> outcomes) {
         try {
             Files.createDirectories(outputDirectory);
             Files.writeString(outputDirectory.resolve(USERS), pretty(metadata.users()), StandardCharsets.UTF_8);
-            if (metadata.loaded()) {
-                Files.writeString(
-                        outputDirectory.resolve(REPORT), pretty(report(metadata, drafts)), StandardCharsets.UTF_8);
-            }
+            Files.writeString(
+                    outputDirectory.resolve(REPORT), pretty(report(metadata, outcomes)), StandardCharsets.UTF_8);
         } catch (IOException exception) {
             throw new UncheckedIOException("cannot write migration package: " + outputDirectory, exception);
         }
@@ -227,19 +311,35 @@ public final class ProjectExporter {
         return pretty(manifest);
     }
 
-    /**
-     * P2-05 adds per-project status. Until then the report only carries metadata warnings.
-     */
-    private static Map<String, Object> report(MongoMetadata metadata, List<PackageDraft> drafts) {
+    private static Map<String, Object> report(MongoMetadata metadata, List<ExportOutcome> outcomes) {
         List<String> warnings = new ArrayList<>(metadata.warnings());
-        for (PackageDraft draft : drafts) {
-            if (!metadata.hasDetails(draft.projectId())) {
-                warnings.add("no ProjectDetails document for project " + draft.projectId());
+        List<Map<String, Object>> projects = new ArrayList<>();
+        for (ExportOutcome outcome : outcomes) {
+            projects.add(projectReport(outcome));
+            if (metadata.loaded() && !metadata.hasDetails(outcome.projectId())) {
+                warnings.add("no ProjectDetails document for project " + outcome.projectId());
             }
         }
         Map<String, Object> report = new LinkedHashMap<>();
+        report.put("projects", List.copyOf(projects));
         report.put("warnings", List.copyOf(warnings));
         return report;
+    }
+
+    private static Map<String, Object> projectReport(ExportOutcome outcome) {
+        Map<String, Object> project = new LinkedHashMap<>();
+        project.put("projectId", outcome.projectId());
+        if (outcome instanceof ProjectFailure failure) {
+            project.put("status", "failure");
+            project.put("reason", failure.reason());
+            return project;
+        }
+        PackageDraft draft = (PackageDraft) outcome;
+        project.put("status", "success");
+        project.put("revisionCount", draft.revisionCount());
+        project.put("changeCount", draft.changeCount());
+        project.put("axiomCounts", draft.axiomCounts());
+        return project;
     }
 
     private static String pretty(Object value) throws JsonProcessingException {
@@ -297,39 +397,17 @@ public final class ProjectExporter {
 
     /**
      * GNU {@code sha256sum} text mode ({@code hash} + two spaces + file name) so {@code sha256sum -c}
-     * can check the directory. Only the files this export wrote are listed; P2-05 adds the head file.
+     * can check the directory.
      */
     private static String checksums(Path projectDir) throws IOException {
         StringBuilder sums = new StringBuilder();
-        for (String name : List.of(MANIFEST, REVISIONS)) {
-            sums.append(sha256(projectDir.resolve(name)))
+        for (String name : PackageFiles.CHECKED) {
+            sums.append(PackageFiles.sha256(projectDir.resolve(name)))
                     .append("  ")
                     .append(name)
                     .append('\n');
         }
         return sums.toString();
-    }
-
-    private static String sha256(Path file) throws IOException {
-        MessageDigest digest = sha256Digest();
-        try (InputStream in = Files.newInputStream(file)) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = in.read(buffer)) >= 0) {
-                if (read > 0) {
-                    digest.update(buffer, 0, read);
-                }
-            }
-        }
-        return HexFormat.of().formatHex(digest.digest());
-    }
-
-    private static MessageDigest sha256Digest() {
-        try {
-            return MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is unavailable", exception);
-        }
     }
 
     private static String readToolVersion() {
@@ -357,6 +435,12 @@ public final class ProjectExporter {
         return message;
     }
 
+    private sealed interface ExportOutcome {
+        String projectId();
+    }
+
+    private record ProjectFailure(String projectId, String reason) implements ExportOutcome {}
+
     private record PackageDraft(
             String projectId,
             String legacyDataDir,
@@ -365,5 +449,8 @@ public final class ProjectExporter {
             List<OntologyKeyAssigner.Slot> ontologies,
             long revisionCount,
             long headRevision,
-            long changeCount) {}
+            long changeCount,
+            byte[] headGzip,
+            Map<String, Map<String, Integer>> axiomCounts)
+            implements ExportOutcome {}
 }

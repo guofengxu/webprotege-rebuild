@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 70 张卡：完成 39，进行中 0，阻塞 0，待办 31。
+共 70 张卡：完成 40，进行中 0，阻塞 0，待办 30。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P2-05](P2/P2-05-head-baseline-verify.md) head 基准文件、verify 子命令与迁移报告（里程碑 M2）
 - [P3-01](P3/P3-01-core-schema.md) 核心数据库表结构（Flyway V2）
 
 ## P0
@@ -62,7 +61,7 @@
 | [P2-02](P2/P2-02-binaryowl-reader.md) | 读取旧 BinaryOWL 修订日志 | wp-legacy-migrator | migrator | M | 完成 | P2-01 |
 | [P2-03](P2/P2-03-interchange-writer.md) | 写出迁移包：manifest、revisions.jsonl、SHA256SUMS | wp-legacy-migrator | migrator | M | 完成 | P2-02 |
 | [P2-04](P2/P2-04-mongo-metadata.md) | 读取 mongoexport 元数据并映射角色 | wp-legacy-migrator | migrator | M | 完成 | P2-03 |
-| [P2-05](P2/P2-05-head-baseline-verify.md) | head 基准文件、verify 子命令与迁移报告（里程碑 M2） | wp-legacy-migrator | migrator | M | 待办（可开工） | P2-04 |
+| [P2-05](P2/P2-05-head-baseline-verify.md) | head 基准文件、verify 子命令与迁移报告（里程碑 M2） | wp-legacy-migrator | migrator | M | 完成 | P2-04 |
 
 ## P3
 

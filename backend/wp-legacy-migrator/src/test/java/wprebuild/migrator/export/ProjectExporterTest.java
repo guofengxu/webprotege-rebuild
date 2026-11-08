@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Properties;
+import java.util.zip.GZIPInputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -191,11 +192,10 @@ class ProjectExporterTest {
         JsonNode ontologies = json.readTree(
                         Files.readString(projectDir(PROJECT_ID).resolve("manifest.json")))
                 .get("ontologies");
-        assertThat(ontologies).hasSize(4);
+        assertThat(ontologies).hasSize(3);
         assertOntology(ontologies.get(0), "o1", "http://example.org/wh", "http://example.org/wh/1");
         assertOntology(ontologies.get(1), "o2", "http://example.org/wh", null);
         assertOntology(ontologies.get(2), "o3", null, null);
-        assertOntology(ontologies.get(3), "o4", null, null);
         JsonNode changes = json.readTree(Files.readString(projectDir(PROJECT_ID).resolve("revisions.jsonl"))
                         .lines()
                         .findFirst()
@@ -205,8 +205,46 @@ class ProjectExporterTest {
         assertThat(keyOf(changes.get(0).asText())).isEqualTo("o1");
         assertThat(keyOf(changes.get(1).asText())).isEqualTo("o2");
         assertThat(keyOf(changes.get(2).asText())).isEqualTo("o3");
-        assertThat(keyOf(changes.get(3).asText())).isEqualTo("o4");
+        assertThat(keyOf(changes.get(3).asText())).isEqualTo("o3");
         assertThat(keyOf(changes.get(4).asText())).isEqualTo("o1");
+    }
+
+    @Test
+    void replays_an_anonymous_ontology_across_revisions() throws Exception {
+        OWLOntologyID anonymous = new OWLOntologyID();
+        OWLAxiom axiom = dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(PALLET));
+        Path dataDir = dataDir();
+        writeLog(
+                dataDir,
+                PROJECT_ID,
+                List.of(
+                        revision(1, "alice", 1L, "add", addAxiom(anonymous, axiom)),
+                        revision(2, "alice", 2L, "remove", removeAxiom(anonymous, axiom))));
+
+        new ProjectExporter(clock).export(dataDir, outDir());
+
+        JsonNode ontologies = json.readTree(
+                        Files.readString(projectDir(PROJECT_ID).resolve("manifest.json")))
+                .get("ontologies");
+        assertThat(ontologies).hasSize(1);
+        assertOntology(ontologies.get(0), "o1", null, null);
+        assertThat(gunzip(projectDir(PROJECT_ID).resolve("head.ofn-lines.gz"))).isEmpty();
+    }
+
+    @Test
+    void rejects_a_language_tag_that_functional_syntax_cannot_write() throws Exception {
+        OWLOntologyID named = new OWLOntologyID(NAMED);
+        OWLAxiom typed = dataFactory.getOWLDataPropertyAssertionAxiom(
+                dataFactory.getOWLDataProperty(IRI.create("http://example.org/wh#note")),
+                dataFactory.getOWLNamedIndividual(PALLET),
+                dataFactory.getOWLLiteral("2025-07-11T08:15:00", "xsd:datetime"));
+        Path dataDir = dataDir();
+        writeLog(dataDir, PROJECT_ID, List.of(revision(1, "alice", 1L, "bad lang", addAxiom(named, typed))));
+
+        assertThatThrownBy(() -> new ProjectExporter(clock).export(dataDir, outDir()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("language tag cannot be written in functional syntax")
+                .hasMessageContaining("xsd:datetime");
     }
 
     @Test
@@ -275,7 +313,10 @@ class ProjectExporterTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(PROJECT_ID)
                 .hasMessageContaining("3");
-        assertThat(outDir()).doesNotExist();
+        assertThat(outDir().resolve("projects").resolve(PROJECT_ID)).doesNotExist();
+        JsonNode report = json.readTree(Files.readString(outDir().resolve("migration-report.json")));
+        assertThat(report.get("projects").get(0).get("status").asText()).isEqualTo("failure");
+        assertThat(report.get("projects").get(0).get("reason").asText()).contains("3");
     }
 
     @Test
@@ -354,7 +395,9 @@ class ProjectExporterTest {
                 "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
         assertThat(rejected.exitCode()).isEqualTo(1);
         assertThat(rejected.err()).contains("SetOntologyID");
-        assertThat(badOut).doesNotExist();
+        assertThat(badOut.resolve("projects").resolve("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"))
+                .doesNotExist();
+        assertThat(badOut.resolve("migration-report.json")).exists();
     }
 
     private void assertIcRules(Path projectDir, List<Object> payloads) throws Exception {
@@ -408,9 +451,17 @@ class ProjectExporterTest {
         String expected = sha256(projectDir.resolve("manifest.json"))
                 + "  manifest.json\n"
                 + sha256(projectDir.resolve("revisions.jsonl"))
-                + "  revisions.jsonl\n";
+                + "  revisions.jsonl\n"
+                + sha256(projectDir.resolve("head.ofn-lines.gz"))
+                + "  head.ofn-lines.gz\n";
         assertThat(Files.readString(projectDir.resolve("SHA256SUMS"), StandardCharsets.UTF_8))
                 .isEqualTo(expected);
+    }
+
+    private static String gunzip(Path file) throws IOException {
+        try (GZIPInputStream in = new GZIPInputStream(Files.newInputStream(file))) {
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     private static String sha256(Path file) throws Exception {

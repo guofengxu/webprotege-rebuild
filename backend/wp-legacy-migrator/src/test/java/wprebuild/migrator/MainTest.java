@@ -28,11 +28,11 @@ class MainTest {
     }
 
     @Test
-    void verify_reports_not_implemented() {
+    void verify_requires_package() {
         Capture capture = run("verify");
 
         assertThat(capture.exitCode()).isEqualTo(2);
-        assertThat(capture.out()).contains("not implemented");
+        assertThat(capture.err()).contains("--package");
     }
 
     @Test
