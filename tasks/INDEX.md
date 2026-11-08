@@ -2,12 +2,12 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 70 张卡：完成 44，进行中 0，阻塞 0，待办 26。
+共 70 张卡：完成 45，进行中 0，阻塞 0，待办 25。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P3-05](P3/P3-05-api-keys.md) API Key 认证
 - [P3-06](P3/P3-06-roles-permissions.md) 角色、动作与权限判断（BS-10）
+- [P3-26](P3/P3-26-mobile-access-tokens.md) 移动端访问令牌与 CORS
 
 ## P0
 
@@ -72,7 +72,7 @@
 | [P3-02](P3/P3-02-jdbc-revision-log.md) | PostgreSQL 版 RevisionLog 与 SnapshotStore（含 outbox） | wp-app/revision | db | M | 完成 | P3-01、P1-08、P1-06、P1-07 |
 | [P3-03](P3/P3-03-runtime-registry.md) | ProjectRuntime 注册表（Caffeine）与快照策略 | wp-app/ontology | app-service | M | 完成 | P3-02、P1-21 |
 | [P3-04](P3/P3-04-users-login.md) | 用户账户、会话登录与首个管理员 | wp-app/access, web | app-security | M | 完成 | P3-01 |
-| [P3-05](P3/P3-05-api-keys.md) | API Key 认证 | wp-app/access, web | app-security | S | 待办（可开工） | P3-04 |
+| [P3-05](P3/P3-05-api-keys.md) | API Key 认证 | wp-app/access, web | app-security | S | 完成 | P3-04 |
 | [P3-06](P3/P3-06-roles-permissions.md) | 角色、动作与权限判断（BS-10） | wp-app/access | app-security | M | 待办（可开工） | P3-04 |
 | [P3-07](P3/P3-07-command-bus.md) | 命令总线与统一校验链 | wp-app/bus, web | app-service | M | 待办 | P3-06 |
 | [P3-08](P3/P3-08-project-lifecycle.md) | 项目生命周期：创建空项目、列表、详情、回收站 | wp-app/project, ontology, web | app-service | M | 待办 | P3-07、P3-03 |
@@ -93,7 +93,7 @@
 | [P3-23](P3/P3-23-openapi-contract.md) | OpenAPI 契约快照与 TypeScript 客户端生成 | wp-app/web | api-contract | S | 待办 | P3-09、P3-10、P3-11、P3-12、P3-17、P3-18、P3-19、P3-20、P3-21、P3-22、P3-25、P3-26 |
 | [P3-24](P3/P3-24-backend-acceptance.md) | 后端端到端验收（里程碑 M3） | wp-app | app-service | S | 待办 | P3-23 |
 | [P3-25](P3/P3-25-admin-user-management.md) | 管理员的用户管理 API | wp-app/web（admin 子包） | app-security | S | 待办 | P3-07 |
-| [P3-26](P3/P3-26-mobile-access-tokens.md) | 移动端访问令牌与 CORS | wp-app/access, web | app-security | M | 待办 | P3-05 |
+| [P3-26](P3/P3-26-mobile-access-tokens.md) | 移动端访问令牌与 CORS | wp-app/access, web | app-security | M | 待办（可开工） | P3-05 |
 | [P3-27](P3/P3-27-frontend-workspace-api-types.md) | 前端 pnpm 工作区与共享 API 类型包 | root, packages/api-types | frontend-workspace | S | 待办 | P3-23 |
 
 ## P4

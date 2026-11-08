@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: app-security
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-04]
 ---
 
@@ -43,10 +43,18 @@ depends_on: [P3-04]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - key 的权限范围（scope）
+
+## 执行记录
+- 日期：2026-11-08
+- 分支：feature/p3-05-api-keys
+- 测试：2026-11-08T17:56:01+08:00 通过（3 项）
+- 实际改动：用户可以签发、列出和吊销自己的 API Key。请求头 X-API-Key 按 SHA-256 认证，明文只在签发时返回一次；带 key 的请求免 CSRF，并且不会把这次登录写进会话。
+- 偏差：生产代码超过 S 卡 200 行的预期，因为服务、仓储、过滤器和控制器都是卡片要求的产出。必须重置密码的账户即使持有 key 也不能通过它登录，与会话登录一致。
+- 审查：security-reviewer, java-reviewer
