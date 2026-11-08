@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: db
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P3-01, P1-08, P1-06, P1-07]
 ---
 
@@ -48,11 +48,19 @@ depends_on: [P3-01, P1-08, P1-06, P1-07]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - outbox 发布器（P6）
 - 修订历史查询 API（P3-20）
+
+## 执行记录
+- 日期：2026-11-08
+- 分支：feature/p3-02-jdbc-revision-log
+- 测试：2026-11-08T10:50:03+08:00 通过（3 项）
+- 实际改动：PostgreSQL 实现 RevisionLog 与 SnapshotStore：同一事务写入修订、主语索引和 outbox；主键冲突转为 ConcurrentAppendException；read 用独立连接按修订号流式读取。
+- 偏差：JdbcRevisionLog 不声明为 final，否则 Spring 事务代理无法生成子类。outbox 写入抽成 RevisionCommitOutbox，供回滚测试替换。时间戳按 timestamptz 存到微秒，outbox 的 ts 用同一值。主语索引包含签名里的全部实体，含字面量数据类型。
+- 审查：database-reviewer, java-reviewer, silent-failure-hunter
