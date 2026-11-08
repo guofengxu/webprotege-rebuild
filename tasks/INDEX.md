@@ -2,12 +2,13 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 70 张卡：完成 46，进行中 0，阻塞 0，待办 24。
+共 70 张卡：完成 47，进行中 0，阻塞 0，待办 23。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P3-07](P3/P3-07-command-bus.md) 命令总线与统一校验链
+- [P3-08](P3/P3-08-project-lifecycle.md) 项目生命周期：创建空项目、列表、详情、回收站
 - [P3-21](P3/P3-21-events-sse.md) 高层事件推送：SSE 与长轮询（BS-11）
+- [P3-25](P3/P3-25-admin-user-management.md) 管理员的用户管理 API
 - [P3-26](P3/P3-26-mobile-access-tokens.md) 移动端访问令牌与 CORS
 
 ## P0
@@ -75,8 +76,8 @@
 | [P3-04](P3/P3-04-users-login.md) | 用户账户、会话登录与首个管理员 | wp-app/access, web | app-security | M | 完成 | P3-01 |
 | [P3-05](P3/P3-05-api-keys.md) | API Key 认证 | wp-app/access, web | app-security | S | 完成 | P3-04 |
 | [P3-06](P3/P3-06-roles-permissions.md) | 角色、动作与权限判断（BS-10） | wp-app/access | app-security | M | 完成 | P3-04 |
-| [P3-07](P3/P3-07-command-bus.md) | 命令总线与统一校验链 | wp-app/bus, web | app-service | M | 待办（可开工） | P3-06 |
-| [P3-08](P3/P3-08-project-lifecycle.md) | 项目生命周期：创建空项目、列表、详情、回收站 | wp-app/project, ontology, web | app-service | M | 待办 | P3-07、P3-03 |
+| [P3-07](P3/P3-07-command-bus.md) | 命令总线与统一校验链 | wp-app/bus, web | app-service | M | 完成 | P3-06 |
+| [P3-08](P3/P3-08-project-lifecycle.md) | 项目生命周期：创建空项目、列表、详情、回收站 | wp-app/project, ontology, web | app-service | M | 待办（可开工） | P3-07、P3-03 |
 | [P3-09](P3/P3-09-upload-import.md) | 上传导入：多格式与 zip（BS-12） | wp-app/ontology, web | app-service | M | 待办 | P3-08 |
 | [P3-10](P3/P3-10-migration-import-revisions.md) | 导入迁移包：修订历史与 IC 校验 | wp-app/migration | app-service | M | 待办 | P3-08、P2-05 |
 | [P3-11](P3/P3-11-migration-import-metadata.md) | 导入迁移包：用户、角色、前缀与设置 | wp-app/migration | app-service | S | 待办 | P3-10、P3-06 |
@@ -93,7 +94,7 @@
 | [P3-22](P3/P3-22-project-settings-sharing.md) | 项目设置与共享（角色分配）API | wp-app/project, ontology, access, web | app-service | M | 待办 | P3-14、P3-06 |
 | [P3-23](P3/P3-23-openapi-contract.md) | OpenAPI 契约快照与 TypeScript 客户端生成 | wp-app/web | api-contract | S | 待办 | P3-09、P3-10、P3-11、P3-12、P3-17、P3-18、P3-19、P3-20、P3-21、P3-22、P3-25、P3-26 |
 | [P3-24](P3/P3-24-backend-acceptance.md) | 后端端到端验收（里程碑 M3） | wp-app | app-service | S | 待办 | P3-23 |
-| [P3-25](P3/P3-25-admin-user-management.md) | 管理员的用户管理 API | wp-app/web（admin 子包） | app-security | S | 待办 | P3-07 |
+| [P3-25](P3/P3-25-admin-user-management.md) | 管理员的用户管理 API | wp-app/web（admin 子包） | app-security | S | 待办（可开工） | P3-07 |
 | [P3-26](P3/P3-26-mobile-access-tokens.md) | 移动端访问令牌与 CORS | wp-app/access, web | app-security | M | 待办（可开工） | P3-05 |
 | [P3-27](P3/P3-27-frontend-workspace-api-types.md) | 前端 pnpm 工作区与共享 API 类型包 | root, packages/api-types | frontend-workspace | S | 待办 | P3-23 |
 
