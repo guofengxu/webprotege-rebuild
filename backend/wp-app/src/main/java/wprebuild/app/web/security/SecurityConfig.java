@@ -18,7 +18,10 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.SessionManagementFilter;
 import tools.jackson.databind.json.JsonMapper;
+import wprebuild.app.access.ApiKeyService;
+import wprebuild.app.access.UserService;
 import wprebuild.app.web.ApiProblems;
 
 /**
@@ -37,7 +40,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain apiSecurity(HttpSecurity http, CookieCsrfTokenRepository csrfTokens, JsonMapper json)
+    SecurityFilterChain apiSecurity(
+            HttpSecurity http,
+            CookieCsrfTokenRepository csrfTokens,
+            JsonMapper json,
+            ApiKeyService apiKeys,
+            UserService users)
             throws Exception {
         http.securityMatcher("/api/**")
                 .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.POST, "/api/auth/login")
@@ -45,7 +53,12 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(session -> session.sessionFixation().changeSessionId())
-                .csrf(csrf -> csrf.spa().csrfTokenRepository(csrfTokens))
+                // ADR-010: X-API-Key is not sent by a browser form, so those requests skip CSRF.
+                .csrf(csrf -> csrf.spa()
+                        .csrfTokenRepository(csrfTokens)
+                        .ignoringRequestMatchers(ApiKeyAuthenticationFilter::carriesApiKey))
+                // After session management: a non-transient token here would be saved and outlive revoke.
+                .addFilterAfter(new ApiKeyAuthenticationFilter(apiKeys, users), SessionManagementFilter.class)
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new ProblemDetailEntryPoint(json))
                         .accessDeniedHandler(new ProblemDetailAccessDenied(json)))
                 .formLogin(AbstractHttpConfigurer::disable)

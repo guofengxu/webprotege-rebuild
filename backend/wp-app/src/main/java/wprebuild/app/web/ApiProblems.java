@@ -38,6 +38,10 @@ public final class ApiProblems {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
     }
 
+    public static ProblemDetail notFound(String detail) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, detail);
+    }
+
     public static ResponseEntity<ProblemDetail> of(ProblemDetail problem) {
         return ResponseEntity.status(problem.getStatus())
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
