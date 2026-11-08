@@ -81,13 +81,16 @@ public final class ChangePipeline {
         Revision revision = new Revision(expectedHead.next(), user, clock.instant(), description, effective);
         // WP-3: persist first. A failed append leaves memory and the head untouched.
         revisionLog.append(runtime.projectId(), expectedHead, revision);
-        try {
-            gate.applyExclusive(() -> runtime.applyCommitted(revision));
-        } catch (RuntimeException failure) {
-            // WP-8: the log is already durable. This runtime must not accept another write.
-            runtime.markCorrupted();
-            throw failure;
-        }
+        gate.applyExclusive(() -> {
+            try {
+                runtime.applyCommitted(revision);
+            } catch (RuntimeException failure) {
+                // WP-8: set the flag before this write lock is released. A snapshot waiting on the
+                // read lock must not persist a partial apply.
+                runtime.markCorrupted();
+                throw failure;
+            }
+        });
         return revision;
     }
 

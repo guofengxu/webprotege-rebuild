@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
@@ -241,6 +242,48 @@ class ChangePipelineTest {
         assertThat(generated).hasValue(1);
         assertThat(harness.log.get(harness.projectId, RevisionNumber.of(2))).isEmpty();
         assertThat(listener.calls).isEmpty();
+    }
+
+    @Test
+    void wp8_sets_the_corrupted_flag_before_releasing_the_write_lock() throws Exception {
+        Harness harness = Harness.create();
+        AtomicBoolean sawCorrupted = new AtomicBoolean(false);
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        AtomicReference<Thread> reader = new AtomicReference<>();
+        harness.view.boom = new IllegalStateException("view failed");
+        harness.view.beforeThrow = () -> {
+            Thread queued = Thread.ofVirtual()
+                    .uncaughtExceptionHandler((thread, error) -> failure.set(error))
+                    .start(() -> harness.gate.read(() -> {
+                        sawCorrupted.set(harness.runtime.isCorrupted());
+                        return null;
+                    }));
+            reader.set(queued);
+            long deadline = System.nanoTime() + Duration.ofSeconds(2).toNanos();
+            while (System.nanoTime() < deadline) {
+                Thread.State state = queued.getState();
+                if (state == Thread.State.WAITING
+                        || state == Thread.State.TIMED_WAITING
+                        || state == Thread.State.BLOCKED) {
+                    return;
+                }
+                if (!queued.isAlive()) {
+                    throw new IllegalStateException("reader finished while the write lock was held");
+                }
+                Thread.onSpinWait();
+            }
+            throw new IllegalStateException("reader did not queue on the read lock");
+        };
+
+        assertThatThrownBy(() -> harness.pipeline(FreshIriMinter.NONE, List.of())
+                        .apply(USER, generator(List.of(declare()), "ok", "Declared", false)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("view failed");
+
+        assertThat(reader.get().join(Duration.ofSeconds(2))).isTrue();
+        assertThat(failure.get()).isNull();
+        assertThat(sawCorrupted).isTrue();
+        assertThat(harness.runtime.isCorrupted()).isTrue();
     }
 
     @Test
