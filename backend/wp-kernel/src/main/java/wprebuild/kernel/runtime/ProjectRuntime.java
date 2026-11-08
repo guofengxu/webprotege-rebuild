@@ -107,8 +107,12 @@ public final class ProjectRuntime {
         }
     }
 
-    /** WP-8: the write pipeline calls this when memory apply throws. The flag stays set. */
-    void markCorrupted() {
+    /**
+     * WP-8: memory no longer matches the log. The write pipeline calls this when apply fails, and
+     * the registry calls it when dropping a runtime so the old pipeline stops writing (ADR-006).
+     * The flag stays set.
+     */
+    public void markCorrupted() {
         corrupted = true;
     }
 

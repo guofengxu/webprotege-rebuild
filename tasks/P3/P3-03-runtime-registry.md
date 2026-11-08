@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P3-02, P1-21]
 ---
 
@@ -49,10 +49,18 @@ depends_on: [P3-02, P1-21]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 多实例之间的项目路由（P6 以后）
+
+## 执行记录
+- 日期：2026-11-08
+- 分支：feature/p3-03-runtime-registry
+- 测试：2026-11-08T12:23:17+08:00 通过（3 项）
+- 实际改动：用 Caffeine 按空闲时间和最大加载数缓存 ProjectRuntime；修订号能被 snapshotEvery 整除时在独立执行器中持读锁打快照，并同步发布 RevisionCommittedEvent。显示名称和新实体设置先用默认值。
+- 偏差：内核 markCorrupted 改为 public，并在写锁释放前置位，这样快照不会保存半成品本体，注册表也能在驱逐后停掉旧管道。快照仍在读锁内调用 ProjectSnapshotter（含数据库写入）。没有单独发布 MeterRegistry Bean，上下文里没有时用进程内的 SimpleMeterRegistry。生产代码超过 M 卡 400 行预期。
+- 审查：java-reviewer, code-reviewer, silent-failure-hunter
