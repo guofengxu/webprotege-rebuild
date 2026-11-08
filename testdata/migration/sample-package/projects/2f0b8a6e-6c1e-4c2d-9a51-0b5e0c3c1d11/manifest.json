@@ -1,0 +1,38 @@
+{
+  "formatVersion" : 1,
+  "projectId" : "2f0b8a6e-6c1e-4c2d-9a51-0b5e0c3c1d11",
+  "exportedAt" : "2026-11-05T08:00:00Z",
+  "source" : {
+    "tool" : "wp-legacy-migrator",
+    "toolVersion" : "0.1.0-SNAPSHOT",
+    "legacyDataDir" : "testdata/migration/sample-source"
+  },
+  "details" : {
+    "displayName" : "",
+    "description" : "",
+    "owner" : "",
+    "inTrash" : false,
+    "createdAt" : 0,
+    "createdBy" : "",
+    "modifiedAt" : 0,
+    "modifiedBy" : ""
+  },
+  "ontologies" : [ {
+    "key" : "o1",
+    "ontologyIri" : "http://example.org/wh",
+    "versionIri" : null
+  } ],
+  "stats" : {
+    "revisionCount" : 2,
+    "headRevision" : 2,
+    "changeCount" : 6
+  },
+  "prefixes" : { },
+  "entityCrudKitSettings" : {
+    "raw" : { }
+  },
+  "displayNameSettings" : {
+    "raw" : { }
+  },
+  "roleAssignments" : [ ]
+}

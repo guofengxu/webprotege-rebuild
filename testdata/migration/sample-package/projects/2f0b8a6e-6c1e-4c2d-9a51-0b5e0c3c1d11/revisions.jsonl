@@ -1,0 +1,2 @@
+{"rev":1,"user":"alice","ts":1690000000000,"desc":"Uploaded project","changes":["+\tAXIOM\to1\tDeclaration(Class(<http://example.org/wh#Pallet>))","+\tANNOTATION\to1\tAnnotation(<http://www.w3.org/2000/01/rdf-schema#comment> \"keep\nme\")","+\tIMPORT\to1\t<http://example.org/other>"]}
+{"rev":2,"user":"bob","ts":1690000001000,"desc":"Name the box","changes":["-\tIMPORT\to1\t<http://example.org/other>","+\tAXIOM\to1\tDeclaration(Class(<http://example.org/wh#Box>))","+\tAXIOM\to1\tSubClassOf(<http://example.org/wh#Box> <http://example.org/wh#Pallet>)"]}

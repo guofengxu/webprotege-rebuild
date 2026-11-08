@@ -3,7 +3,10 @@ package wprebuild.migrator.export;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxOWLParserFactory;
 import org.semanticweb.owlapi.functional.renderer.FunctionalSyntaxObjectRenderer;
 import org.semanticweb.owlapi.io.StringDocumentSource;
 import org.semanticweb.owlapi.model.IRI;
@@ -32,6 +35,10 @@ final class FunctionalOfn {
     /** OWL API 4 writes this on every untyped literal. It is the same literal as {@code "..."}. */
     private static final String XSD_STRING_SUFFIX = "^^<http://www.w3.org/2001/XMLSchema#string>";
 
+    /** A language tag containing {@code :} is tokenized as a prefixed name and cannot be parsed. */
+    private static final Pattern ILLEGAL_LANGUAGE_TAG =
+            Pattern.compile("\"(?:\\\\.|[^\"\\\\])*\"@([^\\s()\"]*:[^\\s()\"]*)");
+
     private final OWLOntology renderOntology;
     private final DefaultPrefixManager prefixes;
     private final OWLOntologyManager parserManager;
@@ -49,6 +56,8 @@ final class FunctionalOfn {
             prefixes.unregisterNamespace(name);
         }
         this.parserManager = OWLManager.createOWLOntologyManager();
+        this.parserManager.getOntologyParsers().clear();
+        this.parserManager.getOntologyParsers().add(new OWLFunctionalSyntaxOWLParserFactory());
         this.parserManager.addIRIMapper(iri -> BLOCKED_IMPORT);
         this.loaderConfiguration = new OWLOntologyLoaderConfiguration()
                 .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT)
@@ -125,7 +134,16 @@ final class FunctionalOfn {
         if (rendered.isBlank()) {
             throw new IllegalArgumentException("functional syntax renderer produced no text");
         }
+        rejectIllegalLanguageTag(rendered);
         return rendered;
+    }
+
+    private static void rejectIllegalLanguageTag(String rendered) {
+        Matcher matcher = ILLEGAL_LANGUAGE_TAG.matcher(rendered);
+        if (matcher.find()) {
+            throw new IllegalArgumentException(
+                    "language tag cannot be written in functional syntax: " + matcher.group(1));
+        }
     }
 
     private <T> T load(String ofn, Extractor<T> extractor) {

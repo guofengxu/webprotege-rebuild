@@ -1,0 +1,15 @@
+{
+  "projects" : [ {
+    "projectId" : "2f0b8a6e-6c1e-4c2d-9a51-0b5e0c3c1d11",
+    "status" : "success",
+    "revisionCount" : 2,
+    "changeCount" : 6,
+    "axiomCounts" : {
+      "o1" : {
+        "Declaration" : 2,
+        "SubClassOf" : 1
+      }
+    }
+  } ],
+  "warnings" : [ ]
+}
