@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-07, P3-03]
 ---
 
@@ -46,11 +46,19 @@ depends_on: [P3-07, P3-03]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 彻底删除项目
 - 上传导入（P3-09）
+
+## 执行记录
+- 日期：2026-11-08
+- 分支：feature/p3-08-project-lifecycle
+- 测试：2026-11-08T20:02:52+08:00 通过（3 项）
+- 实际改动：新增项目生命周期：创建空项目时写入元数据、授予创建者 CAN_MANAGE，并提交修订 1（DeclareOntology）。列表、改名和回收站只改项目元数据；修订提交后更新 modified_at 与 modified_by。
+- 偏差：元数据命令和处理器放在 project 模块；CreateEmptyProject 与 ProjectModifiedUpdater 放在 ontology。卡片括号中的「处理器位于 ontology」按模块分工理解为只覆盖需要 ProjectRuntime 的创建命令。PATCH 未提供 description 时保留原描述。监听器更新失败时用保存点避免中止修订事务，事务回滚时驱逐刚加载的 runtime。
+- 审查：java-reviewer, code-reviewer

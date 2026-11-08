@@ -8,3 +8,6 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/wp}
     username: ${SPRING_DATASOURCE_USERNAME:wp}
     password: ${SPRING_DATASOURCE_PASSWORD:wp}
+wp:
+  project:
+    ontology-iri-base: http://example.org/wp/
