@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-01]
 ---
 
@@ -43,12 +43,20 @@ depends_on: [P3-01]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - API Key（P3-05）
 - 管理员的用户管理 API（P3-25）
 - OIDC（P6）
+
+## 执行记录
+- 日期：2026-11-08
+- 分支：feature/p3-04-users-login
+- 测试：2026-11-08T17:09:41+08:00 通过（3 项）
+- 实际改动：用户用账户密码登录，会话 Cookie 访问 /api。password_hash 为空时返回 PASSWORD_RESET_REQUIRED。users 表为空且 wp.bootstrap.admin.username、password、email 都配置时，启动时创建 SYSTEM_ADMIN。
+- 偏差：Spring Security 7 用 csrf.spa() 让浏览器把 XSRF-TOKEN 原样送回，随后仍把仓库设为 CookieCsrfTokenRepository.withHttpOnlyFalse() 且 path 为 /。超过 72 个 UTF-8 字节的密码会拒绝，避免 BCrypt 截断。测试增加 spring-boot-starter-webmvc-test，因为 Boot 4 把 MockMvc 自动配置移出了 starter-test。
+- 审查：security-reviewer, java-reviewer
