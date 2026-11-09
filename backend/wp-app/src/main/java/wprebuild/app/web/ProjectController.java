@@ -36,6 +36,7 @@ import wprebuild.app.ontology.CreateEntities;
 import wprebuild.app.ontology.DeleteEntities;
 import wprebuild.app.ontology.DownloadFormat;
 import wprebuild.app.ontology.EntityActions;
+import wprebuild.app.ontology.GetClassFrame;
 import wprebuild.app.ontology.GetHierarchyChildren;
 import wprebuild.app.ontology.GetHierarchyPaths;
 import wprebuild.app.ontology.GetHierarchyRoots;
@@ -56,7 +57,7 @@ import wprebuild.kernel.id.ProjectId;
 import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
 
-/** Project lifecycle, hierarchy queries, and entity edits. Permission is checked by {@link CommandBus}. */
+/** Project lifecycle, hierarchy queries, class frames, and entity edits. Permission is checked by {@link CommandBus}. */
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
@@ -202,6 +203,14 @@ public class ProjectController {
                 id,
                 (user, projectId) -> ResponseEntity.ok(bus.execute(
                         user, new GetHierarchyPaths(projectId, HierarchyKind.parse(kind), entityIri(entity)))));
+    }
+
+    @GetMapping("/{id}/frames/class")
+    public ResponseEntity<?> classFrame(@PathVariable String id, @RequestParam("iri") String iri) {
+        return withProject(
+                id,
+                (user, projectId) ->
+                        ResponseEntity.ok(bus.execute(user, new GetClassFrame(projectId, entityIri(iri)))));
     }
 
     @PostMapping(path = "/{id}/entities", consumes = MediaType.APPLICATION_JSON_VALUE)

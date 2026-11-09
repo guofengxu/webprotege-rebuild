@@ -35,7 +35,7 @@ import wprebuild.kernel.shortform.DisplayNameView;
  * in the hierarchy produces an empty list.
  */
 @Component
-final class HierarchyQuery {
+public final class HierarchyQuery {
 
     private static final Comparator<EntityNode> BY_DISPLAY_NAME = Comparator.comparing(
                     EntityNode::displayName, String::compareToIgnoreCase)
@@ -71,7 +71,16 @@ final class HierarchyQuery {
     List<EntityNode> describe(ProjectId projectId, List<? extends OWLEntity> entities) {
         Objects.requireNonNull(projectId, "project id");
         List<? extends OWLEntity> ordered = List.copyOf(Objects.requireNonNull(entities, "entities"));
-        return read(projectId, runtime -> describe(runtime, ordered));
+        return read(projectId, runtime -> nodes(runtime, ordered));
+    }
+
+    /**
+     * Renders entities in the given order. The caller already holds the project read lock, so this
+     * does not take it again.
+     */
+    public List<EntityNode> nodes(ProjectRuntime runtime, List<? extends OWLEntity> entities) {
+        Objects.requireNonNull(runtime, "runtime");
+        return describe(runtime, List.copyOf(Objects.requireNonNull(entities, "entities")));
     }
 
     private <T> T read(ProjectId projectId, Function<ProjectRuntime, T> query) {
