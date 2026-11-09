@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-08]
 ---
 
@@ -44,10 +44,18 @@ depends_on: [P3-08]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 导出为 OBO 格式
+
+## 执行记录
+- 日期：2026-11-09
+- 分支：feature/p3-12-download-export
+- 测试：2026-11-09T15:21:59+08:00 通过（3 项）
+- 实际改动：任意修订可按 owl、ttl、owx、omn、ofn 下载。等于 head 时在读锁下从 ProjectRuntime 写出；更早的修订取不晚于该修订的最近快照并重放，临时本体不进注册表。单个本体直接返回，多个本体打成 zip。
+- 偏差：Manchester 再解析会多出内置实体的声明，测试只接受项目 IRI 以外的声明公理；其余四种格式公理集合相等。非 Latin-1 项目名放在 filename*，quoted filename 使用 ISO-8859-1 回退，避免 Tomcat 拒绝响应头。
+- 审查：java-reviewer, code-reviewer

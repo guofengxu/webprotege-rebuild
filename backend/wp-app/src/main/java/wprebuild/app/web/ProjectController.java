@@ -2,12 +2,15 @@ package wprebuild.app.web;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.semanticweb.owlapi.model.IRI;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +29,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import wprebuild.app.bus.CommandBus;
 import wprebuild.app.ontology.CreateEmptyProject;
+import wprebuild.app.ontology.DownloadFormat;
+import wprebuild.app.ontology.GetProjectDownload;
 import wprebuild.app.ontology.ImportOntologyFromUpload;
+import wprebuild.app.ontology.ProjectDownload;
 import wprebuild.app.ontology.UploadProperties;
 import wprebuild.app.project.GetProjectDetails;
 import wprebuild.app.project.ListMyProjects;
@@ -37,6 +43,7 @@ import wprebuild.app.project.ProjectText;
 import wprebuild.app.project.RestoreProjectFromTrash;
 import wprebuild.app.project.UpdateProjectDetails;
 import wprebuild.kernel.id.ProjectId;
+import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
 
 /** Project lifecycle. Permission and trash state are checked by {@link CommandBus}. */
@@ -131,6 +138,36 @@ public class ProjectController {
         return ResponseEntity.ok(projects.stream().map(ProjectResponse::from).toList());
     }
 
+    @GetMapping("/{id}/download")
+    public ResponseEntity<?> download(
+            @PathVariable String id,
+            @RequestParam(name = "format", required = false) String format,
+            @RequestParam(name = "revision", required = false) Long revision) {
+        UserId user = currentUser();
+        if (user == null) {
+            return ApiProblems.of(ApiProblems.authenticationRequired());
+        }
+        final ProjectId projectId;
+        try {
+            projectId = ProjectId.of(id);
+        } catch (IllegalArgumentException ex) {
+            return invalid("project id is not a UUID");
+        }
+        final DownloadFormat parsed;
+        final Optional<RevisionNumber> number;
+        try {
+            parsed = DownloadFormat.parse(format);
+            number = revision == null ? Optional.empty() : Optional.of(RevisionNumber.of(revision));
+        } catch (IllegalArgumentException ex) {
+            return invalid(ex.getMessage());
+        }
+        ProjectDownload file = bus.execute(user, new GetProjectDownload(projectId, number, parsed));
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(file.mediaType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition(file.fileName()))
+                .body(file.body());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable String id) {
         return withProject(id, (user, projectId) -> {
@@ -183,6 +220,14 @@ public class ProjectController {
         } catch (IllegalArgumentException ex) {
             return invalid(ex.getMessage());
         }
+    }
+
+    /** {@code filename*} carries the Unicode name. The quoted filename stays ISO-8859-1 for Tomcat. */
+    private static String contentDisposition(String fileName) {
+        return ContentDisposition.attachment()
+                .filename(fileName, StandardCharsets.UTF_8)
+                .build()
+                .toString();
     }
 
     private static ResponseEntity<ProblemDetail> invalid(String detail) {
