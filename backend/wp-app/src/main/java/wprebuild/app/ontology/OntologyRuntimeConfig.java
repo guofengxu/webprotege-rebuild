@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 /** Wires the runtime cache, its clock, and the snapshot executor. */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties({RuntimeProperties.class, ProjectProperties.class})
+@EnableConfigurationProperties({RuntimeProperties.class, ProjectProperties.class, UploadProperties.class})
 class OntologyRuntimeConfig {
 
     @Bean

@@ -14,6 +14,8 @@ public final class ApiProblems {
 
     public static final String PASSWORD_RESET_REQUIRED = "PASSWORD_RESET_REQUIRED";
 
+    public static final String UPLOAD_TOO_LARGE = "UPLOAD_TOO_LARGE";
+
     private ApiProblems() {}
 
     public static ProblemDetail authenticationRequired() {
@@ -36,6 +38,13 @@ public final class ApiProblems {
 
     public static ProblemDetail badRequest(String detail) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+    }
+
+    public static ProblemDetail payloadTooLarge() {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.CONTENT_TOO_LARGE, "upload exceeds the size limit");
+        problem.setProperty("code", UPLOAD_TOO_LARGE);
+        return problem;
     }
 
     public static ProblemDetail notFound(String detail) {
