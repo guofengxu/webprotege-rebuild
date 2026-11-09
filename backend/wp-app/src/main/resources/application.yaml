@@ -4,6 +4,10 @@ spring:
   threads:
     virtual:
       enabled: true
+  servlet:
+    multipart:
+      max-file-size: ${wp.upload.max-size}
+      max-request-size: ${wp.upload.max-size}
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/wp}
     username: ${SPRING_DATASOURCE_USERNAME:wp}
@@ -11,3 +15,5 @@ spring:
 wp:
   project:
     ontology-iri-base: http://example.org/wp/
+  upload:
+    max-size: 200MB

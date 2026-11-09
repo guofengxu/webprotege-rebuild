@@ -15,6 +15,8 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import wprebuild.app.ontology.OntologyParseException;
 import wprebuild.app.shared.ConflictException;
 import wprebuild.app.shared.NotFoundException;
 import wprebuild.app.shared.PermissionDeniedException;
@@ -25,6 +27,8 @@ import wprebuild.kernel.revision.ConcurrentAppendException;
 public class ProblemDetailsAdvice {
 
     public static final String VALIDATION_FAILED = "VALIDATION_FAILED";
+
+    public static final String ONTOLOGY_PARSE_FAILED = "ONTOLOGY_PARSE_FAILED";
 
     public static final String CONCURRENT_APPEND = "CONCURRENT_APPEND";
 
@@ -57,6 +61,23 @@ public class ProblemDetailsAdvice {
     @ExceptionHandler(BindException.class)
     ResponseEntity<ProblemDetail> invalid(BindException exception) {
         return problem(HttpStatus.BAD_REQUEST, VALIDATION_FAILED, bindingDetail(exception));
+    }
+
+    @ExceptionHandler(OntologyParseException.class)
+    ResponseEntity<ProblemDetail> parseFailed(OntologyParseException exception) {
+        ProblemDetail body = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+        body.setProperty("code", ONTOLOGY_PARSE_FAILED);
+        if (exception.line() != null) {
+            body.setProperty("line", exception.line());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(body);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ResponseEntity<ProblemDetail> tooLarge(MaxUploadSizeExceededException exception) {
+        return ApiProblems.of(ApiProblems.payloadTooLarge());
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)

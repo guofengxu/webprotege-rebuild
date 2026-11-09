@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P3-08]
 ---
 
@@ -44,10 +44,18 @@ depends_on: [P3-08]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 上传并合并到已有项目（P6）
+
+## 执行记录
+- 日期：2026-11-09
+- 分支：feature/p3-09-upload-import
+- 测试：2026-11-09T11:50:54+08:00 通过（3 项）
+- 实际改动：上传本体或 zip 会创建项目，修订 1 由 InitialImportGenerator 写入已解析的公理、注解和导入声明。缺失导入映射到本地不存在的文件，不访问网络。超过 wp.upload.max-size 返回 413，解析失败返回带行号的 400。
+- 偏差：Manchester 文件比另外四种多 4 条内置实体声明公理，测试按每个文件自身的公理数核对，另外四种都是 119。审查 agent 在上次会话中被中断，未完成自动审查。
+- 审查：无
