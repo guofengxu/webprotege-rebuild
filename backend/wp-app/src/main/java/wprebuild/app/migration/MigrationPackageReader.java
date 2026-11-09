@@ -56,6 +56,8 @@ public final class MigrationPackageReader {
 
     private static final long MAX_CHECKSUM_BYTES = 1024 * 1024L;
 
+    private static final long MAX_USERS_BYTES = 32L * 1024 * 1024;
+
     private static final long MAX_MANIFEST_BYTES = 64L * 1024 * 1024;
 
     private static final long MAX_REVISION_BYTES = 1024L * 1024 * 1024;
@@ -80,6 +82,7 @@ public final class MigrationPackageReader {
             throw failure("package", "projects", "projects directory is missing");
         }
         List<MigrationFailure> failures = new ArrayList<>();
+        List<MigrationUser> users = readUsers(root, failures);
         List<MigrationProject> projects = new ArrayList<>();
         for (Path projectDir : directories(projectsDir, failures)) {
             readProject(root, projectDir, failures).ifPresent(projects::add);
@@ -87,7 +90,29 @@ public final class MigrationPackageReader {
         if (!failures.isEmpty()) {
             throw new InvalidMigrationPackageException(failures);
         }
-        return new MigrationPackage(projects);
+        return new MigrationPackage(users, projects);
+    }
+
+    /** A missing file means there are no profiles. Password fields are ignored by the parser. */
+    private List<MigrationUser> readUsers(Path root, List<MigrationFailure> failures) {
+        Path file = root.resolve("users.json");
+        if (!Files.exists(file)) {
+            return List.of();
+        }
+        if (!Files.isRegularFile(file) || !contained(root, file)) {
+            failures.add(new MigrationFailure("users", "users.json", "file is missing"));
+            return List.of();
+        }
+        if (largerThan(file, MAX_USERS_BYTES)) {
+            failures.add(new MigrationFailure("users", "users.json", "file exceeds size limit"));
+            return List.of();
+        }
+        try {
+            return MigrationMetadataReader.users(JSON.readTree(file), failures);
+        } catch (JacksonException ex) {
+            failures.add(new MigrationFailure("users", "users.json", "not JSON"));
+            return List.of();
+        }
     }
 
     private Optional<MigrationProject> readProject(Path root, Path projectDir, List<MigrationFailure> failures) {
@@ -119,6 +144,7 @@ public final class MigrationPackageReader {
         }
         checkRevisionNumbers(projectDir, manifest, draft, failures);
         checkChangeCount(projectDir, manifest, draft, failures);
+        ProjectMetadata metadata = MigrationMetadataReader.project(manifest, where, failures);
         if (failures.size() != before || !draft.complete()) {
             return Optional.empty();
         }
@@ -135,7 +161,8 @@ public final class MigrationPackageReader {
                 modifiedBy,
                 ontologies,
                 draft.revisions(),
-                projectDir.resolve(HEAD)));
+                projectDir.resolve(HEAD),
+                metadata));
     }
 
     private void checkChecksums(Path root, Path projectDir, List<MigrationFailure> failures) {

@@ -170,7 +170,8 @@ class ProjectMigratorTest {
                 "bob",
                 List.of(ontology),
                 List.of(),
-                head);
+                head,
+                ProjectMetadata.empty());
 
         assertThat(HeadEquivalence.check(List.of(ontology.declare(), added, added.inverse()), project))
                 .isEmpty();

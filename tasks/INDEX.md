@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 70 张卡：完成 50，进行中 0，阻塞 0，待办 20。
+共 70 张卡：完成 51，进行中 0，阻塞 0，待办 19。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P3-11](P3/P3-11-migration-import-metadata.md) 导入迁移包：用户、角色、前缀与设置
 - [P3-12](P3/P3-12-download-export.md) 下载导出：任意修订、多格式（BS-12）
 - [P3-13](P3/P3-13-hierarchy-queries.md) 层级查询 API
 - [P3-20](P3/P3-20-revision-history.md) 修订历史、实体历史与回滚 API
@@ -83,7 +82,7 @@
 | [P3-08](P3/P3-08-project-lifecycle.md) | 项目生命周期：创建空项目、列表、详情、回收站 | wp-app/project, ontology, web | app-service | M | 完成 | P3-07、P3-03 |
 | [P3-09](P3/P3-09-upload-import.md) | 上传导入：多格式与 zip（BS-12） | wp-app/ontology, web | app-service | M | 完成 | P3-08 |
 | [P3-10](P3/P3-10-migration-import-revisions.md) | 导入迁移包：修订历史与 IC 校验 | wp-app/migration | app-service | M | 完成 | P3-08、P2-05 |
-| [P3-11](P3/P3-11-migration-import-metadata.md) | 导入迁移包：用户、角色、前缀与设置 | wp-app/migration | app-service | S | 待办（可开工） | P3-10、P3-06 |
+| [P3-11](P3/P3-11-migration-import-metadata.md) | 导入迁移包：用户、角色、前缀与设置 | wp-app/migration | app-service | S | 完成 | P3-10、P3-06 |
 | [P3-12](P3/P3-12-download-export.md) | 下载导出：任意修订、多格式（BS-12） | wp-app/ontology, web | app-service | M | 待办（可开工） | P3-08 |
 | [P3-13](P3/P3-13-hierarchy-queries.md) | 层级查询 API | wp-app/ontology, web | app-service | M | 待办（可开工） | P3-08 |
 | [P3-14](P3/P3-14-entity-create-delete.md) | 创建与删除实体 API | wp-app/ontology, web | app-service | S | 待办 | P3-13 |

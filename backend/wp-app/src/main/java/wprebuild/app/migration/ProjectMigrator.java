@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import wprebuild.app.access.JdbcRoleAssignmentRepository;
 import wprebuild.app.access.UserService;
 import wprebuild.app.project.ProjectDetails;
 import wprebuild.app.project.ProjectRepository;
@@ -43,6 +44,10 @@ public class ProjectMigrator {
 
     private final UserService users;
 
+    private final JdbcRoleAssignmentRepository roleAssignments;
+
+    private final LegacySettingsConverter settings;
+
     private final JdbcClient jdbc;
 
     private final TransactionTemplate transactions;
@@ -52,12 +57,16 @@ public class ProjectMigrator {
             ProjectRepository projects,
             RevisionLog revisions,
             UserService users,
+            JdbcRoleAssignmentRepository roleAssignments,
+            LegacySettingsConverter settings,
             JdbcClient jdbc,
             PlatformTransactionManager transactions) {
         this.reader = Objects.requireNonNull(reader, "reader");
         this.projects = Objects.requireNonNull(projects, "projects");
         this.revisions = Objects.requireNonNull(revisions, "revisions");
         this.users = Objects.requireNonNull(users, "users");
+        this.roleAssignments = Objects.requireNonNull(roleAssignments, "roleAssignments");
+        this.settings = Objects.requireNonNull(settings, "settings");
         this.jdbc = Objects.requireNonNull(jdbc, "jdbc");
         this.transactions = new TransactionTemplate(Objects.requireNonNull(transactions, "transactions"));
     }
@@ -67,24 +76,32 @@ public class ProjectMigrator {
         int projectCount = 0;
         int revisionCount = 0;
         int usersCreated = 0;
+        List<String> warnings = new ArrayList<>(credentialWarnings(loaded.users()));
+        warnings.forEach(warning -> log.warn("migration warning: {}", warning));
+        if (loaded.projects().isEmpty()) {
+            Integer created = transactions.execute(status -> importListedUsers(loaded.users()));
+            return new MigrationSummary(0, 0, created == null ? 0 : created, warnings);
+        }
         for (MigrationProject project : loaded.projects()) {
-            Stored stored = transactions.execute(status -> importProject(project, replace));
+            Stored stored = transactions.execute(status -> importProject(project, loaded.users(), replace));
             if (stored == null) {
                 throw new IllegalStateException("import returned no result for " + project.projectId());
             }
             projectCount++;
             revisionCount += stored.revisions();
             usersCreated += stored.usersCreated();
+            warnings.addAll(stored.warnings());
+            stored.warnings().forEach(warning -> log.warn("migration warning: {}", warning));
             log.info(
                     "imported project {} at revision {} ({} new users)",
                     project.projectId(),
                     stored.revisions(),
                     stored.usersCreated());
         }
-        return new MigrationSummary(projectCount, revisionCount, usersCreated);
+        return new MigrationSummary(projectCount, revisionCount, usersCreated, warnings);
     }
 
-    private Stored importProject(MigrationProject project, boolean replace) {
+    private Stored importProject(MigrationProject project, List<MigrationUser> listedUsers, boolean replace) {
         ProjectId projectId = project.projectId();
         if (projects.find(projectId).isPresent()) {
             if (!replace) {
@@ -93,7 +110,8 @@ public class ProjectMigrator {
             }
             deleteProject(projectId);
         }
-        int created = ensureUsers(project);
+        int created = importListedUsers(listedUsers);
+        created += ensureUsers(project);
         projects.insert(new ProjectDetails(
                 projectId,
                 displayName(project),
@@ -114,7 +132,72 @@ public class ProjectMigrator {
         if (!failures.isEmpty()) {
             throw new InvalidMigrationPackageException(failures);
         }
-        return new Stored(history.size(), created);
+        List<String> warnings = writeMetadata(project);
+        return new Stored(history.size(), created, warnings);
+    }
+
+    /**
+     * Profiles come from {@code users.json}. An account that already exists is left unchanged,
+     * including its password hash. The package never supplies a password.
+     */
+    private int importListedUsers(List<MigrationUser> listedUsers) {
+        int created = 0;
+        for (MigrationUser listed : listedUsers) {
+            if (users.findById(new UserId(listed.username())).isPresent()) {
+                continue;
+            }
+            String displayName = listed.realName().isBlank() ? listed.username() : listed.realName();
+            users.create(listed.username(), displayName, listed.email(), null, List.of());
+            created++;
+        }
+        return created;
+    }
+
+    private static List<String> credentialWarnings(List<MigrationUser> listedUsers) {
+        List<String> warnings = new ArrayList<>();
+        for (MigrationUser listed : listedUsers) {
+            if (listed.discardedCredentials()) {
+                warnings.add("users.json: ignored password material for " + listed.username());
+            }
+        }
+        return warnings;
+    }
+
+    private List<String> writeMetadata(MigrationProject project) {
+        String where = project.location() + "/manifest.json";
+        List<String> warnings = new ArrayList<>();
+        for (String warning : project.metadata().warnings()) {
+            warnings.add(where + ": " + warning);
+        }
+        OntologyKey target = project.ontologies().isEmpty()
+                ? OntologyKey.of(1)
+                : project.ontologies().get(0).key();
+        ConvertedSettings converted = settings.convert(
+                project.metadata().crudRaw(), project.metadata().displayRaw(), target);
+        for (String warning : converted.warnings()) {
+            warnings.add(where + ": " + warning);
+        }
+        for (ImportedRole role : project.metadata().roles()) {
+            roleAssignments.assign(project.projectId(), new UserId(role.username()), role.role());
+        }
+        insertSetting(
+                project.projectId(),
+                "prefixes",
+                settings.prefixesJson(project.metadata().prefixes()));
+        insertSetting(project.projectId(), "new-entity", converted.newEntityJson());
+        insertSetting(project.projectId(), "display-names", converted.displayNamesJson());
+        return warnings;
+    }
+
+    private void insertSetting(ProjectId projectId, String key, String json) {
+        int stored =
+                jdbc.sql("""
+                        insert into project_settings (project_id, key, value)
+                        values (?, ?, cast(? as jsonb))
+                        """).param(projectId.value()).param(key).param(json).update();
+        if (stored != 1) {
+            throw new IllegalStateException("project setting was not stored");
+        }
     }
 
     /**
@@ -188,13 +271,16 @@ public class ProjectMigrator {
         for (String userId : project.userNames()) {
             created += ensureUser(userId);
         }
+        for (ImportedRole role : project.metadata().roles()) {
+            created += ensureUser(role.username());
+        }
         created += ensureUser(actor(project.owner()).value());
         created += ensureUser(actor(project.createdBy()).value());
         created += ensureUser(actor(project.modifiedBy()).value());
         return created;
     }
 
-    /** Missing accounts cannot sign in until a password is set. Profiles are filled by P3-11. */
+    /** Missing accounts cannot sign in until a password is set. Profiles come from users.json. */
     private int ensureUser(String userId) {
         UserId id = new UserId(userId);
         if (users.findById(id).isPresent()) {
@@ -206,7 +292,7 @@ public class ProjectMigrator {
 
     /**
      * {@code projects.owner} references {@code users}, and {@code ProjectText} rejects a blank name.
-     * The sample manifest leaves both blank. P3-11 overwrites the details from the same manifest.
+     * The sample manifest leaves both blank. A present manifest value is stored as given.
      */
     private static String displayName(MigrationProject project) {
         if (project.displayName().isBlank()) {
@@ -246,5 +332,5 @@ public class ProjectMigrator {
                 .update();
     }
 
-    private record Stored(int revisions, int usersCreated) {}
+    private record Stored(int revisions, int usersCreated, List<String> warnings) {}
 }
