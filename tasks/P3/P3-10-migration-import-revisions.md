@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P3-08, P2-05]
 ---
 
@@ -45,10 +45,18 @@ depends_on: [P3-08, P2-05]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 用户资料、角色、设置（P3-11）
+
+## 执行记录
+- 日期：2026-11-09
+- 分支：feature/p3-10-migration-import-revisions
+- 测试：2026-11-09T13:34:05+08:00 通过（3 项）
+- 实际改动：按迁移包原修订号写入 RevisionLog，并在本体 key 第一次出现时插入 DeclareOntology。IC-1 到 IC-8 失败会拒绝导入；IC-7 或 IC-8 失败回滚该项目。缺失用户以需重置密码的状态创建。
+- 偏差：实现约 1600 行，超过卡片 400 行预期，因为读取、校验、导入和启动入口都在本卡产出里。样例包的 displayName 与 owner 为空：名称改存项目 ID，owner、createdBy、modifiedBy 为空时用 system 用户，否则无法满足 projects.owner 外键和 ProjectText。P3-11 会按 manifest 覆盖项目资料。导入成功后服务继续启动；失败抛出退出码为 1 的异常。
+- 审查：java-reviewer, code-reviewer, security-reviewer
