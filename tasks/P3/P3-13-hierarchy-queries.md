@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P3-08]
 ---
 
@@ -46,10 +46,18 @@ depends_on: [P3-08]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 移动节点（拖拽改父类）——放到 P3-16 的 Frame 编辑中
+
+## 执行记录
+- 日期：2026-11-09
+- 分支：feature/p3-13-hierarchy-queries
+- 测试：2026-11-09T19:38:36+08:00 通过（3 项）
+- 实际改动：四种层级可按根、直接子节点和到根路径懒加载查询。查询在项目读锁内执行，节点按显示名称不区分大小写排序，未知 IRI 返回空列表。
+- 偏差：无
+- 审查：java-reviewer, code-reviewer
