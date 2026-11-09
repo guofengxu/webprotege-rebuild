@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P3-13]
 ---
 
@@ -46,10 +46,18 @@ depends_on: [P3-13]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 编辑（P3-16）
+
+## 执行记录
+- 日期：2026-11-09
+- 分支：feature/p3-15-class-frame-read
+- 测试：2026-11-09T21:30:44+08:00 通过（3 项）
+- 实际改动：新增类 Frame 读取：注解、命名父类、三种限制，以及其余以该类为主语的公理的 Manchester 文本。
+- 偏差：GetClassFrame 放在 ontology 根包，因为 Spring Modulith 只公开本体模块根包，web 不能依赖 frame 子包。ClassFrame 等类型仍在 frame 包。测试同时断言了 ObjectHasValue 和 DataHasValue。
+- 审查：java-reviewer, code-reviewer
