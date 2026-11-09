@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,9 +83,11 @@ public final class CommandBus {
     private <C extends Command<R>, R> R dispatch(UserId user, C command) {
         CommandHandler<C, R> handler = handler(command);
         Optional<ProjectId> project = required(handler.project(command), "project", command);
-        Optional<Action> action = required(handler.requiredAction(command), "required action", command);
+        // Resolve actions after the project check so a missing project does not load a runtime.
         requireUsableProject(handler, project);
-        authorize(user, project, action);
+        for (Action action : actions(handler, command)) {
+            authorize(user, project, action);
+        }
         return handler.handle(command, new CommandContext(user));
     }
 
@@ -128,11 +131,16 @@ public final class CommandBus {
         }
     }
 
-    private void authorize(UserId user, Optional<ProjectId> project, Optional<Action> action) {
-        if (action.isEmpty()) {
-            return;
+    private static <C extends Command<?>> Set<Action> actions(CommandHandler<C, ?> handler, C command) {
+        Set<Action> actions = handler.requiredActions(command);
+        if (actions == null) {
+            throw new IllegalStateException(
+                    "required actions returned null for " + command.getClass().getName());
         }
-        Action required = action.get();
+        return Set.copyOf(actions);
+    }
+
+    private void authorize(UserId user, Optional<ProjectId> project, Action required) {
         if (required.projectScoped()) {
             if (project.isEmpty()) {
                 throw new IllegalStateException(required.name() + " requires a project");

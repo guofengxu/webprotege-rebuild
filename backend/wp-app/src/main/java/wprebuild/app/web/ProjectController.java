@@ -5,12 +5,15 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import org.semanticweb.owlapi.model.IRI;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +32,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import wprebuild.app.bus.CommandBus;
 import wprebuild.app.ontology.CreateEmptyProject;
+import wprebuild.app.ontology.CreateEntities;
+import wprebuild.app.ontology.DeleteEntities;
 import wprebuild.app.ontology.DownloadFormat;
+import wprebuild.app.ontology.EntityActions;
 import wprebuild.app.ontology.GetHierarchyChildren;
 import wprebuild.app.ontology.GetHierarchyPaths;
 import wprebuild.app.ontology.GetHierarchyRoots;
@@ -50,7 +56,7 @@ import wprebuild.kernel.id.ProjectId;
 import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
 
-/** Project lifecycle and hierarchy queries. Permission and trash state are checked by {@link CommandBus}. */
+/** Project lifecycle, hierarchy queries, and entity edits. Permission is checked by {@link CommandBus}. */
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
@@ -198,6 +204,35 @@ public class ProjectController {
                         user, new GetHierarchyPaths(projectId, HierarchyKind.parse(kind), entityIri(entity)))));
     }
 
+    @PostMapping(path = "/{id}/entities", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createEntities(@PathVariable String id, @RequestBody CreateEntitiesRequest body) {
+        if (body == null) {
+            return invalid("request body is required");
+        }
+        return withProject(id, (user, projectId) -> {
+            CreateEntities.Result created = bus.execute(
+                    user,
+                    new CreateEntities(
+                            projectId,
+                            EntityActions.parse(body.entityType()),
+                            names(body.names()),
+                            language(body.lang()),
+                            iris(body.parents())));
+            return ResponseEntity.status(HttpStatus.CREATED).body(created.body());
+        });
+    }
+
+    @DeleteMapping(path = "/{id}/entities", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> deleteEntities(@PathVariable String id, @RequestBody DeleteEntitiesRequest body) {
+        if (body == null) {
+            return invalid("request body is required");
+        }
+        return withProject(id, (user, projectId) -> {
+            RevisionNumber revision = bus.execute(user, new DeleteEntities(projectId, iris(body.iris())));
+            return ResponseEntity.ok(new RevisionResponse(revision.value()));
+        });
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable String id) {
         return withProject(id, (user, projectId) -> {
@@ -266,6 +301,31 @@ public class ProjectController {
         return ApiProblems.of(problem);
     }
 
+    private static List<String> names(List<String> names) {
+        if (names == null || names.isEmpty()) {
+            throw new IllegalArgumentException("names must not be empty");
+        }
+        return List.copyOf(names);
+    }
+
+    private static Optional<String> language(String lang) {
+        if (lang == null || lang.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(lang.strip());
+    }
+
+    private static Set<IRI> iris(List<String> raw) {
+        if (raw == null || raw.isEmpty()) {
+            return Set.of();
+        }
+        Set<IRI> iris = new LinkedHashSet<>();
+        for (String value : raw) {
+            iris.add(entityIri(value));
+        }
+        return Set.copyOf(iris);
+    }
+
     private static IRI entityIri(String raw) {
         if (raw == null || raw.isBlank()) {
             throw new IllegalArgumentException("IRI is required");
@@ -315,4 +375,10 @@ public class ProjectController {
     public record CreateProjectRequest(String name, String description, String ontologyIri) {}
 
     public record UpdateProjectRequest(String name, String description) {}
+
+    public record CreateEntitiesRequest(String entityType, List<String> names, String lang, List<String> parents) {}
+
+    public record DeleteEntitiesRequest(List<String> iris) {}
+
+    public record RevisionResponse(long revision) {}
 }

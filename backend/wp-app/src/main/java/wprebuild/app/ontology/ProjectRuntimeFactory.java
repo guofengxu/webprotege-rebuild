@@ -6,9 +6,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
+import org.semanticweb.owlapi.model.EntityType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import wprebuild.app.access.AccessService;
 import wprebuild.kernel.codec.SnapshotCodec;
 import wprebuild.kernel.crud.KitEntityCreator;
 import wprebuild.kernel.crud.PrefixedNameExpander;
@@ -17,7 +19,7 @@ import wprebuild.kernel.hierarchy.ClassHierarchyView;
 import wprebuild.kernel.hierarchy.DataPropertyHierarchyView;
 import wprebuild.kernel.hierarchy.ObjectPropertyHierarchyView;
 import wprebuild.kernel.id.ProjectId;
-import wprebuild.kernel.iri.CreatePermission;
+import wprebuild.kernel.id.UserId;
 import wprebuild.kernel.iri.DefaultFreshIriMinter;
 import wprebuild.kernel.revision.RevisionLog;
 import wprebuild.kernel.revision.SnapshotStore;
@@ -46,6 +48,8 @@ public final class ProjectRuntimeFactory {
 
     private final ProjectSettingsProvider settings;
 
+    private final AccessService access;
+
     private final ApplicationEventPublisher events;
 
     private final Executor snapshotExecutor;
@@ -57,6 +61,7 @@ public final class ProjectRuntimeFactory {
             SnapshotStore snapshotStore,
             SnapshotCodec snapshotCodec,
             ProjectSettingsProvider settings,
+            AccessService access,
             ApplicationEventPublisher events,
             @Qualifier("projectSnapshotExecutor") Executor snapshotExecutor,
             RuntimeProperties properties) {
@@ -64,6 +69,7 @@ public final class ProjectRuntimeFactory {
         this.snapshotStore = Objects.requireNonNull(snapshotStore, "snapshot store");
         this.snapshotCodec = Objects.requireNonNull(snapshotCodec, "snapshot codec");
         this.settings = Objects.requireNonNull(settings, "settings");
+        this.access = Objects.requireNonNull(access, "access");
         this.events = Objects.requireNonNull(events, "events");
         this.snapshotExecutor = Objects.requireNonNull(snapshotExecutor, "snapshot executor");
         this.properties = Objects.requireNonNull(properties, "properties");
@@ -92,10 +98,18 @@ public final class ProjectRuntimeFactory {
     }
 
     private FreshIriMinter minter(ProjectId projectId) {
-        // Custom prefixes arrive with project settings (P3-22). Permission checks sit on the command bus.
+        // Custom prefixes arrive with project settings (P3-22). BS-05 checks create permission while minting.
         return new DefaultFreshIriMinter(
                 new KitEntityCreator(() -> settings.newEntitySettings(projectId), () -> PREFIXES),
-                CreatePermission.ALLOW_ALL);
+                (user, type) -> canCreate(user, projectId, type));
+    }
+
+    private boolean canCreate(UserId user, ProjectId projectId, EntityType<?> type) {
+        try {
+            return access.can(user, projectId, EntityActions.create(type));
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 
     private List<PostCommitListener> listeners(ProjectId projectId, ProjectWriteGate gate) {

@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: app-service
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-13]
 ---
 
@@ -43,10 +43,18 @@ depends_on: [P3-13]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 新实体设置的读写 API（P3-22）
+
+## 执行记录
+- 日期：2026-11-09
+- 分支：feature/p3-14-entity-create-delete
+- 测试：2026-11-09T20:42:18+08:00 通过（3 项）
+- 实际改动：新增创建与删除实体命令及 POST/DELETE /api/projects/{id}/entities。创建按实体类型要求 CREATE_*，并把临时 IRI 的 CreatePermission 接到 AccessService。删除在生成锁内对同一批实体逐类检查 DELETE_* 后提交修订。
+- 偏差：删除的 DELETE_* 检查放在生成锁内，总线只先要求 VIEW_PROJECT，避免权限检查和实际删除看到不同的实体集合。命令总线增加 requiredActions，供一次命令检查多个动作。没有 DELETE 动作的数据类型 IRI 会跳过。
+- 审查：java-reviewer, code-reviewer
