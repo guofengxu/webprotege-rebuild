@@ -30,7 +30,11 @@ import org.springframework.web.multipart.MultipartFile;
 import wprebuild.app.bus.CommandBus;
 import wprebuild.app.ontology.CreateEmptyProject;
 import wprebuild.app.ontology.DownloadFormat;
+import wprebuild.app.ontology.GetHierarchyChildren;
+import wprebuild.app.ontology.GetHierarchyPaths;
+import wprebuild.app.ontology.GetHierarchyRoots;
 import wprebuild.app.ontology.GetProjectDownload;
+import wprebuild.app.ontology.HierarchyKind;
 import wprebuild.app.ontology.ImportOntologyFromUpload;
 import wprebuild.app.ontology.ProjectDownload;
 import wprebuild.app.ontology.UploadProperties;
@@ -46,7 +50,7 @@ import wprebuild.kernel.id.ProjectId;
 import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
 
-/** Project lifecycle. Permission and trash state are checked by {@link CommandBus}. */
+/** Project lifecycle and hierarchy queries. Permission and trash state are checked by {@link CommandBus}. */
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
@@ -168,6 +172,32 @@ public class ProjectController {
                 .body(file.body());
     }
 
+    @GetMapping("/{id}/hierarchies/{kind}/roots")
+    public ResponseEntity<?> hierarchyRoots(@PathVariable String id, @PathVariable String kind) {
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(
+                        bus.execute(user, new GetHierarchyRoots(projectId, HierarchyKind.parse(kind)))));
+    }
+
+    @GetMapping("/{id}/hierarchies/{kind}/children")
+    public ResponseEntity<?> hierarchyChildren(
+            @PathVariable String id, @PathVariable String kind, @RequestParam("parent") String parent) {
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(bus.execute(
+                        user, new GetHierarchyChildren(projectId, HierarchyKind.parse(kind), entityIri(parent)))));
+    }
+
+    @GetMapping("/{id}/hierarchies/{kind}/paths")
+    public ResponseEntity<?> hierarchyPaths(
+            @PathVariable String id, @PathVariable String kind, @RequestParam("entity") String entity) {
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(bus.execute(
+                        user, new GetHierarchyPaths(projectId, HierarchyKind.parse(kind), entityIri(entity)))));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable String id) {
         return withProject(id, (user, projectId) -> {
@@ -234,6 +264,22 @@ public class ProjectController {
         ProblemDetail problem = ApiProblems.badRequest(detail);
         problem.setProperty("code", ProblemDetailsAdvice.VALIDATION_FAILED);
         return ApiProblems.of(problem);
+    }
+
+    private static IRI entityIri(String raw) {
+        if (raw == null || raw.isBlank()) {
+            throw new IllegalArgumentException("IRI is required");
+        }
+        final IRI iri;
+        try {
+            iri = IRI.create(raw.strip());
+        } catch (RuntimeException ex) {
+            throw new IllegalArgumentException("IRI is invalid");
+        }
+        if (!iri.isAbsolute()) {
+            throw new IllegalArgumentException("IRI must be absolute");
+        }
+        return iri;
     }
 
     private static Optional<IRI> ontologyIri(String raw) {
