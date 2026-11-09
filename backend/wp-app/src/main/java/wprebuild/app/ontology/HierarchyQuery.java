@@ -67,6 +67,13 @@ final class HierarchyQuery {
         return read(projectId, runtime -> paths(runtime, kind, entity));
     }
 
+    /** Renders entities in the given order. Individuals have no hierarchy, so {@code hasChildren} is false. */
+    List<EntityNode> describe(ProjectId projectId, List<? extends OWLEntity> entities) {
+        Objects.requireNonNull(projectId, "project id");
+        List<? extends OWLEntity> ordered = List.copyOf(Objects.requireNonNull(entities, "entities"));
+        return read(projectId, runtime -> describe(runtime, ordered));
+    }
+
     private <T> T read(ProjectId projectId, Function<ProjectRuntime, T> query) {
         ProjectHandle handle = registry.get(projectId);
         return handle.gate().read(() -> {
@@ -167,6 +174,33 @@ final class HierarchyQuery {
                 names.displayName(entity),
                 view.hasChildren(entity),
                 deprecated(runtime.ontologies(), entity));
+    }
+
+    private static List<EntityNode> describe(ProjectRuntime runtime, List<? extends OWLEntity> entities) {
+        DisplayNameView names = runtime.view(DisplayNameView.class);
+        List<EntityNode> nodes = new ArrayList<>(entities.size());
+        for (OWLEntity entity : entities) {
+            nodes.add(new EntityNode(
+                    entity.getIRI().toString(),
+                    entityType(entity),
+                    names.displayName(entity),
+                    hasChildren(runtime, entity),
+                    deprecated(runtime.ontologies(), entity)));
+        }
+        return List.copyOf(nodes);
+    }
+
+    private static boolean hasChildren(ProjectRuntime runtime, OWLEntity entity) {
+        return switch (entity) {
+            case OWLClass cls -> runtime.view(ClassHierarchyView.class).hasChildren(cls);
+            case OWLObjectProperty property ->
+                runtime.view(ObjectPropertyHierarchyView.class).hasChildren(property);
+            case OWLDataProperty property ->
+                runtime.view(DataPropertyHierarchyView.class).hasChildren(property);
+            case OWLAnnotationProperty property ->
+                runtime.view(AnnotationPropertyHierarchyView.class).hasChildren(property);
+            default -> false;
+        };
     }
 
     private static String entityType(OWLEntity entity) {

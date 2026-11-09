@@ -8,8 +8,10 @@ import static org.mockito.Mockito.mock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
@@ -154,6 +156,40 @@ class CommandBusTest {
                 .isInstanceOf(PermissionDeniedException.class)
                 .hasMessage("permission denied");
         assertThat(handler.calls.get()).isEqualTo(0);
+    }
+
+    @Test
+    void checks_every_required_action_before_the_handler_runs() {
+        StubHandler handler = new StubHandler();
+        handler.project = Optional.of(PROJECT);
+        handler.actions = new LinkedHashSet<>(List.of(Action.DELETE_CLASS, Action.DELETE_PROPERTY));
+        projects.state = ProjectState.ACTIVE;
+
+        assertThat(bus(handler).execute(ADA, new Ping())).isEqualTo("ok");
+        assertThat(projectChecks.get()).isEqualTo(2);
+        assertThat(handler.calls.get()).isEqualTo(1);
+    }
+
+    @Test
+    void denies_when_any_required_action_is_missing() {
+        StubHandler handler = new StubHandler();
+        handler.project = Optional.of(PROJECT);
+        handler.actions = new LinkedHashSet<>(List.of(Action.DELETE_CLASS, Action.DELETE_PROPERTY));
+        projects.state = ProjectState.ACTIVE;
+        Mockito.doAnswer(invocation -> {
+                    projectChecks.incrementAndGet();
+                    Action action = invocation.getArgument(2);
+                    if (action == Action.DELETE_PROPERTY) {
+                        throw new PermissionDeniedException("permission denied");
+                    }
+                    return null;
+                })
+                .when(access)
+                .require(any(UserId.class), any(ProjectId.class), any(Action.class));
+
+        assertThatThrownBy(() -> bus(handler).execute(ADA, new Ping())).isInstanceOf(PermissionDeniedException.class);
+        assertThat(handler.calls.get()).isEqualTo(0);
+        assertThat(projectChecks.get()).isPositive();
     }
 
     @Test
@@ -340,6 +376,8 @@ class CommandBusTest {
 
         private Optional<Action> action = Optional.empty();
 
+        private Set<Action> actions;
+
         private boolean allowsTrashed;
 
         private RuntimeException failure;
@@ -361,6 +399,14 @@ class CommandBusTest {
         @Override
         public Optional<Action> requiredAction(Ping command) {
             return action;
+        }
+
+        @Override
+        public Set<Action> requiredActions(Ping command) {
+            if (actions != null) {
+                return actions;
+            }
+            return CommandHandler.super.requiredActions(command);
         }
 
         @Override

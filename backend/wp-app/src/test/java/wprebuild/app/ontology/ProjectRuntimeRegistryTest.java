@@ -2,6 +2,10 @@ package wprebuild.app.ontology;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.github.benmanes.caffeine.cache.Ticker;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -30,6 +34,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.PayloadApplicationEvent;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.TestPropertySource;
+import wprebuild.app.access.AccessService;
+import wprebuild.app.access.Action;
 import wprebuild.app.support.DatabaseTest;
 import wprebuild.app.support.TestData;
 import wprebuild.kernel.change.AddAxiom;
@@ -44,6 +50,7 @@ import wprebuild.kernel.hierarchy.ObjectPropertyHierarchyView;
 import wprebuild.kernel.id.ProjectId;
 import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
+import wprebuild.kernel.iri.CreatePermissionDeniedException;
 import wprebuild.kernel.iri.FreshEntityIri;
 import wprebuild.kernel.revision.InMemoryRevisionLog;
 import wprebuild.kernel.revision.InMemorySnapshotStore;
@@ -246,6 +253,7 @@ class ProjectRuntimeRegistryTest {
                 new InMemorySnapshotStore(),
                 new OfnZipSnapshotCodec(),
                 new DefaultProjectSettingsProvider(),
+                allowCreates(),
                 collecting(new ArrayList<>()),
                 Runnable::run,
                 limits);
@@ -326,6 +334,31 @@ class ProjectRuntimeRegistryTest {
                         .read(() ->
                                 handle.runtime().view(ClassHierarchyView.class).children(data.getOWLThing())))
                 .contains(created);
+    }
+
+    @Test
+    void refuses_to_mint_when_the_user_cannot_create_that_type() {
+        AccessService access = mock(AccessService.class);
+        when(access.can(any(UserId.class), any(ProjectId.class), any(Action.class)))
+                .thenReturn(false);
+        Harness harness = Harness.create(IDLE, 20, 500, Runnable::run, access);
+        ProjectId projectId = ProjectId.random();
+        ProjectHandle handle = harness.registry.get(projectId);
+        handle.pipeline().apply(USER, declare(1, false));
+        OWLDataFactory data = handle.runtime().ontologies().dataFactory();
+        IRI fresh = new FreshEntityIri("Person", "", "deny", Set.of()).toIri();
+
+        assertThatThrownBy(() -> handle.pipeline()
+                        .apply(
+                                USER,
+                                edits(
+                                        List.of(new AddAxiom(
+                                                OntologyKey.of(1),
+                                                data.getOWLDeclarationAxiom(data.getOWLClass(fresh)))),
+                                        false)))
+                .isInstanceOf(CreatePermissionDeniedException.class);
+        assertThat(handle.runtime().head()).isEqualTo(RevisionNumber.of(1));
+        assertThat(harness.log.head(projectId)).isEqualTo(RevisionNumber.of(1));
     }
 
     @Test
@@ -498,13 +531,14 @@ class ProjectRuntimeRegistryTest {
 
         private final ProjectRuntimeRegistry registry;
 
-        private Harness(Duration idle, int maxLoaded, int snapshotEvery, Executor executor) {
+        private Harness(Duration idle, int maxLoaded, int snapshotEvery, Executor executor, AccessService access) {
             RuntimeProperties properties = new RuntimeProperties(idle, maxLoaded, snapshotEvery);
             this.factory = new ProjectRuntimeFactory(
                     log,
                     snapshots,
                     new OfnZipSnapshotCodec(),
                     new DefaultProjectSettingsProvider(),
+                    access,
                     collecting(events),
                     executor,
                     properties);
@@ -519,8 +553,21 @@ class ProjectRuntimeRegistryTest {
         }
 
         private static Harness create(Duration idle, int maxLoaded, int snapshotEvery, Executor executor) {
-            return new Harness(idle, maxLoaded, snapshotEvery, executor);
+            return create(idle, maxLoaded, snapshotEvery, executor, allowCreates());
         }
+
+        private static Harness create(
+                Duration idle, int maxLoaded, int snapshotEvery, Executor executor, AccessService access) {
+            return new Harness(idle, maxLoaded, snapshotEvery, executor, access);
+        }
+    }
+
+    private static AccessService allowCreates() {
+        AccessService access = mock(AccessService.class);
+        lenient()
+                .when(access.can(any(UserId.class), any(ProjectId.class), any(Action.class)))
+                .thenReturn(true);
+        return access;
     }
 
     private static ApplicationEventPublisher collecting(List<RevisionCommittedEvent> events) {

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.semanticweb.owlapi.model.EntityType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -33,6 +34,8 @@ import wprebuild.app.shared.NotFoundException;
 import wprebuild.app.shared.PermissionDeniedException;
 import wprebuild.kernel.id.ProjectId;
 import wprebuild.kernel.id.RevisionNumber;
+import wprebuild.kernel.id.UserId;
+import wprebuild.kernel.iri.CreatePermissionDeniedException;
 import wprebuild.kernel.revision.ConcurrentAppendException;
 
 /** Each mapped exception becomes a ProblemDetail with a stable {@code code}. */
@@ -60,6 +63,16 @@ class ProblemDetailsAdviceTest {
                 .andExpect(jsonPath("$.title").value("Not Found"))
                 .andExpect(jsonPath("$.detail").value("missing project"))
                 .andExpect(jsonPath("$.code").value(NotFoundException.CODE));
+    }
+
+    @Test
+    void create_permission_denied_is_403_without_the_user_id() throws Exception {
+        mockMvc.perform(get("/probe/create-denied"))
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.detail").value("permission denied"))
+                .andExpect(jsonPath("$.code").value(PermissionDeniedException.CODE));
     }
 
     @Test
@@ -139,6 +152,11 @@ class ProblemDetailsAdviceTest {
         @GetMapping("/denied")
         void denied() {
             throw new PermissionDeniedException("permission denied");
+        }
+
+        @GetMapping("/create-denied")
+        void createDenied() {
+            throw new CreatePermissionDeniedException(new UserId("ada"), EntityType.CLASS);
         }
 
         @GetMapping("/conflict")

@@ -20,6 +20,7 @@ import wprebuild.app.ontology.OntologyParseException;
 import wprebuild.app.shared.ConflictException;
 import wprebuild.app.shared.NotFoundException;
 import wprebuild.app.shared.PermissionDeniedException;
+import wprebuild.kernel.iri.CreatePermissionDeniedException;
 import wprebuild.kernel.revision.ConcurrentAppendException;
 
 /** Maps application failures to RFC 9457 bodies. {@code code} is a top-level extension. */
@@ -45,6 +46,13 @@ public class ProblemDetailsAdvice {
     @ExceptionHandler(PermissionDeniedException.class)
     ResponseEntity<ProblemDetail> denied(PermissionDeniedException exception) {
         return problem(HttpStatus.FORBIDDEN, exception.code(), exception.getMessage());
+    }
+
+    /** BS-05: minting checks create permission inside the write pipeline, after the bus check. */
+    @ExceptionHandler(CreatePermissionDeniedException.class)
+    ResponseEntity<ProblemDetail> createDenied(CreatePermissionDeniedException exception) {
+        log.info("create permission denied for entity type {}", exception.entityType());
+        return problem(HttpStatus.FORBIDDEN, PermissionDeniedException.CODE, "permission denied");
     }
 
     @ExceptionHandler(ConflictException.class)
