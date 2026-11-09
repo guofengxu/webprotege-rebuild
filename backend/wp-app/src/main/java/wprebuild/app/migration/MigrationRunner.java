@@ -43,10 +43,11 @@ public class MigrationRunner implements ApplicationRunner {
         try {
             MigrationSummary summary = migrator.importPackage(directory, replace);
             log.info(
-                    "migration imported {} projects, {} revisions, {} new users from {}",
+                    "migration imported {} projects, {} revisions, {} new users, {} warnings from {}",
                     summary.projects(),
                     summary.revisions(),
                     summary.usersCreated(),
+                    summary.warnings().size(),
                     directory);
         } catch (InvalidMigrationPackageException ex) {
             log.error("migration failed: {}", ex.getMessage(), ex);

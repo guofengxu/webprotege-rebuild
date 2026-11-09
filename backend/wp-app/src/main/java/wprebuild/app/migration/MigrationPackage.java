@@ -3,12 +3,18 @@ package wprebuild.app.migration;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.semanticweb.owlapi.model.IRI;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import wprebuild.app.access.ProjectRole;
 import wprebuild.kernel.change.DeclareOntology;
 import wprebuild.kernel.change.OntologyChange;
 import wprebuild.kernel.change.OntologyKey;
@@ -17,10 +23,73 @@ import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
 
 /** One validated migration package. Package-private: only the importer consumes it. */
-record MigrationPackage(List<MigrationProject> projects) {
+record MigrationPackage(List<MigrationUser> users, List<MigrationProject> projects) {
 
     MigrationPackage {
+        users = List.copyOf(Objects.requireNonNull(users, "users"));
         projects = List.copyOf(Objects.requireNonNull(projects, "projects"));
+    }
+}
+
+/**
+ * One {@code users.json} account. Password material is never copied; {@code discardedCredentials}
+ * only records that a secret field was present and ignored.
+ */
+record MigrationUser(String username, String realName, String email, boolean discardedCredentials) {
+
+    MigrationUser {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("username must not be blank");
+        }
+        realName = realName == null ? "" : realName;
+        if (email != null && email.isBlank()) {
+            email = null;
+        }
+    }
+}
+
+/** One project role after collapsing a manifest assignment to the highest known role. */
+record ImportedRole(String username, ProjectRole role) {
+
+    ImportedRole {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("username must not be blank");
+        }
+        Objects.requireNonNull(role, "role");
+    }
+}
+
+/** Prefixes, roles, and raw legacy settings for one project. */
+record ProjectMetadata(
+        Map<String, String> prefixes,
+        List<ImportedRole> roles,
+        List<String> warnings,
+        JsonNode crudRaw,
+        JsonNode displayRaw) {
+
+    private static final JsonMapper JSON = new JsonMapper();
+
+    ProjectMetadata {
+        prefixes = copyPrefixes(prefixes);
+        roles = List.copyOf(Objects.requireNonNull(roles, "roles"));
+        warnings = List.copyOf(Objects.requireNonNull(warnings, "warnings"));
+        crudRaw = copyNode(crudRaw);
+        displayRaw = copyNode(displayRaw);
+    }
+
+    static ProjectMetadata empty() {
+        return new ProjectMetadata(Map.of(), List.of(), List.of(), JSON.createObjectNode(), JSON.createObjectNode());
+    }
+
+    private static Map<String, String> copyPrefixes(Map<String, String> prefixes) {
+        return Collections.unmodifiableMap(new LinkedHashMap<>(Objects.requireNonNull(prefixes, "prefixes")));
+    }
+
+    private static JsonNode copyNode(JsonNode node) {
+        if (node == null || node.isNull() || node.isMissingNode()) {
+            return JSON.createObjectNode();
+        }
+        return node.deepCopy();
     }
 }
 
@@ -38,7 +107,8 @@ record MigrationProject(
         String modifiedBy,
         List<RegisteredOntology> ontologies,
         List<MigrationRevision> revisions,
-        Path headFile) {
+        Path headFile,
+        ProjectMetadata metadata) {
 
     MigrationProject {
         Objects.requireNonNull(projectId, "projectId");
@@ -53,6 +123,7 @@ record MigrationProject(
         ontologies = List.copyOf(Objects.requireNonNull(ontologies, "ontologies"));
         revisions = List.copyOf(Objects.requireNonNull(revisions, "revisions"));
         Objects.requireNonNull(headFile, "headFile");
+        metadata = Objects.requireNonNull(metadata, "metadata");
     }
 
     /** Usernames cited by the manifest or the revision log. Blank manifest fields are omitted. */

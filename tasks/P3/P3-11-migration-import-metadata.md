@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: app-service
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P3-10, P3-06]
 ---
 
@@ -45,10 +45,18 @@ depends_on: [P3-10, P3-06]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 表单、标签、关注等 P6 数据
+
+## 执行记录
+- 日期：2026-11-09
+- 分支：feature/p3-11-migration-import-metadata
+- 测试：2026-11-09T14:41:54+08:00 通过（3 项）
+- 实际改动：导入 users.json、角色、前缀和旧的新实体与显示名称设置。已有用户保持不变，新用户密码哈希为空；无法识别的 kit 回落到 UUID，并写入迁移摘要。
+- 偏差：生产代码约 900 行，超过 S 号卡 200 行预期，因为用户、角色、前缀和三种 kit 的转换都在本卡产出里。project_settings 的 new-entity 与 display-names 使用显式 JSON（kit.type 为 UUID、SUPPLIED_NAME 或 OBO，IRI 和本体 key 写成字符串），不是内核 record 的默认 Jackson 形态，因为内核不能依赖 Jackson。P3-22 需要按这个形状读取。
+- 审查：java-reviewer, code-reviewer, security-reviewer
