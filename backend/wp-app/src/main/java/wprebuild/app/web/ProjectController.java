@@ -37,15 +37,21 @@ import wprebuild.app.ontology.CreateEntities;
 import wprebuild.app.ontology.DeleteEntities;
 import wprebuild.app.ontology.DownloadFormat;
 import wprebuild.app.ontology.EntityActions;
+import wprebuild.app.ontology.GetAnnotationPropertyFrame;
 import wprebuild.app.ontology.GetClassFrame;
+import wprebuild.app.ontology.GetDataPropertyFrame;
 import wprebuild.app.ontology.GetHierarchyChildren;
 import wprebuild.app.ontology.GetHierarchyPaths;
 import wprebuild.app.ontology.GetHierarchyRoots;
+import wprebuild.app.ontology.GetObjectPropertyFrame;
 import wprebuild.app.ontology.GetProjectDownload;
 import wprebuild.app.ontology.HierarchyKind;
 import wprebuild.app.ontology.ImportOntologyFromUpload;
 import wprebuild.app.ontology.ProjectDownload;
+import wprebuild.app.ontology.UpdateAnnotationPropertyFrame;
 import wprebuild.app.ontology.UpdateClassFrame;
+import wprebuild.app.ontology.UpdateDataPropertyFrame;
+import wprebuild.app.ontology.UpdateObjectPropertyFrame;
 import wprebuild.app.ontology.UploadProperties;
 import wprebuild.app.project.GetProjectDetails;
 import wprebuild.app.project.ListMyProjects;
@@ -59,7 +65,7 @@ import wprebuild.kernel.id.ProjectId;
 import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
 
-/** Project lifecycle, hierarchy queries, class frames, and entity edits. Permission is checked by {@link CommandBus}. */
+/** Project lifecycle, hierarchy queries, entity frames, and entity edits. Permission is checked by {@link CommandBus}. */
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
@@ -225,6 +231,69 @@ public class ProjectController {
                     bus.execute(user, new UpdateClassFrame(projectId, body.from(), body.to()));
             return ResponseEntity.ok(updated.body());
         });
+    }
+
+    @GetMapping("/{id}/frames/object-property")
+    public ResponseEntity<?> objectPropertyFrame(@PathVariable String id, @RequestParam("iri") String iri) {
+        return withProject(
+                id,
+                (user, projectId) ->
+                        ResponseEntity.ok(bus.execute(user, new GetObjectPropertyFrame(projectId, entityIri(iri)))));
+    }
+
+    @PutMapping(path = "/{id}/frames/object-property", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateObjectPropertyFrame(
+            @PathVariable String id, @RequestBody UpdateObjectPropertyFrame.Request body) {
+        if (body == null || body.from() == null || body.to() == null) {
+            return invalid("request body is required");
+        }
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(
+                        bus.execute(user, new UpdateObjectPropertyFrame(projectId, body.from(), body.to()))
+                                .body()));
+    }
+
+    @GetMapping("/{id}/frames/data-property")
+    public ResponseEntity<?> dataPropertyFrame(@PathVariable String id, @RequestParam("iri") String iri) {
+        return withProject(
+                id,
+                (user, projectId) ->
+                        ResponseEntity.ok(bus.execute(user, new GetDataPropertyFrame(projectId, entityIri(iri)))));
+    }
+
+    @PutMapping(path = "/{id}/frames/data-property", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateDataPropertyFrame(
+            @PathVariable String id, @RequestBody UpdateDataPropertyFrame.Request body) {
+        if (body == null || body.from() == null || body.to() == null) {
+            return invalid("request body is required");
+        }
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(
+                        bus.execute(user, new UpdateDataPropertyFrame(projectId, body.from(), body.to()))
+                                .body()));
+    }
+
+    @GetMapping("/{id}/frames/annotation-property")
+    public ResponseEntity<?> annotationPropertyFrame(@PathVariable String id, @RequestParam("iri") String iri) {
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(
+                        bus.execute(user, new GetAnnotationPropertyFrame(projectId, entityIri(iri)))));
+    }
+
+    @PutMapping(path = "/{id}/frames/annotation-property", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateAnnotationPropertyFrame(
+            @PathVariable String id, @RequestBody UpdateAnnotationPropertyFrame.Request body) {
+        if (body == null || body.from() == null || body.to() == null) {
+            return invalid("request body is required");
+        }
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(
+                        bus.execute(user, new UpdateAnnotationPropertyFrame(projectId, body.from(), body.to()))
+                                .body()));
     }
 
     @PostMapping(path = "/{id}/entities", consumes = MediaType.APPLICATION_JSON_VALUE)

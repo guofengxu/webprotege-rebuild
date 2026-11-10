@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P3-16]
 ---
 
@@ -45,10 +45,18 @@ depends_on: [P3-16]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 属性链、不相交属性等高级公理的编辑（只在 `otherAxioms` 中只读显示）
+
+## 执行记录
+- 日期：2026-11-10
+- 分支：feature/p3-17-property-frames
+- 测试：2026-11-10T10:13:47+08:00 通过（3 项）
+- 实际改动：新增对象、数据和注解属性 Frame 的读取与更新：按 from 与 to 的公理差量写入，当前 Frame 已变时返回 409 FRAME_CHANGED，并把类 Frame 的冲突检查与差量计算抽到 AbstractFrameUpdateGenerator。
+- 偏差：生产代码增删合计约 2064 行（不含测试），高于 M 卡预期的 400 行。三种属性的读取、toAxioms、更新生成器和 REST 都是卡片要求的产出。读取和更新命令放在 ontology 根包，与类 Frame 相同，web 不直接依赖 frame 子包。注解属性的定义域和值域是 IRI 字符串。逆属性在公理两侧都能读到；旧 ObjectPropertyFrameTranslator.getFrame 把逆属性固定成空集，这里按卡片补上。属性链、不相交属性和等价属性只出现在 otherAxioms，不参与写入。
+- 审查：java-reviewer, code-reviewer
