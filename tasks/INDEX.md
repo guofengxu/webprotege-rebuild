@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 70 张卡：完成 57，进行中 0，阻塞 0，待办 13。
+共 70 张卡：完成 58，进行中 0，阻塞 0，待办 12。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P3-18](P3/P3-18-individual-frame.md) 个体 Frame 的读取与更新
 - [P3-19](P3/P3-19-search.md) 实体搜索（Lucene 10）
 - [P3-20](P3/P3-20-revision-history.md) 修订历史、实体历史与回滚 API
 - [P3-21](P3/P3-21-events-sse.md) 高层事件推送：SSE 与长轮询（BS-11）
@@ -90,7 +89,7 @@
 | [P3-15](P3/P3-15-class-frame-read.md) | 类 Frame 读取 | wp-app/ontology, web | app-service | M | 完成 | P3-13 |
 | [P3-16](P3/P3-16-class-frame-update.md) | 类 Frame 更新（含乐观并发） | wp-app/ontology, web | app-service | M | 完成 | P3-15、P3-14 |
 | [P3-17](P3/P3-17-property-frames.md) | 对象 / 数据 / 注解属性 Frame 的读取与更新 | wp-app/ontology, web | app-service | M | 完成 | P3-16 |
-| [P3-18](P3/P3-18-individual-frame.md) | 个体 Frame 的读取与更新 | wp-app/ontology, web | app-service | S | 待办（可开工） | P3-17 |
+| [P3-18](P3/P3-18-individual-frame.md) | 个体 Frame 的读取与更新 | wp-app/ontology, web | app-service | S | 完成 | P3-17 |
 | [P3-19](P3/P3-19-search.md) | 实体搜索（Lucene 10） | wp-app/search, web | app-service | M | 待办（可开工） | P3-13 |
 | [P3-20](P3/P3-20-revision-history.md) | 修订历史、实体历史与回滚 API | wp-app/revision, ontology, web | app-service | M | 待办（可开工） | P3-08、P1-15 |
 | [P3-21](P3/P3-21-events-sse.md) | 高层事件推送：SSE 与长轮询（BS-11） | wp-app/events, web | app-service | M | 待办（可开工） | P3-03、P3-06 |

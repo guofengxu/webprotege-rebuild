@@ -43,14 +43,17 @@ import wprebuild.app.ontology.GetDataPropertyFrame;
 import wprebuild.app.ontology.GetHierarchyChildren;
 import wprebuild.app.ontology.GetHierarchyPaths;
 import wprebuild.app.ontology.GetHierarchyRoots;
+import wprebuild.app.ontology.GetNamedIndividualFrame;
 import wprebuild.app.ontology.GetObjectPropertyFrame;
 import wprebuild.app.ontology.GetProjectDownload;
 import wprebuild.app.ontology.HierarchyKind;
 import wprebuild.app.ontology.ImportOntologyFromUpload;
+import wprebuild.app.ontology.ListIndividualsByType;
 import wprebuild.app.ontology.ProjectDownload;
 import wprebuild.app.ontology.UpdateAnnotationPropertyFrame;
 import wprebuild.app.ontology.UpdateClassFrame;
 import wprebuild.app.ontology.UpdateDataPropertyFrame;
+import wprebuild.app.ontology.UpdateNamedIndividualFrame;
 import wprebuild.app.ontology.UpdateObjectPropertyFrame;
 import wprebuild.app.ontology.UploadProperties;
 import wprebuild.app.project.GetProjectDetails;
@@ -294,6 +297,39 @@ public class ProjectController {
                 (user, projectId) -> ResponseEntity.ok(
                         bus.execute(user, new UpdateAnnotationPropertyFrame(projectId, body.from(), body.to()))
                                 .body()));
+    }
+
+    @GetMapping("/{id}/frames/individual")
+    public ResponseEntity<?> individualFrame(@PathVariable String id, @RequestParam("iri") String iri) {
+        return withProject(
+                id,
+                (user, projectId) ->
+                        ResponseEntity.ok(bus.execute(user, new GetNamedIndividualFrame(projectId, entityIri(iri)))));
+    }
+
+    @PutMapping(path = "/{id}/frames/individual", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateIndividualFrame(
+            @PathVariable String id, @RequestBody UpdateNamedIndividualFrame.Request body) {
+        if (body == null || body.from() == null || body.to() == null) {
+            return invalid("request body is required");
+        }
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(
+                        bus.execute(user, new UpdateNamedIndividualFrame(projectId, body.from(), body.to()))
+                                .body()));
+    }
+
+    @GetMapping("/{id}/individuals")
+    public ResponseEntity<?> individuals(
+            @PathVariable String id,
+            @RequestParam("type") String type,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "50") int size) {
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(
+                        bus.execute(user, new ListIndividualsByType(projectId, entityIri(type), page, size))));
     }
 
     @PostMapping(path = "/{id}/entities", consumes = MediaType.APPLICATION_JSON_VALUE)
