@@ -1,5 +1,10 @@
 package wprebuild.app.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -30,6 +35,7 @@ import wprebuild.kernel.id.UserId;
 /** Session login. These routes stay off the command bus (ADR-007): they only touch the current user. */
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Auth")
 public class AuthController {
 
     private final UserService users;
@@ -45,6 +51,11 @@ public class AuthController {
         this.csrfTokens = Objects.requireNonNull(csrfTokens, "csrf tokens");
     }
 
+    @Operation(summary = "Sign in and start a session", operationId = "login")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = AuthUserResponse.class)))
     @PostMapping(path = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> login(
             @RequestBody LoginRequest body, HttpServletRequest request, HttpServletResponse response) {
@@ -61,6 +72,8 @@ public class AuthController {
         };
     }
 
+    @Operation(summary = "End the current session", operationId = "logout")
+    @ApiResponse(responseCode = "204", description = "Signed out")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -69,6 +82,11 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Return the signed-in user", operationId = "getCurrentUser")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = AuthUserResponse.class)))
     @GetMapping("/me")
     public ResponseEntity<?> me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

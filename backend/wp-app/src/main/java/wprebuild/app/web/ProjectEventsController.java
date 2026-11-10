@@ -1,5 +1,7 @@
 package wprebuild.app.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -40,6 +42,7 @@ import wprebuild.kernel.id.UserId;
  */
 @RestController
 @RequestMapping("/api/projects/{id}/events")
+@Tag(name = "Project events")
 public class ProjectEventsController {
 
     private static final Logger log = LoggerFactory.getLogger(ProjectEventsController.class);
@@ -60,12 +63,14 @@ public class ProjectEventsController {
         this.json = Objects.requireNonNull(json, "json");
     }
 
+    @Operation(summary = "Subscribe to project events as SSE", operationId = "streamProjectEvents")
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Object stream(
             @PathVariable String id, @RequestHeader(name = "Last-Event-ID", required = false) String lastEventId) {
         return withProject(id, (user, projectId) -> open(user, projectId, cursor(lastEventId)));
     }
 
+    @Operation(summary = "Long-poll project events", operationId = "pollProjectEvents")
     @GetMapping(path = "/poll", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object poll(
             @PathVariable String id,

@@ -1,5 +1,11 @@
 package wprebuild.app.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
@@ -26,6 +32,7 @@ import wprebuild.kernel.id.UserId;
 /** The signed-in user's own API keys. These routes stay off the command bus (ADR-007). */
 @RestController
 @RequestMapping("/api/me/api-keys")
+@Tag(name = "API keys")
 public class ApiKeyController {
 
     private final ApiKeyService apiKeys;
@@ -34,6 +41,13 @@ public class ApiKeyController {
         this.apiKeys = Objects.requireNonNull(apiKeys, "api keys");
     }
 
+    @Operation(summary = "Create an API key", operationId = "createApiKey")
+    @ApiResponse(
+            responseCode = "201",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = IssuedApiKeyResponse.class)))
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> create(@RequestBody CreateApiKeyRequest body) {
         UserId user = currentUser();
@@ -50,6 +64,13 @@ public class ApiKeyController {
         }
     }
 
+    @Operation(summary = "List API keys", operationId = "listApiKeys")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = ApiKeyInfo.class))))
     @GetMapping
     public ResponseEntity<?> list() {
         UserId user = currentUser();
@@ -60,6 +81,8 @@ public class ApiKeyController {
         return ResponseEntity.ok(keys);
     }
 
+    @Operation(summary = "Revoke an API key", operationId = "revokeApiKey")
+    @ApiResponse(responseCode = "204", description = "API key revoked", content = @Content)
     @DeleteMapping("/{keyId}")
     public ResponseEntity<?> revoke(@PathVariable UUID keyId) {
         UserId user = currentUser();

@@ -1,5 +1,6 @@
 package wprebuild.app.ontology;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import wprebuild.app.bus.Command;
 import wprebuild.app.ontology.frame.ObjectPropertyFrame;
@@ -23,5 +24,6 @@ public record UpdateObjectPropertyFrame(ProjectId projectId, ObjectPropertyFrame
     }
 
     /** JSON body of {@code PUT /api/projects/{id}/frames/object-property}. */
+    @Schema(name = "UpdateObjectPropertyFrameRequest")
     public record Request(ObjectPropertyFrame from, ObjectPropertyFrame to) {}
 }

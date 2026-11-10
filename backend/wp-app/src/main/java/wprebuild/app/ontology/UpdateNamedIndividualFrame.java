@@ -1,5 +1,6 @@
 package wprebuild.app.ontology;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import wprebuild.app.bus.Command;
 import wprebuild.app.ontology.frame.NamedIndividualFrame;
@@ -23,5 +24,6 @@ public record UpdateNamedIndividualFrame(ProjectId projectId, NamedIndividualFra
     }
 
     /** JSON body of {@code PUT /api/projects/{id}/frames/individual}. */
+    @Schema(name = "UpdateNamedIndividualFrameRequest")
     public record Request(NamedIndividualFrame from, NamedIndividualFrame to) {}
 }

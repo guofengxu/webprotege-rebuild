@@ -1,5 +1,11 @@
 package wprebuild.app.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.http.CacheControl;
@@ -15,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import wprebuild.app.access.AccessTokenService;
+import wprebuild.app.access.DeviceSession;
 import wprebuild.app.access.InvalidRefreshTokenException;
 import wprebuild.app.access.IssuedTokens;
 import wprebuild.app.access.PasswordResetRequiredException;
@@ -26,6 +33,7 @@ import wprebuild.kernel.id.UserId;
 
 /** Mobile bearer tokens. These routes stay off the command bus (ADR-007): they only touch the current user. */
 @RestController
+@Tag(name = "Access tokens")
 public class AccessTokenController {
 
     private final AccessTokenService tokens;
@@ -37,6 +45,13 @@ public class AccessTokenController {
         this.users = Objects.requireNonNull(users, "users");
     }
 
+    @Operation(summary = "Issue access and refresh tokens", operationId = "issueAccessTokens")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = IssuedTokensResponse.class)))
     @PostMapping(path = "/api/auth/tokens", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> issue(@RequestBody IssueTokenRequest body) {
         if (body == null || body.username() == null || body.username().isBlank()) {
@@ -50,6 +65,13 @@ public class AccessTokenController {
         };
     }
 
+    @Operation(summary = "Rotate access and refresh tokens", operationId = "refreshAccessTokens")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = IssuedTokensResponse.class)))
     @PostMapping(path = "/api/auth/tokens/refresh", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> refresh(@RequestBody RefreshTokenRequest body) {
         try {
@@ -64,6 +86,13 @@ public class AccessTokenController {
         }
     }
 
+    @Operation(summary = "List signed-in devices", operationId = "listDevices")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = DeviceSession.class))))
     @GetMapping("/api/me/devices")
     public ResponseEntity<?> list() {
         UserId user = currentUser();
@@ -73,6 +102,8 @@ public class AccessTokenController {
         return ResponseEntity.ok(tokens.list(user));
     }
 
+    @Operation(summary = "Revoke a device session", operationId = "revokeDevice")
+    @ApiResponse(responseCode = "204", description = "Device revoked", content = @Content)
     @DeleteMapping("/api/me/devices/{tokenId}")
     public ResponseEntity<?> revoke(@PathVariable UUID tokenId) {
         UserId user = currentUser();
