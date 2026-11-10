@@ -18,3 +18,8 @@ wp:
     ontology-iri-base: http://example.org/wp/
   upload:
     max-size: 200MB
+  tokens:
+    access-ttl: 12h
+    refresh-ttl: 30d
+  cors:
+    allowed-origins: []

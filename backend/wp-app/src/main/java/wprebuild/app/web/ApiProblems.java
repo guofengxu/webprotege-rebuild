@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import tools.jackson.databind.json.JsonMapper;
+import wprebuild.app.access.RefreshTokenReusedException;
 
 /** RFC 9457 bodies for authentication failures. {@code code} is a top-level extension. */
 public final class ApiProblems {
@@ -30,6 +31,16 @@ public final class ApiProblems {
         ProblemDetail problem = unauthorized("Password reset is required before this account can sign in");
         problem.setProperty("code", PASSWORD_RESET_REQUIRED);
         return problem;
+    }
+
+    public static ProblemDetail refreshTokenReused() {
+        ProblemDetail problem = unauthorized("The refresh token was reused");
+        problem.setProperty("code", RefreshTokenReusedException.CODE);
+        return problem;
+    }
+
+    public static ProblemDetail invalidRefreshToken() {
+        return unauthorized("The refresh token is invalid");
     }
 
     public static ProblemDetail accessDenied() {
