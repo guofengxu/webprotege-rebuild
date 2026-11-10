@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: app-security
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-07]
 ---
 
@@ -43,11 +43,19 @@ depends_on: [P3-07]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 用户自助注册
 - 删除用户（P6，需要先确定其修订记录如何展示）
+
+## 执行记录
+- 日期：2026-11-10
+- 分支：feature/p3-25-admin-user-management
+- 测试：2026-11-10T20:06:46+08:00 通过（3 项）
+- 实际改动：新增管理员用户管理：分页列出、创建、重置密码、分配应用角色。重复用户名用 ON CONFLICT 返回 409，不能移除最后一个 SYSTEM_ADMIN。
+- 偏差：列表使用 CREATE_ACCOUNT，因为 BS-10 没有单独的查看用户动作。用户名格式只约束创建；重置密码和改角色仍接受已有 UserId，迁移用户名可以含 @。显示名最长 200，邮箱最长 254。密码重置不吊销已有会话和 API Key：现有密钥过滤器在密码设置完成后允许密钥继续使用，会话也没有按用户作废的字段。
+- 审查：security-reviewer, java-reviewer

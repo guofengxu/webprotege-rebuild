@@ -1,13 +1,16 @@
 package wprebuild.app.access;
 
 import java.nio.charset.StandardCharsets;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import org.springframework.dao.DuplicateKeyException;
+import java.util.Set;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import wprebuild.app.shared.ConflictException;
+import wprebuild.app.shared.NotFoundException;
 import wprebuild.kernel.id.UserId;
 
 /**
@@ -17,6 +20,9 @@ import wprebuild.kernel.id.UserId;
  */
 @Service
 public class UserService {
+
+    /** Removing the only {@link AppRole#SYSTEM_ADMIN} is rejected. */
+    public static final String LAST_SYSTEM_ADMIN = "LAST_SYSTEM_ADMIN";
 
     /** BCrypt ignores bytes past this point, so a longer password would be stored as a shorter one. */
     static final int BCRYPT_MAX_BYTES = 72;
@@ -42,12 +48,44 @@ public class UserService {
             throw new IllegalArgumentException("display name must not be blank");
         }
         UserAccount account = new UserAccount(id, displayName, email, encode(rawPassword), appRoles);
-        try {
-            users.insert(account);
-        } catch (DuplicateKeyException ex) {
-            throw new IllegalArgumentException("user already exists: " + id.value(), ex);
+        if (users.insert(account) == 0) {
+            throw new ConflictException("user already exists: " + id.value());
         }
         return account;
+    }
+
+    @Transactional(readOnly = true)
+    public UserPage list(int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("page must be at least 0");
+        }
+        if (size < 1 || size > UserPage.MAX_SIZE) {
+            throw new IllegalArgumentException("size must be from 1 to " + UserPage.MAX_SIZE);
+        }
+        JdbcUserRepository.UserSlice slice = users.slice(size, (long) page * size);
+        return new UserPage(slice.users(), page, size, slice.total());
+    }
+
+    /**
+     * Replaces application roles. The last {@link AppRole#SYSTEM_ADMIN} cannot be removed. The table
+     * lock makes that count stable with the update.
+     */
+    @Transactional
+    public UserProfile setAppRoles(UserId userId, Set<AppRole> appRoles) {
+        Objects.requireNonNull(userId, "user id");
+        List<String> stored = roleNames(appRoles);
+        users.lockUsers();
+        UserAccount current = users.findById(userId).orElseThrow(() -> new NotFoundException("user not found"));
+        boolean removingAdmin = current.appRoles().contains(AppRole.SYSTEM_ADMIN.name())
+                && !stored.contains(AppRole.SYSTEM_ADMIN.name());
+        if (removingAdmin && users.countWithRole(AppRole.SYSTEM_ADMIN.name()) < 2) {
+            throw new ConflictException(LAST_SYSTEM_ADMIN, "the last system administrator cannot be removed");
+        }
+        if (users.updateAppRoles(userId, stored) == 0) {
+            throw new IllegalStateException("user disappeared while roles were locked: " + userId.value());
+        }
+        return new UserProfile(
+                current.userId(), current.displayName(), current.email(), current.passwordResetRequired(), stored);
     }
 
     public Optional<UserAccount> findById(UserId userId) {
@@ -62,8 +100,22 @@ public class UserService {
         }
         String hash = encode(rawPassword);
         if (users.updatePasswordHash(userId, hash) == 0) {
-            throw new IllegalArgumentException("unknown user: " + userId.value());
+            throw new NotFoundException("user not found");
         }
+    }
+
+    private static List<String> roleNames(Set<AppRole> appRoles) {
+        if (appRoles == null) {
+            throw new IllegalArgumentException("app roles must not be null");
+        }
+        EnumSet<AppRole> ordered = EnumSet.noneOf(AppRole.class);
+        for (AppRole role : appRoles) {
+            if (role == null) {
+                throw new IllegalArgumentException("app role must not be null");
+            }
+            ordered.add(role);
+        }
+        return ordered.stream().map(AppRole::name).toList();
     }
 
     public PasswordVerification verifyPassword(String username, String rawPassword) {
