@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-05]
 ---
 
@@ -46,11 +46,19 @@ uni-app 客户端可以不依赖 Cookie，用 Bearer 令牌安全地调用 API�
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - OIDC / 企业微信登录（P6）
 - 推送通知
+
+## 执行记录
+- 日期：2026-11-10
+- 分支：feature/p3-26-mobile-access-tokens
+- 测试：2026-11-10T21:17:16+08:00 通过（3 项）
+- 实际改动：移动端可以用账号密码换取不透明的访问令牌和刷新令牌。Authorization: Bearer 免 CSRF，并且不会把这次登录写进会话。刷新会轮换令牌；重放已轮换的刷新令牌会吊销该设备并返回 REFRESH_TOKEN_REUSED。CORS 默认关闭，只对配置的来源开放 /api/**。
+- 偏差：access_tokens 只保存当前摘要，因此另加 rotated_refresh_tokens 记住每一次被轮换掉的刷新令牌，多次轮换后仍能识别重放。必须重置密码的账户不能签发或轮换令牌，与会话登录和 API Key 一致。生产代码约 980 行，超过 400 行预期，因为服务、仓储、过滤器和四个接口都是卡片要求的产出。
+- 审查：security-reviewer, java-reviewer

@@ -4,6 +4,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,8 +20,13 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.session.SessionManagementFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import tools.jackson.databind.json.JsonMapper;
+import wprebuild.app.access.AccessTokenService;
 import wprebuild.app.access.ApiKeyService;
 import wprebuild.app.access.UserService;
 import wprebuild.app.web.ApiProblems;
@@ -30,6 +37,7 @@ import wprebuild.app.web.ApiProblems;
  */
 @Configuration
 @EnableWebSecurity
+@EnableConfigurationProperties(CorsProperties.class)
 public class SecurityConfig {
 
     @Bean
@@ -43,22 +51,35 @@ public class SecurityConfig {
     SecurityFilterChain apiSecurity(
             HttpSecurity http,
             CookieCsrfTokenRepository csrfTokens,
+            CorsProperties cors,
             JsonMapper json,
             ApiKeyService apiKeys,
+            AccessTokenService accessTokens,
             UserService users)
             throws Exception {
         http.securityMatcher("/api/**")
-                .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.POST, "/api/auth/login")
+                .cors(config -> config.configurationSource(corsConfiguration(cors)))
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                                HttpMethod.POST, "/api/auth/login", "/api/auth/tokens", "/api/auth/tokens/refresh")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(session -> session.sessionFixation().changeSessionId())
-                // ADR-010: X-API-Key is not sent by a browser form, so those requests skip CSRF.
+                // ADR-010: a bearer token or API key is not a browser form field. The token posts carry the secret
+                // in JSON, so a mobile client can call them without a CSRF cookie.
                 .csrf(csrf -> csrf.spa()
                         .csrfTokenRepository(csrfTokens)
-                        .ignoringRequestMatchers(ApiKeyAuthenticationFilter::carriesApiKey))
+                        .ignoringRequestMatchers(
+                                ApiKeyAuthenticationFilter::carriesApiKey,
+                                BearerTokenAuthenticationFilter::carriesBearer)
+                        .ignoringRequestMatchers(
+                                PathPatternRequestMatcher.pathPattern(HttpMethod.POST, "/api/auth/tokens"),
+                                PathPatternRequestMatcher.pathPattern(HttpMethod.POST, "/api/auth/tokens/refresh")))
                 // After session management: a non-transient token here would be saved and outlive revoke.
+                // Bearer runs last so an Authorization header is not replaced by a session or an API key.
                 .addFilterAfter(new ApiKeyAuthenticationFilter(apiKeys, users), SessionManagementFilter.class)
+                .addFilterAfter(
+                        new BearerTokenAuthenticationFilter(accessTokens, users), ApiKeyAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new ProblemDetailEntryPoint(json))
                         .accessDeniedHandler(new ProblemDetailAccessDenied(json)))
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -66,6 +87,27 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .requestCache(cache -> cache.disable());
         return http.build();
+    }
+
+    /**
+     * Not a bean: MVC already publishes a {@link CorsConfigurationSource}, and a second one makes injection
+     * ambiguous. An empty allow-list still publishes a configuration so the processor rejects the preflight;
+     * a missing configuration would let the request finish as 200 without CORS headers.
+     */
+    private static CorsConfigurationSource corsConfiguration(CorsProperties cors) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        if (cors.allowedOrigins().isEmpty()) {
+            configuration.setAllowedOrigins(List.of());
+        } else {
+            configuration.setAllowedOrigins(cors.allowedOrigins());
+            configuration.setAllowedMethods(List.of("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"));
+            configuration.setAllowedHeaders(
+                    List.of("Authorization", "Content-Type", "Accept", "X-XSRF-TOKEN", "X-API-Key"));
+            configuration.setMaxAge(CorsProperties.preflightMaxAge());
+        }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);
+        return source;
     }
 
     /** Stops Spring Boot from publishing a generated user and password. Login is the JSON endpoint. */
