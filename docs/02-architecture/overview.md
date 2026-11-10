@@ -45,7 +45,7 @@ webprotege-rebuild/
 | `project` | 项目元数据、回收站、项目设置（前缀、CrudKit、显示语言）、共享设置；实现 `ProjectExistenceCheck` | bus, access, shared |
 | `revision` | PostgreSQL 实现的 `RevisionLog`、`SnapshotStore`；同一事务写 outbox；修订历史的只读查询接口 | shared |
 | `ontology` | `ProjectRuntime` 注册表（Caffeine）；本体命令与查询；导入导出；修订历史与回滚的命令处理器 | bus, project, access, revision, shared |
-| `search` | Lucene 实体索引；订阅修订提交事件做增量更新 | bus, ontology, access, shared |
+| `search` | Lucene 实体索引；订阅修订提交事件做增量更新 | bus, ontology, ontology :: dto, access, shared |
 | `events` | 把修订翻译为高层事件（BS-11），通过 SSE 和长轮询推送 | bus, ontology, access, shared |
 | `migration` | 导入迁移包，生成带完整历史的项目 | bus, ontology, project, access, shared |
 | `web` | REST 控制器、OpenAPI、异常映射、安全配置（含 CORS） | 以上全部 |

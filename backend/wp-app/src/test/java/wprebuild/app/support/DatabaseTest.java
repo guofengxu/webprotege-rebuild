@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.TestConstructor.AutowireMode;
+import org.springframework.test.context.TestPropertySource;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -17,5 +18,6 @@ import org.springframework.test.context.TestConstructor.AutowireMode;
 @Inherited
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
+@TestPropertySource(properties = "wp.data-dir=${java.io.tmpdir}/webprotege-rebuild-test")
 @TestConstructor(autowireMode = AutowireMode.ALL)
 public @interface DatabaseTest {}

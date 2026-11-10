@@ -64,11 +64,16 @@ import wprebuild.app.project.ProjectDetails;
 import wprebuild.app.project.ProjectText;
 import wprebuild.app.project.RestoreProjectFromTrash;
 import wprebuild.app.project.UpdateProjectDetails;
+import wprebuild.app.search.SearchEntities;
+import wprebuild.app.search.SearchTypes;
 import wprebuild.kernel.id.ProjectId;
 import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
 
-/** Project lifecycle, hierarchy queries, entity frames, and entity edits. Permission is checked by {@link CommandBus}. */
+/**
+ * Project lifecycle, hierarchy queries, entity search, frames, and edits. Permission is checked by
+ * {@link CommandBus}.
+ */
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
@@ -214,6 +219,18 @@ public class ProjectController {
                 id,
                 (user, projectId) -> ResponseEntity.ok(bus.execute(
                         user, new GetHierarchyPaths(projectId, HierarchyKind.parse(kind), entityIri(entity)))));
+    }
+
+    @GetMapping("/{id}/search")
+    public ResponseEntity<?> search(
+            @PathVariable String id,
+            @RequestParam("q") String query,
+            @RequestParam(name = "types", required = false) String types,
+            @RequestParam(name = "limit", defaultValue = "20") int limit) {
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(
+                        bus.execute(user, new SearchEntities(projectId, query, SearchTypes.parse(types), limit))));
     }
 
     @GetMapping("/{id}/frames/class")
