@@ -1,5 +1,11 @@
 package wprebuild.app.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -80,6 +86,7 @@ import wprebuild.kernel.id.UserId;
  */
 @RestController
 @RequestMapping("/api/projects")
+@Tag(name = "Projects")
 public class ProjectController {
 
     private final CommandBus bus;
@@ -91,6 +98,11 @@ public class ProjectController {
         this.uploads = Objects.requireNonNull(uploads, "uploads");
     }
 
+    @Operation(summary = "Create an empty project", operationId = "createProject")
+    @ApiResponse(
+            responseCode = "201",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ProjectResponse.class)))
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> create(@RequestBody CreateProjectRequest body) {
         UserId user = currentUser();
@@ -111,6 +123,11 @@ public class ProjectController {
         }
     }
 
+    @Operation(summary = "Create a project from an uploaded ontology", operationId = "uploadProject")
+    @ApiResponse(
+            responseCode = "201",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ProjectResponse.class)))
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> upload(
             @RequestParam("file") MultipartFile file,
@@ -149,6 +166,13 @@ public class ProjectController {
         }
     }
 
+    @Operation(summary = "List the signed-in user's projects", operationId = "listProjects")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = ProjectResponse.class))))
     @GetMapping
     public ResponseEntity<?> list() {
         UserId user = currentUser();
@@ -159,6 +183,13 @@ public class ProjectController {
         return ResponseEntity.ok(projects.stream().map(ProjectResponse::from).toList());
     }
 
+    @Operation(summary = "List trashed projects", operationId = "listTrashedProjects")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = ProjectResponse.class))))
     @GetMapping("/trash")
     public ResponseEntity<?> listTrash() {
         UserId user = currentUser();
@@ -169,6 +200,7 @@ public class ProjectController {
         return ResponseEntity.ok(projects.stream().map(ProjectResponse::from).toList());
     }
 
+    @Operation(summary = "Download a project ontology", operationId = "downloadProject")
     @GetMapping("/{id}/download")
     public ResponseEntity<?> download(
             @PathVariable String id,
@@ -199,6 +231,7 @@ public class ProjectController {
                 .body(file.body());
     }
 
+    @Operation(summary = "List hierarchy roots", operationId = "getHierarchyRoots")
     @GetMapping("/{id}/hierarchies/{kind}/roots")
     public ResponseEntity<?> hierarchyRoots(@PathVariable String id, @PathVariable String kind) {
         return withProject(
@@ -207,6 +240,7 @@ public class ProjectController {
                         bus.execute(user, new GetHierarchyRoots(projectId, HierarchyKind.parse(kind)))));
     }
 
+    @Operation(summary = "List hierarchy children", operationId = "getHierarchyChildren")
     @GetMapping("/{id}/hierarchies/{kind}/children")
     public ResponseEntity<?> hierarchyChildren(
             @PathVariable String id, @PathVariable String kind, @RequestParam("parent") String parent) {
@@ -216,6 +250,7 @@ public class ProjectController {
                         user, new GetHierarchyChildren(projectId, HierarchyKind.parse(kind), entityIri(parent)))));
     }
 
+    @Operation(summary = "List paths from roots to an entity", operationId = "getHierarchyPaths")
     @GetMapping("/{id}/hierarchies/{kind}/paths")
     public ResponseEntity<?> hierarchyPaths(
             @PathVariable String id, @PathVariable String kind, @RequestParam("entity") String entity) {
@@ -225,6 +260,7 @@ public class ProjectController {
                         user, new GetHierarchyPaths(projectId, HierarchyKind.parse(kind), entityIri(entity)))));
     }
 
+    @Operation(summary = "List project revisions", operationId = "listRevisions")
     @GetMapping("/{id}/revisions")
     public ResponseEntity<?> revisions(
             @PathVariable String id,
@@ -235,6 +271,7 @@ public class ProjectController {
                 (user, projectId) -> ResponseEntity.ok(bus.execute(user, new ListRevisions(projectId, page, size))));
     }
 
+    @Operation(summary = "Get a revision diff", operationId = "getRevisionDiff")
     @GetMapping("/{id}/revisions/{rev}")
     public ResponseEntity<?> revision(
             @PathVariable String id,
@@ -246,6 +283,7 @@ public class ProjectController {
                         bus.execute(user, new GetRevisionDiff(projectId, RevisionNumber.of(rev), limit))));
     }
 
+    @Operation(summary = "Revert a revision", operationId = "revertRevision")
     @PostMapping("/{id}/revisions/{rev}/revert")
     public ResponseEntity<?> revert(@PathVariable String id, @PathVariable long rev) {
         return withProject(id, (user, projectId) -> {
@@ -254,6 +292,7 @@ public class ProjectController {
         });
     }
 
+    @Operation(summary = "List revisions that touched an entity", operationId = "listEntityRevisions")
     @GetMapping("/{id}/entities/history")
     public ResponseEntity<?> entityHistory(
             @PathVariable String id,
@@ -266,6 +305,7 @@ public class ProjectController {
                         bus.execute(user, new ListEntityRevisions(projectId, entityIri(iri), page, size))));
     }
 
+    @Operation(summary = "Search entities by name", operationId = "searchEntities")
     @GetMapping("/{id}/search")
     public ResponseEntity<?> search(
             @PathVariable String id,
@@ -278,6 +318,7 @@ public class ProjectController {
                         bus.execute(user, new SearchEntities(projectId, query, SearchTypes.parse(types), limit))));
     }
 
+    @Operation(summary = "Read a class frame", operationId = "getClassFrame")
     @GetMapping("/{id}/frames/class")
     public ResponseEntity<?> classFrame(@PathVariable String id, @RequestParam("iri") String iri) {
         return withProject(
@@ -286,6 +327,7 @@ public class ProjectController {
                         ResponseEntity.ok(bus.execute(user, new GetClassFrame(projectId, entityIri(iri)))));
     }
 
+    @Operation(summary = "Update a class frame", operationId = "updateClassFrame")
     @PutMapping(path = "/{id}/frames/class", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateClassFrame(@PathVariable String id, @RequestBody UpdateClassFrame.Request body) {
         if (body == null || body.from() == null || body.to() == null) {
@@ -298,6 +340,7 @@ public class ProjectController {
         });
     }
 
+    @Operation(summary = "Read an object property frame", operationId = "getObjectPropertyFrame")
     @GetMapping("/{id}/frames/object-property")
     public ResponseEntity<?> objectPropertyFrame(@PathVariable String id, @RequestParam("iri") String iri) {
         return withProject(
@@ -306,6 +349,7 @@ public class ProjectController {
                         ResponseEntity.ok(bus.execute(user, new GetObjectPropertyFrame(projectId, entityIri(iri)))));
     }
 
+    @Operation(summary = "Update an object property frame", operationId = "updateObjectPropertyFrame")
     @PutMapping(path = "/{id}/frames/object-property", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateObjectPropertyFrame(
             @PathVariable String id, @RequestBody UpdateObjectPropertyFrame.Request body) {
@@ -319,6 +363,7 @@ public class ProjectController {
                                 .body()));
     }
 
+    @Operation(summary = "Read a data property frame", operationId = "getDataPropertyFrame")
     @GetMapping("/{id}/frames/data-property")
     public ResponseEntity<?> dataPropertyFrame(@PathVariable String id, @RequestParam("iri") String iri) {
         return withProject(
@@ -327,6 +372,7 @@ public class ProjectController {
                         ResponseEntity.ok(bus.execute(user, new GetDataPropertyFrame(projectId, entityIri(iri)))));
     }
 
+    @Operation(summary = "Update a data property frame", operationId = "updateDataPropertyFrame")
     @PutMapping(path = "/{id}/frames/data-property", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateDataPropertyFrame(
             @PathVariable String id, @RequestBody UpdateDataPropertyFrame.Request body) {
@@ -340,6 +386,7 @@ public class ProjectController {
                                 .body()));
     }
 
+    @Operation(summary = "Read an annotation property frame", operationId = "getAnnotationPropertyFrame")
     @GetMapping("/{id}/frames/annotation-property")
     public ResponseEntity<?> annotationPropertyFrame(@PathVariable String id, @RequestParam("iri") String iri) {
         return withProject(
@@ -348,6 +395,7 @@ public class ProjectController {
                         bus.execute(user, new GetAnnotationPropertyFrame(projectId, entityIri(iri)))));
     }
 
+    @Operation(summary = "Update an annotation property frame", operationId = "updateAnnotationPropertyFrame")
     @PutMapping(path = "/{id}/frames/annotation-property", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateAnnotationPropertyFrame(
             @PathVariable String id, @RequestBody UpdateAnnotationPropertyFrame.Request body) {
@@ -361,6 +409,7 @@ public class ProjectController {
                                 .body()));
     }
 
+    @Operation(summary = "Read a named individual frame", operationId = "getNamedIndividualFrame")
     @GetMapping("/{id}/frames/individual")
     public ResponseEntity<?> individualFrame(@PathVariable String id, @RequestParam("iri") String iri) {
         return withProject(
@@ -369,6 +418,7 @@ public class ProjectController {
                         ResponseEntity.ok(bus.execute(user, new GetNamedIndividualFrame(projectId, entityIri(iri)))));
     }
 
+    @Operation(summary = "Update a named individual frame", operationId = "updateNamedIndividualFrame")
     @PutMapping(path = "/{id}/frames/individual", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateIndividualFrame(
             @PathVariable String id, @RequestBody UpdateNamedIndividualFrame.Request body) {
@@ -382,6 +432,7 @@ public class ProjectController {
                                 .body()));
     }
 
+    @Operation(summary = "List individuals of a type", operationId = "listIndividualsByType")
     @GetMapping("/{id}/individuals")
     public ResponseEntity<?> individuals(
             @PathVariable String id,
@@ -394,6 +445,11 @@ public class ProjectController {
                         bus.execute(user, new ListIndividualsByType(projectId, entityIri(type), page, size))));
     }
 
+    @Operation(summary = "Create entities", operationId = "createEntities")
+    @ApiResponse(
+            responseCode = "201",
+            description = "Entities created",
+            content = @Content(mediaType = "application/json"))
     @PostMapping(path = "/{id}/entities", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createEntities(@PathVariable String id, @RequestBody CreateEntitiesRequest body) {
         if (body == null) {
@@ -412,6 +468,7 @@ public class ProjectController {
         });
     }
 
+    @Operation(summary = "Delete entities", operationId = "deleteEntities")
     @DeleteMapping(path = "/{id}/entities", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteEntities(@PathVariable String id, @RequestBody DeleteEntitiesRequest body) {
         if (body == null) {
@@ -423,6 +480,11 @@ public class ProjectController {
         });
     }
 
+    @Operation(summary = "Get project details", operationId = "getProject")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ProjectResponse.class)))
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable String id) {
         return withProject(id, (user, projectId) -> {
@@ -431,6 +493,11 @@ public class ProjectController {
         });
     }
 
+    @Operation(summary = "Update project details", operationId = "updateProject")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ProjectResponse.class)))
     @PatchMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> update(@PathVariable String id, @RequestBody UpdateProjectRequest body) {
         if (body == null) {
@@ -443,6 +510,11 @@ public class ProjectController {
         });
     }
 
+    @Operation(summary = "Move a project to trash", operationId = "trashProject")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ProjectResponse.class)))
     @PostMapping("/{id}/trash")
     public ResponseEntity<?> trash(@PathVariable String id) {
         return withProject(id, (user, projectId) -> {
@@ -451,6 +523,11 @@ public class ProjectController {
         });
     }
 
+    @Operation(summary = "Restore a project from trash", operationId = "restoreProject")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ProjectResponse.class)))
     @DeleteMapping("/{id}/trash")
     public ResponseEntity<?> restore(@PathVariable String id) {
         return withProject(id, (user, projectId) -> {

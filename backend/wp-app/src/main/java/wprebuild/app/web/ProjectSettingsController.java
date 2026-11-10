@@ -1,5 +1,11 @@
 package wprebuild.app.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.http.MediaType;
@@ -31,6 +37,7 @@ import wprebuild.kernel.id.UserId;
 /** Project settings and sharing. Permission is checked by {@link CommandBus}. */
 @RestController
 @RequestMapping("/api/projects")
+@Tag(name = "Project settings")
 public class ProjectSettingsController {
 
     private final CommandBus bus;
@@ -39,36 +46,67 @@ public class ProjectSettingsController {
         this.bus = Objects.requireNonNull(bus, "bus");
     }
 
+    @Operation(summary = "Read prefix settings", operationId = "getPrefixSettings")
     @GetMapping("/{id}/settings/prefixes")
     public ResponseEntity<?> prefixes(@PathVariable String id) {
         return read(id, ProjectSettingKeys.PREFIXES);
     }
 
+    @Operation(
+            summary = "Replace prefix settings",
+            operationId = "putPrefixSettings",
+            requestBody =
+                    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                            required = true,
+                            content = @Content(mediaType = "application/json", schema = @Schema(type = "object"))))
     @PutMapping(path = "/{id}/settings/prefixes", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> putPrefixes(@PathVariable String id, @RequestBody JsonNode body) {
         return write(id, ProjectSettingKeys.PREFIXES, body);
     }
 
+    @Operation(summary = "Read new-entity settings", operationId = "getNewEntitySettings")
     @GetMapping("/{id}/settings/new-entity")
     public ResponseEntity<?> newEntity(@PathVariable String id) {
         return read(id, ProjectSettingKeys.NEW_ENTITY);
     }
 
+    @Operation(
+            summary = "Replace new-entity settings",
+            operationId = "putNewEntitySettings",
+            requestBody =
+                    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                            required = true,
+                            content = @Content(mediaType = "application/json", schema = @Schema(type = "object"))))
     @PutMapping(path = "/{id}/settings/new-entity", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> putNewEntity(@PathVariable String id, @RequestBody JsonNode body) {
         return write(id, ProjectSettingKeys.NEW_ENTITY, body);
     }
 
+    @Operation(summary = "Read display-name settings", operationId = "getDisplayNameSettings")
     @GetMapping("/{id}/settings/display-names")
     public ResponseEntity<?> displayNames(@PathVariable String id) {
         return read(id, ProjectSettingKeys.DISPLAY_NAMES);
     }
 
+    @Operation(
+            summary = "Replace display-name settings",
+            operationId = "putDisplayNameSettings",
+            requestBody =
+                    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                            required = true,
+                            content = @Content(mediaType = "application/json", schema = @Schema(type = "object"))))
     @PutMapping(path = "/{id}/settings/display-names", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> putDisplayNames(@PathVariable String id, @RequestBody JsonNode body) {
         return write(id, ProjectSettingKeys.DISPLAY_NAMES, body);
     }
 
+    @Operation(summary = "List project members", operationId = "listProjectMembers")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = MemberResponse.class))))
     @GetMapping("/{id}/members")
     public ResponseEntity<?> members(@PathVariable String id) {
         return withProject(id, (user, projectId) -> {
@@ -77,6 +115,10 @@ public class ProjectSettingsController {
         });
     }
 
+    @Operation(summary = "Set a project member's role", operationId = "putProjectMember")
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = MemberResponse.class)))
     @PutMapping(path = "/{id}/members/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> putMember(
             @PathVariable String id, @PathVariable String userId, @RequestBody RoleRequest body) {
@@ -95,6 +137,8 @@ public class ProjectSettingsController {
         });
     }
 
+    @Operation(summary = "Remove a project member", operationId = "deleteProjectMember")
+    @ApiResponse(responseCode = "204", description = "Member removed", content = @Content)
     @DeleteMapping("/{id}/members/{userId}")
     public ResponseEntity<?> deleteMember(@PathVariable String id, @PathVariable String userId) {
         return withProject(id, (user, projectId) -> {

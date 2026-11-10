@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: api-contract
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-09, P3-10, P3-11, P3-12, P3-17, P3-18, P3-19, P3-20, P3-21, P3-22, P3-25, P3-26]
 ---
 
@@ -43,10 +43,18 @@ depends_on: [P3-09, P3-10, P3-11, P3-12, P3-17, P3-18, P3-19, P3-20, P3-21, P3-2
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 前端工程本身（P4）
+
+## 执行记录
+- 日期：2026-11-10
+- 分支：feature/p3-23-openapi-contract
+- 测试：2026-11-10T22:13:41+08:00 通过（3 项）
+- 实际改动：Added springdoc 3.2.0, a committed OpenAPI snapshot at docs/api/openapi.json, OpenApiContractTest, and @Operation/@Tag on controllers with ProblemDetail as the shared RFC 9457 error model.
+- 偏差：GET frame, hierarchy, search, and revision success bodies stay untyped in the snapshot because web cannot import ontology.dto or ontology.frame. Named @Schema on Update*Frame.Request records instead so ClassFrame and EntityNode still appear as distinct schemas.
+- 审查：code-reviewer, java-reviewer

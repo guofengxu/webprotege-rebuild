@@ -1,5 +1,6 @@
 package wprebuild.app.ontology;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import wprebuild.app.bus.Command;
 import wprebuild.app.ontology.frame.AnnotationPropertyFrame;
@@ -24,5 +25,6 @@ public record UpdateAnnotationPropertyFrame(
     }
 
     /** JSON body of {@code PUT /api/projects/{id}/frames/annotation-property}. */
+    @Schema(name = "UpdateAnnotationPropertyFrameRequest")
     public record Request(AnnotationPropertyFrame from, AnnotationPropertyFrame to) {}
 }

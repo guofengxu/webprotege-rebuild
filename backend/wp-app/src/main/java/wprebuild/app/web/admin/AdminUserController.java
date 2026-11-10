@@ -1,5 +1,10 @@
 package wprebuild.app.web.admin;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import java.util.EnumSet;
 import java.util.List;
@@ -30,6 +35,7 @@ import wprebuild.kernel.id.UserId;
 /** Administrator account operations. Permission is checked by {@link CommandBus}. */
 @RestController
 @RequestMapping("/api/admin/users")
+@Tag(name = "Admin")
 public class AdminUserController {
 
     private final CommandBus bus;
@@ -38,6 +44,10 @@ public class AdminUserController {
         this.bus = Objects.requireNonNull(bus, "bus");
     }
 
+    @Operation(summary = "List user accounts", operationId = "listUsers")
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AdminUserPage.class)))
     @GetMapping
     public ResponseEntity<?> list(
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -54,6 +64,13 @@ public class AdminUserController {
         }
     }
 
+    @Operation(summary = "Create a user account", operationId = "createUser")
+    @ApiResponse(
+            responseCode = "201",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AdminUserResponse.class)))
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> create(@RequestBody CreateUserRequest body) {
         UserId caller = currentUser();
@@ -74,6 +91,8 @@ public class AdminUserController {
         }
     }
 
+    @Operation(summary = "Reset a user's password", operationId = "resetUserPassword")
+    @ApiResponse(responseCode = "204", description = "Password reset", content = @Content)
     @PutMapping(path = "/{userId}/password", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> resetPassword(@PathVariable String userId, @RequestBody ResetPasswordRequest body) {
         UserId caller = currentUser();
@@ -91,6 +110,13 @@ public class AdminUserController {
         }
     }
 
+    @Operation(summary = "Replace a user's application roles", operationId = "setUserAppRoles")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AdminUserResponse.class)))
     @PutMapping(path = "/{userId}/app-roles", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> setRoles(@PathVariable String userId, @RequestBody SetAppRolesRequest body) {
         UserId caller = currentUser();

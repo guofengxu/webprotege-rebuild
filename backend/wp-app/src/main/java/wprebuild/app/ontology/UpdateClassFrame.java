@@ -1,5 +1,6 @@
 package wprebuild.app.ontology;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import org.semanticweb.owlapi.model.IRI;
 import wprebuild.app.bus.Command;
@@ -32,6 +33,7 @@ public record UpdateClassFrame(ProjectId projectId, ClassFrame from, ClassFrame 
     }
 
     /** JSON body of {@code PUT /api/projects/{id}/frames/class}. The project id stays in the path. */
+    @Schema(name = "UpdateClassFrameRequest")
     public record Request(ClassFrame from, ClassFrame to) {}
 
     /** Updated frame and the project head after the command. */
