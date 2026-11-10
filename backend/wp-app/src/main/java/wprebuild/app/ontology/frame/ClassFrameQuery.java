@@ -87,8 +87,17 @@ public final class ClassFrameQuery {
             if (handle.runtime().isCorrupted()) {
                 throw new IllegalStateException("project runtime is corrupted: " + projectId);
             }
-            return read(handle.runtime(), iri);
+            return frame(handle.runtime(), iri);
         });
+    }
+
+    /**
+     * Reads one class frame. The caller already holds the project read lock or the generation lock.
+     */
+    ClassFrame frame(ProjectRuntime runtime, IRI iri) {
+        Objects.requireNonNull(runtime, "runtime");
+        Objects.requireNonNull(iri, "iri");
+        return read(runtime, iri);
     }
 
     private ClassFrame read(ProjectRuntime runtime, IRI iri) {
