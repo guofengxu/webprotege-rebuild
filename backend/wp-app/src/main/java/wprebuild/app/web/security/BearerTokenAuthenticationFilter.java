@@ -49,6 +49,15 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
                 && (value.length() == SCHEME.length() || Character.isWhitespace(value.charAt(SCHEME.length())));
     }
 
+    /**
+     * Long poll and SSE resume on an async dispatch. This token is not stored in the session, so the dispatch
+     * has to authenticate the header again or {@code AuthorizationFilter} treats the caller as anonymous.
+     */
+    @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+        return false;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {

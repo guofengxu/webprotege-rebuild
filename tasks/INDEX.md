@@ -2,12 +2,12 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 70 张卡：完成 65，进行中 0，阻塞 0，待办 5。
+共 70 张卡：完成 66，进行中 0，阻塞 0，待办 4。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P3-24](P3/P3-24-backend-acceptance.md) 后端端到端验收（里程碑 M3）
 - [P3-27](P3/P3-27-frontend-workspace-api-types.md) 前端 pnpm 工作区与共享 API 类型包
+- [P6-00](P6/P6-00-extensions-planning.md) 规划卡：按优先级细化扩展功能
 
 ## P0
 
@@ -91,7 +91,7 @@
 | [P3-21](P3/P3-21-events-sse.md) | 高层事件推送：SSE 与长轮询（BS-11） | wp-app/events, web | app-service | M | 完成 | P3-03、P3-06 |
 | [P3-22](P3/P3-22-project-settings-sharing.md) | 项目设置与共享（角色分配）API | wp-app/project, ontology, access, web | app-service | M | 完成 | P3-14、P3-06 |
 | [P3-23](P3/P3-23-openapi-contract.md) | OpenAPI 契约快照与 TypeScript 客户端生成 | wp-app/web | api-contract | S | 完成 | P3-09、P3-10、P3-11、P3-12、P3-17、P3-18、P3-19、P3-20、P3-21、P3-22、P3-25、P3-26 |
-| [P3-24](P3/P3-24-backend-acceptance.md) | 后端端到端验收（里程碑 M3） | wp-app | app-service | S | 待办（可开工） | P3-23 |
+| [P3-24](P3/P3-24-backend-acceptance.md) | 后端端到端验收（里程碑 M3） | wp-app | app-service | S | 完成 | P3-23 |
 | [P3-25](P3/P3-25-admin-user-management.md) | 管理员的用户管理 API | wp-app/web（admin 子包） | app-security | S | 完成 | P3-07 |
 | [P3-26](P3/P3-26-mobile-access-tokens.md) | 移动端访问令牌与 CORS | wp-app/access, web | app-security | M | 完成 | P3-05 |
 | [P3-27](P3/P3-27-frontend-workspace-api-types.md) | 前端 pnpm 工作区与共享 API 类型包 | root, packages/api-types | frontend-workspace | S | 待办（可开工） | P3-23 |
@@ -112,6 +112,6 @@
 
 | ID | 标题 | 模块 | 类型 | 规模 | 状态 | 依赖 |
 |---|---|---|---|---|---|---|
-| [P6-00](P6/P6-00-extensions-planning.md) | 规划卡：按优先级细化扩展功能 | tasks/P6 | planning | S | 待办 | P3-24 |
+| [P6-00](P6/P6-00-extensions-planning.md) | 规划卡：按优先级细化扩展功能 | tasks/P6 | planning | S | 待办（可开工） | P3-24 |
 
 各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`。
