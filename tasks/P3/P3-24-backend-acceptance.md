@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: app-service
 ecc_extra: [milestone]
-status: todo
+status: done
 depends_on: [P3-23]
 ---
 
@@ -44,11 +44,19 @@ depends_on: [P3-23]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] M2 中的真实项目已导入新系统，并通过 IC-7、IC-8（结果写入 `m3-acceptance.md`）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] M2 中的真实项目已导入新系统，并通过 IC-7、IC-8（结果写入 `m3-acceptance.md`）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 前端
+
+## 执行记录
+- 日期：2026-11-11
+- 分支：feature/p3-24-backend-acceptance
+- 测试：2026-11-11T04:51:27+08:00 通过（3 项）
+- 实际改动：新增 BackendAcceptanceTest 与 docs/03-plan/m3-acceptance.md。脚本用 RestClient 走完管理员建用户、上传 warehouse-sample.ttl、授权、API Key 长轮询、创建周转托盘、英文标签、搜索、修订历史、回滚、下载和回收站，以及移动端令牌换发。API Key 与 Bearer 不进会话，长轮询异步派发会变成匿名请求，所以这两个过滤器在异步派发上再认证一次。2026-11-11 导入 P2-05 的真实迁移包：4 个项目、3 条修订、1 个新用户、9 条警告，IC-7 与 IC-8 通过。差距（brownfield，不另建文档）：默认搜索只索引无语言 rdfs:label，验收因此先写入 en；未能导出的项目 0a3eaa4c 不在包内；真实包不在仓库里；无法识别的实体创建套件回落到 UUID；事件订阅用长轮询而不是 SSE。
+- 偏差：场景一用 API Key 长轮询订阅事件，没有打开 SSE。搜索前把 rdfs:label 的 en 写入显示名称设置。真实包只含 P2-05 verify 通过的 4 个项目。
+- 审查：java-reviewer, code-reviewer

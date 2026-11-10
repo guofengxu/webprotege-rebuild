@@ -42,6 +42,15 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
         return header != null && !header.isBlank();
     }
 
+    /**
+     * SSE resumes on an async dispatch. The key is not stored in the session, so the dispatch has to authenticate
+     * the header again or {@code AuthorizationFilter} treats the caller as anonymous.
+     */
+    @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+        return false;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {

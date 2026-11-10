@@ -78,7 +78,7 @@ flowchart LR
         P3_21["P3-21"]:::done
         P3_22["P3-22"]:::done
         P3_23["P3-23"]:::done
-        P3_24["P3-24"]:::todo
+        P3_24["P3-24"]:::done
         P3_25["P3-25"]:::done
         P3_26["P3-26"]:::done
         P3_27["P3-27"]:::todo
