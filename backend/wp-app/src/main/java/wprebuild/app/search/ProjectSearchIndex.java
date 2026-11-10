@@ -83,6 +83,9 @@ public final class ProjectSearchIndex {
 
     static final String REVISION = "revision";
 
+    /** Display-name list used when the commit was written. A change forces a full rebuild. */
+    static final String NAMES = "names";
+
     private static final String ID = "id";
 
     private static final String IRI_FIELD = "iri";
@@ -172,7 +175,8 @@ public final class ProjectSearchIndex {
         try {
             List<DisplayNameSetting> names = nameSettings(projectId);
             Path path = directories.indexDirectory(projectId);
-            if (storedRevision(path) != runtime.head().value()) {
+            if (storedRevision(path) != runtime.head().value()
+                    || !namesKey(names).equals(storedNames(path))) {
                 withWriter(path, names, writer -> rebuild(projectId, runtime, writer, names));
             }
             return hierarchy.nodes(runtime, hits(path, runtime, names, query, types, limit));
@@ -201,10 +205,11 @@ public final class ProjectSearchIndex {
             throws IOException {
         long stored = revisionOf(writer.getDirectory());
         long head = revision.number().value();
-        if (stored == head) {
+        boolean namesChanged = !namesKey(names).equals(storedNames(writer.getDirectory()));
+        if (stored == head && !namesChanged) {
             return;
         }
-        if (stored != head - 1) {
+        if (stored != head - 1 || namesChanged) {
             rebuild(projectId, runtime, writer, names);
             return;
         }
@@ -216,7 +221,7 @@ public final class ProjectSearchIndex {
                 writer.deleteDocuments(id);
             }
         }
-        commit(writer, head);
+        commit(writer, head, namesKey(names));
     }
 
     private void rebuild(
@@ -226,7 +231,7 @@ public final class ProjectSearchIndex {
         for (OWLEntity entity : runtime.ontologies().signature().toList()) {
             writer.addDocument(document(runtime, names, entity));
         }
-        commit(writer, runtime.head().value());
+        commit(writer, runtime.head().value(), namesKey(names));
         log.info(
                 "rebuilt search index for {} at revision {}",
                 projectId,
@@ -412,9 +417,43 @@ public final class ProjectSearchIndex {
         return values;
     }
 
-    private static void commit(IndexWriter writer, long revision) throws IOException {
-        writer.setLiveCommitData(List.of(Map.entry(REVISION, Long.toString(revision))));
+    private static void commit(IndexWriter writer, long revision, String namesKey) throws IOException {
+        writer.setLiveCommitData(List.of(Map.entry(REVISION, Long.toString(revision)), Map.entry(NAMES, namesKey)));
         writer.commit();
+    }
+
+    private static String namesKey(List<DisplayNameSetting> names) {
+        StringBuilder out = new StringBuilder();
+        for (DisplayNameSetting name : names) {
+            out.append(name.annotationProperty())
+                    .append('\n')
+                    .append(name.lang())
+                    .append('\n');
+        }
+        return out.toString();
+    }
+
+    private static String storedNames(Path path) throws IOException {
+        if (!Files.isDirectory(path)) {
+            return "";
+        }
+        try (Directory directory = FSDirectory.open(path)) {
+            return storedNames(directory);
+        }
+    }
+
+    private static String storedNames(Directory directory) throws IOException {
+        final List<IndexCommit> commits;
+        try {
+            commits = DirectoryReader.listCommits(directory);
+        } catch (IndexNotFoundException ex) {
+            return "";
+        }
+        if (commits.isEmpty()) {
+            return "";
+        }
+        String raw = commits.get(commits.size() - 1).getUserData().get(NAMES);
+        return raw == null ? "" : raw;
     }
 
     private static long storedRevision(Path path) throws IOException {

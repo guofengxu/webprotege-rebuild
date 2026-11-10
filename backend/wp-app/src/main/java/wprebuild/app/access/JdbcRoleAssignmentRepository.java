@@ -57,6 +57,15 @@ public class JdbcRoleAssignmentRepository {
         }
     }
 
+    /** Locks the project's role rows so the last-manager check and the write stay together. */
+    public void lock(ProjectId projectId) {
+        Objects.requireNonNull(projectId, "project id");
+        jdbc.sql("select user_id from role_assignments where project_id = ? for update")
+                .param(projectId.value())
+                .query((rs, row) -> rs.getString("user_id"))
+                .list();
+    }
+
     public void remove(ProjectId projectId, UserId userId) {
         Objects.requireNonNull(projectId, "project id");
         Objects.requireNonNull(userId, "user id");

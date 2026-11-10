@@ -2,7 +2,6 @@ package wprebuild.app.ontology;
 
 import java.time.Clock;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
@@ -37,8 +36,6 @@ import wprebuild.kernel.shortform.DisplayNameView;
 public final class ProjectRuntimeFactory {
 
     private static final Clock CLOCK = Clock.systemUTC();
-
-    private static final PrefixedNameExpander PREFIXES = new PrefixedNameExpander(Map.of());
 
     private final RevisionLog revisionLog;
 
@@ -98,9 +95,11 @@ public final class ProjectRuntimeFactory {
     }
 
     private FreshIriMinter minter(ProjectId projectId) {
-        // Custom prefixes arrive with project settings (P3-22). BS-05 checks create permission while minting.
+        // Suppliers read the current rows, so a settings change applies to the next minted IRI (BS-06).
         return new DefaultFreshIriMinter(
-                new KitEntityCreator(() -> settings.newEntitySettings(projectId), () -> PREFIXES),
+                new KitEntityCreator(
+                        () -> settings.newEntitySettings(projectId),
+                        () -> new PrefixedNameExpander(settings.prefixes(projectId))),
                 (user, type) -> canCreate(user, projectId, type));
     }
 

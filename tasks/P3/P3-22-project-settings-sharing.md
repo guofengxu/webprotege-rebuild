@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P3-14, P3-06]
 ---
 
@@ -45,10 +45,18 @@ depends_on: [P3-14, P3-06]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 用户邀请邮件
+
+## 执行记录
+- 日期：2026-11-10
+- 分支：feature/p3-22-project-settings-sharing
+- 测试：2026-11-10T17:00:03+08:00 通过（3 项）
+- 实际改动：项目设置三个键用 Jackson 写入 project_settings。管理员可以改前缀、新实体规则和显示语言，并增删成员；不能移除最后一个 CAN_MANAGE。显示语言在事务提交后重建视图，搜索索引在名称列表变化时整库重建，并通知客户端 resync。
+- 偏差：生产代码明显超过卡片预期的 400 行，主要因为设置 JSON 必须手写为与迁移包一致的形状，不能用内核记录的默认 Jackson 视图。查看成员需要 EDIT_SHARING_SETTINGS，与旧工程的共享读取权限一致。显示语言变化还会让 Lucene 索引按新的显示名列表重建。
+- 审查：java-reviewer, code-reviewer, security-reviewer
