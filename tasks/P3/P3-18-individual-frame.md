@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: app-service
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P3-17]
 ---
 
@@ -45,10 +45,18 @@ depends_on: [P3-17]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 推理得到的类型
+
+## 执行记录
+- 日期：2026-11-10
+- 分支：feature/p3-18-individual-frame
+- 测试：2026-11-10T10:50:28+08:00 通过（3 项）
+- 实际改动：新增具名个体 Frame 的读取与更新，以及按类分页列出直接个体。编辑按 from 与 to 的公理差量写入，当前 Frame 已变时返回 409 FRAME_CHANGED。
+- 偏差：生产代码约 786 行（不含测试），高于 S 卡预期的 200 行。读取、toAxioms、更新生成器、REST 和按类分页都是卡片要求的产出。三个及以上个体的 SameIndividual 只出现在 otherAxioms，不参与写入，避免差量无法删除原公理。直接个体只统计该类自身的类断言，不包含子类个体，也不把 owl:Thing 展开成未声明类型的全部个体。推理类型不读取。
+- 审查：java-reviewer, code-reviewer
