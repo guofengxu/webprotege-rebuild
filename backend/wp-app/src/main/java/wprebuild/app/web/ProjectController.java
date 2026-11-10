@@ -46,10 +46,14 @@ import wprebuild.app.ontology.GetHierarchyRoots;
 import wprebuild.app.ontology.GetNamedIndividualFrame;
 import wprebuild.app.ontology.GetObjectPropertyFrame;
 import wprebuild.app.ontology.GetProjectDownload;
+import wprebuild.app.ontology.GetRevisionDiff;
 import wprebuild.app.ontology.HierarchyKind;
 import wprebuild.app.ontology.ImportOntologyFromUpload;
+import wprebuild.app.ontology.ListEntityRevisions;
 import wprebuild.app.ontology.ListIndividualsByType;
+import wprebuild.app.ontology.ListRevisions;
 import wprebuild.app.ontology.ProjectDownload;
+import wprebuild.app.ontology.RevertRevision;
 import wprebuild.app.ontology.UpdateAnnotationPropertyFrame;
 import wprebuild.app.ontology.UpdateClassFrame;
 import wprebuild.app.ontology.UpdateDataPropertyFrame;
@@ -71,8 +75,8 @@ import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
 
 /**
- * Project lifecycle, hierarchy queries, entity search, frames, and edits. Permission is checked by
- * {@link CommandBus}.
+ * Project lifecycle, hierarchy queries, entity search, frames, edits, and revision history.
+ * Permission is checked by {@link CommandBus}.
  */
 @RestController
 @RequestMapping("/api/projects")
@@ -219,6 +223,47 @@ public class ProjectController {
                 id,
                 (user, projectId) -> ResponseEntity.ok(bus.execute(
                         user, new GetHierarchyPaths(projectId, HierarchyKind.parse(kind), entityIri(entity)))));
+    }
+
+    @GetMapping("/{id}/revisions")
+    public ResponseEntity<?> revisions(
+            @PathVariable String id,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "50") int size) {
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(bus.execute(user, new ListRevisions(projectId, page, size))));
+    }
+
+    @GetMapping("/{id}/revisions/{rev}")
+    public ResponseEntity<?> revision(
+            @PathVariable String id,
+            @PathVariable long rev,
+            @RequestParam(name = "limit", defaultValue = "200") int limit) {
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(
+                        bus.execute(user, new GetRevisionDiff(projectId, RevisionNumber.of(rev), limit))));
+    }
+
+    @PostMapping("/{id}/revisions/{rev}/revert")
+    public ResponseEntity<?> revert(@PathVariable String id, @PathVariable long rev) {
+        return withProject(id, (user, projectId) -> {
+            RevisionNumber created = bus.execute(user, new RevertRevision(projectId, RevisionNumber.of(rev)));
+            return ResponseEntity.ok(new RevisionResponse(created.value()));
+        });
+    }
+
+    @GetMapping("/{id}/entities/history")
+    public ResponseEntity<?> entityHistory(
+            @PathVariable String id,
+            @RequestParam("iri") String iri,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "50") int size) {
+        return withProject(
+                id,
+                (user, projectId) -> ResponseEntity.ok(
+                        bus.execute(user, new ListEntityRevisions(projectId, entityIri(iri), page, size))));
     }
 
     @GetMapping("/{id}/search")

@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-08, P1-15]
 ---
 
@@ -47,10 +47,18 @@ depends_on: [P3-08, P1-15]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 两个任意修订之间的比较
+
+## 执行记录
+- 日期：2026-11-10
+- 分支：feature/p3-20-revision-history
+- 测试：2026-11-10T13:16:59+08:00 通过（3 项）
+- 实际改动：增加修订历史、实体历史和回滚 API。列表只读 revisions 与 revision_subjects 的元数据；差异按主语分组并用 Manchester 语法渲染；回滚走 RevertRevisionGenerator，含 DeclareOntology 的修订返回 409。
+- 偏差：生产代码约 970 行，超过卡片 400 行预期。四个命令、元数据查询、差异渲染和 REST 都在本卡产出内，没有扩大范围。
+- 审查：java-reviewer, code-reviewer
