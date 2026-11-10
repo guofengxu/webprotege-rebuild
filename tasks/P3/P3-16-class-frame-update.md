@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P3-15, P3-14]
 ---
 
@@ -44,10 +44,18 @@ depends_on: [P3-15, P3-14]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - Manchester 语法编辑（P6）
+
+## 执行记录
+- 日期：2026-11-09
+- 分支：feature/p3-16-class-frame-update
+- 测试：2026-11-09T22:42:22+08:00 通过（3 项）
+- 实际改动：新增类 Frame 更新：按 from 与 to 的公理差量写入，当前 Frame 已变时返回 409 FRAME_CHANGED。
+- 偏差：UpdateClassFrame 放在 ontology 根包，web 不依赖 frame 子包。删除时按忽略公理注解匹配已存储的公理。生产代码约 500 行，高于卡片预期的 400 行，主要是注解、父类和三种限制的逆转换。
+- 审查：java-reviewer, code-reviewer

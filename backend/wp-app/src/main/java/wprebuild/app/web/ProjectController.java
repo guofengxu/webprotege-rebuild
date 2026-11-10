@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,6 +45,7 @@ import wprebuild.app.ontology.GetProjectDownload;
 import wprebuild.app.ontology.HierarchyKind;
 import wprebuild.app.ontology.ImportOntologyFromUpload;
 import wprebuild.app.ontology.ProjectDownload;
+import wprebuild.app.ontology.UpdateClassFrame;
 import wprebuild.app.ontology.UploadProperties;
 import wprebuild.app.project.GetProjectDetails;
 import wprebuild.app.project.ListMyProjects;
@@ -211,6 +213,18 @@ public class ProjectController {
                 id,
                 (user, projectId) ->
                         ResponseEntity.ok(bus.execute(user, new GetClassFrame(projectId, entityIri(iri)))));
+    }
+
+    @PutMapping(path = "/{id}/frames/class", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateClassFrame(@PathVariable String id, @RequestBody UpdateClassFrame.Request body) {
+        if (body == null || body.from() == null || body.to() == null) {
+            return invalid("request body is required");
+        }
+        return withProject(id, (user, projectId) -> {
+            UpdateClassFrame.Result updated =
+                    bus.execute(user, new UpdateClassFrame(projectId, body.from(), body.to()));
+            return ResponseEntity.ok(updated.body());
+        });
     }
 
     @PostMapping(path = "/{id}/entities", consumes = MediaType.APPLICATION_JSON_VALUE)
