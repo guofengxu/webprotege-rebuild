@@ -10,6 +10,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -101,6 +102,19 @@ public final class ProjectRuntimeRegistry implements DisposableBean {
             throw new IllegalStateException("reloaded project runtime is corrupted: " + projectId);
         }
         return reloaded;
+    }
+
+    /**
+     * The loaded runtime, if any. Does not load or retire a project, so the write thread can read
+     * view deltas without replacing the instance it is still updating.
+     */
+    public Optional<ProjectHandle> peek(ProjectId projectId) {
+        Objects.requireNonNull(projectId, "project id");
+        ProjectHandle handle = cache.getIfPresent(projectId);
+        if (handle == null || handle.runtime().isCorrupted()) {
+            return Optional.empty();
+        }
+        return Optional.of(handle);
     }
 
     public void evict(ProjectId projectId) {

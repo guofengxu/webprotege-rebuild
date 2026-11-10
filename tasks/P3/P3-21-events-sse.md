@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P3-03, P3-06]
 ---
 
@@ -47,11 +47,19 @@ depends_on: [P3-03, P3-06]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 评论、关注等 P6 事件
 - WebSocket
+
+## 执行记录
+- 日期：2026-11-10
+- 分支：feature/p3-21-events-sse
+- 测试：2026-11-10T14:48:27+08:00 通过（3 项）
+- 实际改动：已提交修订在生成锁内翻译成 BS-11 事件，按修订号经 SSE 和长轮询推送；静默修订只发 ProjectChanged，角色变更发 PermissionsChanged。
+- 偏差：生产代码约 1400 行，超过 M 卡 400 行预期，主要是五个事件 record 的校验和环形缓冲。access 新增 RoleAssignmentsChanged(ProjectId)，由本卡监听，P3-22 再发布。审查后改为单线程按提交顺序投递，已追上的长轮询能收到权限事件，翻译失败会通知客户端 resync，写线程用 peek 读取视图增量。
+- 审查：java-reviewer, code-reviewer, silent-failure-hunter
