@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-13]
 ---
 
@@ -46,11 +46,19 @@ depends_on: [P3-13]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 跨项目搜索
 - 按注解值全文检索
+
+## 执行记录
+- 日期：2026-11-10
+- 分支：feature/p3-19-search
+- 测试：2026-11-10T11:58:27+08:00 通过（3 项）
+- 实际改动：每个项目一个 Lucene 索引，中文用 CJK 二元组、英文用前缀匹配；修订提交后增量更新，索引落后或目录被删时从运行时重建。GET /api/projects/{id}/search 返回按相关度排序的 EntityNode。
+- 偏差：生产代码超过 M 卡 400 行预期。查询按分析器词元做合取，不用 QueryParser.parse，以避免 AND/OR 和中文二元组误命中；lucene-queryparser 仍按卡片声明为依赖。ontology.dto 标为 NamedInterface，search 的允许依赖和 overview 增加 ontology :: dto，以便返回 EntityNode。
+- 审查：java-reviewer, code-reviewer
