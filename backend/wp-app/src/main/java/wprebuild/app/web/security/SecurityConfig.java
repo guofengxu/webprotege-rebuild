@@ -8,11 +8,13 @@ import java.util.List;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -48,6 +50,7 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Order(0)
     SecurityFilterChain apiSecurity(
             HttpSecurity http,
             CookieCsrfTokenRepository csrfTokens,
@@ -86,6 +89,23 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .requestCache(cache -> cache.disable());
+        return http.build();
+    }
+
+    /**
+     * Pages outside {@code /api/**} are static GET. They stay anonymous, but they still need the default
+     * clickjacking and content-type headers. Cache-Control is left to the resource handler so {@code index.html}
+     * can be revalidated and hashed {@code assets/*} can be cached.
+     */
+    @Bean
+    @Order(1)
+    SecurityFilterChain staticContent(HttpSecurity http) throws Exception {
+        http.securityMatcher("/**")
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable)
+                .requestCache(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers.cacheControl(cache -> cache.disable()));
         return http.build();
     }
 
