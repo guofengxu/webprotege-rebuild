@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-01]
 ---
 
@@ -76,13 +76,21 @@ pnpm -C frontend --filter wp-web exec vitest run src/shared/api/client.spec.ts s
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 代码中没有手写的请求或响应类型
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 代码中没有手写的请求或响应类型
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 登录页、当前用户、路由守卫、401 跳转（P4-25）
 - 顶部栏、用户菜单、语言切换（P4-03）
 - 移动端访问令牌（`issueAccessTokens` 等，P5）
+
+## 执行记录
+- 日期：2026-11-11
+- 分支：feature/p4-02-api-client-auth
+- 测试：2026-11-11T16:36:05+08:00 通过（4 项）
+- 实际改动：为 wp-web 加上 openapi-fetch 客户端、CSRF 头、ProblemDetail 错误文案、集中查询键、Vue Query 默认配置，以及后续卡片共用的假 fetch 和挂载工具。pnpm 允许 vue-demi 的安装脚本，以便 Vue Query 选中 Vue 3。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect

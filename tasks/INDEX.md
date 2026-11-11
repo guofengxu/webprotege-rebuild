@@ -2,13 +2,13 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 99 张卡：完成 69，进行中 0，阻塞 0，待办 30。
+共 99 张卡：完成 70，进行中 0，阻塞 0，待办 29。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P4-02](P4/P4-02-api-client-auth.md) API 客户端、CSRF、ProblemDetail 错误处理、查询键、Vue Query 全局配置与测试支持
 - [P4-16](P4/P4-16-single-jar-packaging.md) 单包打包：wp-app 的 with-web profile 把 wp-web 的 dist 打进可执行 jar，SPA 路由回退
 - [P4-18](P4/P4-18-openapi-response-schemas.md) 补齐 OpenAPI 中无类型的成功响应（层级、Frame、搜索、修订、个体、设置、事件）并重新生成 @wp/api-types
+- [P4-25](P4/P4-25-auth-login.md) 登录页、当前用户、路由守卫与 401 统一跳转
 - [P5-00](P5/P5-00-mobile-planning.md) 规划卡：细化移动端（uni-app）MVP 任务卡
 - [P6-00](P6/P6-00-extensions-planning.md) 规划卡：按优先级细化扩展功能
 
@@ -105,7 +105,7 @@
 |---|---|---|---|---|---|---|
 | [P4-00](P4/P4-00-web-frontend-planning.md) | 规划卡：细化 Web 端（Vue）MVP 任务卡 | tasks/P4 | planning | S | 完成 | P3-24、P3-27 |
 | [P4-01](P4/P4-01-web-skeleton.md) | wp-web 工程骨架：Vue 3.5 + Vite 8 + TypeScript strict + ESLint + Vitest + Playwright | wp-web | web | S | 完成 | P3-27 |
-| [P4-02](P4/P4-02-api-client-auth.md) | API 客户端、CSRF、ProblemDetail 错误处理、查询键、Vue Query 全局配置与测试支持 | wp-web | web | M | 待办（可开工） | P4-01 |
+| [P4-02](P4/P4-02-api-client-auth.md) | API 客户端、CSRF、ProblemDetail 错误处理、查询键、Vue Query 全局配置与测试支持 | wp-web | web | M | 完成 | P4-01 |
 | [P4-03](P4/P4-03-layout-theme-i18n.md) | 主布局与顶部栏、Element Plus 主题与设计令牌、zh-CN / en-US 界面语言切换 | wp-web | web | M | 待办 | P4-25 |
 | [P4-04](P4/P4-04-project-list.md) | 项目列表：新建空项目、上传导入（进度与错误展示）、回收站 | wp-web | web | M | 待办 | P4-03 |
 | [P4-05](P4/P4-05-project-workspace.md) | 项目工作台：项目外壳路由、左侧层级面板与右侧详情面板、URL 保存选中状态 | wp-web | web | M | 待办 | P4-03 |
@@ -128,7 +128,7 @@
 | [P4-22](P4/P4-22-frame-editor-foundation.md) | Frame 编辑机制：useFrameEditor（from / to 与 409 冲突）、保存栏、校验约定、标题与其它公理分区 | wp-web | web | M | 待办 | P4-05、P4-18 |
 | [P4-23](P4/P4-23-individual-frame-editor.md) | 个体 Frame 编辑器：类型、对象属性断言、数据属性断言、同一个体 | wp-web | web | M | 待办 | P4-22、P4-26 |
 | [P4-24](P4/P4-24-project-members.md) | 项目成员管理：列出成员、添加成员、修改角色、移除成员 | wp-web | web | M | 待办 | P4-15 |
-| [P4-25](P4/P4-25-auth-login.md) | 登录页、当前用户、路由守卫与 401 统一跳转 | wp-web | web | M | 待办 | P4-02 |
+| [P4-25](P4/P4-25-auth-login.md) | 登录页、当前用户、路由守卫与 401 统一跳转 | wp-web | web | M | 待办（可开工） | P4-02 |
 | [P4-26](P4/P4-26-frame-inputs.md) | Frame 输入组件：实体选择器（含内置实体）、实体引用列表、字面量输入、注解编辑器 | wp-web | web | M | 待办 | P4-22 |
 | [P4-27](P4/P4-27-entity-naming-settings.md) | 项目设置：新实体的 IRI 生成规则与显示语言（显示名称设置） | wp-web | web | M | 待办 | P4-15、P4-26 |
 | [P4-28](P4/P4-28-admin-user-roles-password.md) | 用户管理（系统管理员）：修改应用角色、重置密码 | wp-web | web | S | 待办 | P4-21 |
