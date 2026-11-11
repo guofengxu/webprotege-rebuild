@@ -9,6 +9,8 @@ allowBuilds:
   core-js: true
   core-js-pure: true
   esbuild: true
+  # @tanstack/vue-query depends on vue-demi, whose postinstall selects the Vue 3 build (P4-02).
+  vue-demi: true
 # vite 8.3.8 is inside pnpm's minimumReleaseAge window (P4-01).
 minimumReleaseAgeExclude:
   - vite@8.3.8
