@@ -14,6 +14,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import wprebuild.app.web.openapi.ResponseSchemasCustomizer;
 
 /** OpenAPI document for {@code /v3/api-docs}. Errors share the RFC 9457 ProblemDetail schema. */
 @Configuration
@@ -32,6 +33,11 @@ public class OpenApiConfiguration {
                         .description(
                                 "REST API for the WebProtege rebuild (ADR-007). Errors use RFC 9457 ProblemDetail."))
                 .components(new Components().addSchemas(PROBLEM_SCHEMA, problemDetailSchema()));
+    }
+
+    @Bean
+    OpenApiCustomizer responseSchemas() {
+        return new ResponseSchemasCustomizer();
     }
 
     @Bean

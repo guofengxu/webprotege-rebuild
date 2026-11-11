@@ -31,6 +31,9 @@ import wprebuild.app.project.ProjectSettingKeys;
 import wprebuild.app.project.PutProjectSetting;
 import wprebuild.app.project.RemoveProjectMember;
 import wprebuild.app.project.SetProjectMember;
+import wprebuild.app.web.openapi.SettingsSchemas.DisplayNameSetting;
+import wprebuild.app.web.openapi.SettingsSchemas.NewEntitySettings;
+import wprebuild.app.web.openapi.SettingsSchemas.PrefixSettings;
 import wprebuild.kernel.id.ProjectId;
 import wprebuild.kernel.id.UserId;
 
@@ -47,6 +50,9 @@ public class ProjectSettingsController {
     }
 
     @Operation(summary = "Read prefix settings", operationId = "getPrefixSettings")
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = PrefixSettings.class)))
     @GetMapping("/{id}/settings/prefixes")
     public ResponseEntity<?> prefixes(@PathVariable String id) {
         return read(id, ProjectSettingKeys.PREFIXES);
@@ -58,13 +64,25 @@ public class ProjectSettingsController {
             requestBody =
                     @io.swagger.v3.oas.annotations.parameters.RequestBody(
                             required = true,
-                            content = @Content(mediaType = "application/json", schema = @Schema(type = "object"))))
+                            content =
+                                    @Content(
+                                            mediaType = "application/json",
+                                            schema = @Schema(implementation = PrefixSettings.class))))
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = PrefixSettings.class)))
     @PutMapping(path = "/{id}/settings/prefixes", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> putPrefixes(@PathVariable String id, @RequestBody JsonNode body) {
         return write(id, ProjectSettingKeys.PREFIXES, body);
     }
 
     @Operation(summary = "Read new-entity settings", operationId = "getNewEntitySettings")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = NewEntitySettings.class)))
     @GetMapping("/{id}/settings/new-entity")
     public ResponseEntity<?> newEntity(@PathVariable String id) {
         return read(id, ProjectSettingKeys.NEW_ENTITY);
@@ -76,13 +94,28 @@ public class ProjectSettingsController {
             requestBody =
                     @io.swagger.v3.oas.annotations.parameters.RequestBody(
                             required = true,
-                            content = @Content(mediaType = "application/json", schema = @Schema(type = "object"))))
+                            content =
+                                    @Content(
+                                            mediaType = "application/json",
+                                            schema = @Schema(implementation = NewEntitySettings.class))))
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = NewEntitySettings.class)))
     @PutMapping(path = "/{id}/settings/new-entity", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> putNewEntity(@PathVariable String id, @RequestBody JsonNode body) {
         return write(id, ProjectSettingKeys.NEW_ENTITY, body);
     }
 
     @Operation(summary = "Read display-name settings", operationId = "getDisplayNameSettings")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = DisplayNameSetting.class))))
     @GetMapping("/{id}/settings/display-names")
     public ResponseEntity<?> displayNames(@PathVariable String id) {
         return read(id, ProjectSettingKeys.DISPLAY_NAMES);
@@ -94,7 +127,21 @@ public class ProjectSettingsController {
             requestBody =
                     @io.swagger.v3.oas.annotations.parameters.RequestBody(
                             required = true,
-                            content = @Content(mediaType = "application/json", schema = @Schema(type = "object"))))
+                            content =
+                                    @Content(
+                                            mediaType = "application/json",
+                                            array =
+                                                    @ArraySchema(
+                                                            schema =
+                                                                    @Schema(
+                                                                            implementation =
+                                                                                    DisplayNameSetting.class)))))
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = DisplayNameSetting.class))))
     @PutMapping(path = "/{id}/settings/display-names", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> putDisplayNames(@PathVariable String id, @RequestBody JsonNode body) {
         return write(id, ProjectSettingKeys.DISPLAY_NAMES, body);

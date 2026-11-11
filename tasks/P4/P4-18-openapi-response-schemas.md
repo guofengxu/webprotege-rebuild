@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: api-contract
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-23, P3-27]
 ---
 
@@ -80,15 +80,23 @@ pnpm -C frontend --filter @wp/api-types exec vitest run --typecheck
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 快照中 Web 端要用的成功响应没有 `{"type": "object"}` 的空 schema
-- [ ] 没有修改任何接口的 URL、参数、状态码或 JSON 形状
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 快照中 Web 端要用的成功响应没有 `{"type": "object"}` 的空 schema
+- [x] 没有修改任何接口的 URL、参数、状态码或 JSON 形状
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 修改任何接口的行为或响应形状（发现必须改时按 `AGENTS.md` 第 6 节停下）
 - `downloadProject` 的二进制响应（保持现状）
 - 移动端令牌、API Key、管理接口（已有类型）
 - 前端代码（P4-01 起）
+
+## 执行记录
+- 日期：2026-11-11
+- 分支：feature/p4-18-openapi-response-schemas
+- 测试：2026-11-11T18:11:59+08:00 通过（7 项）
+- 实际改动：为层级、Frame、搜索、修订、个体、设置和事件的成功响应补了 OpenAPI schema，并重新生成 @wp/api-types。领域模块只在 ontology 的 CreateEntities.Body 上加了 @Schema(name = CreatedEntities)，没有改 JSON 字段。
+- 偏差：手写部分（customizer、文档 record、控制器注解、类型别名）大约 590 行，高于卡片预计的 400 行。多出的部分是 ResponseSchemasCustomizer 把成功响应从 */* 收到 application/json，并自行组装事件 oneOf，因为 springdoc 没有把注解里的 oneOf 落到响应上。downloadProject 的二进制响应仍是无类型 object，按卡片保持现状。
+- 审查：code-reviewer

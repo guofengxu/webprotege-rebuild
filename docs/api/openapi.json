@@ -85,6 +85,19 @@
         },
         "type" : "object"
       },
+      "AnnotationPropertyFrameUpdateResult" : {
+        "properties" : {
+          "frame" : {
+            "$ref" : "#/components/schemas/AnnotationPropertyFrame"
+          },
+          "revision" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "frame", "revision" ],
+        "type" : "object"
+      },
       "AnnotationValue" : {
         "properties" : {
           "lang" : {
@@ -143,6 +156,26 @@
         },
         "type" : "object"
       },
+      "BrowserTextChanged" : {
+        "properties" : {
+          "displayName" : {
+            "type" : "string"
+          },
+          "entity" : {
+            "$ref" : "#/components/schemas/EventEntity"
+          },
+          "revNo" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "type" : {
+            "enum" : [ "BrowserTextChanged" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "displayName", "entity", "revNo", "type" ],
+        "type" : "object"
+      },
       "ClassFrame" : {
         "properties" : {
           "annotations" : {
@@ -173,6 +206,19 @@
             "$ref" : "#/components/schemas/EntityNode"
           }
         },
+        "type" : "object"
+      },
+      "ClassFrameUpdateResult" : {
+        "properties" : {
+          "frame" : {
+            "$ref" : "#/components/schemas/ClassFrame"
+          },
+          "revision" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "frame", "revision" ],
         "type" : "object"
       },
       "CreateApiKeyRequest" : {
@@ -237,6 +283,22 @@
         },
         "type" : "object"
       },
+      "CreatedEntities" : {
+        "properties" : {
+          "entities" : {
+            "items" : {
+              "$ref" : "#/components/schemas/EntityNode"
+            },
+            "type" : "array"
+          },
+          "revision" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "entities", "revision" ],
+        "type" : "object"
+      },
       "DataPropertyAssertion" : {
         "properties" : {
           "property" : {
@@ -289,6 +351,19 @@
         },
         "type" : "object"
       },
+      "DataPropertyFrameUpdateResult" : {
+        "properties" : {
+          "frame" : {
+            "$ref" : "#/components/schemas/DataPropertyFrame"
+          },
+          "revision" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "frame", "revision" ],
+        "type" : "object"
+      },
       "DeleteEntitiesRequest" : {
         "properties" : {
           "iris" : {
@@ -328,6 +403,81 @@
         },
         "type" : "object"
       },
+      "DisplayNameSetting" : {
+        "properties" : {
+          "annotationProperty" : {
+            "type" : "string"
+          },
+          "lang" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "annotationProperty", "lang" ],
+        "type" : "object"
+      },
+      "EntityCrudKitSettings" : {
+        "discriminator" : {
+          "mapping" : {
+            "OBO" : "#/components/schemas/OboEntityCrudKit",
+            "SUPPLIED_NAME" : "#/components/schemas/SuppliedNameEntityCrudKit",
+            "UUID" : "#/components/schemas/UuidEntityCrudKit"
+          },
+          "propertyName" : "type"
+        },
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/UuidEntityCrudKit"
+        }, {
+          "$ref" : "#/components/schemas/SuppliedNameEntityCrudKit"
+        }, {
+          "$ref" : "#/components/schemas/OboEntityCrudKit"
+        } ]
+      },
+      "EntityFrameChanged" : {
+        "properties" : {
+          "entity" : {
+            "$ref" : "#/components/schemas/EventEntity"
+          },
+          "revNo" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "type" : {
+            "enum" : [ "EntityFrameChanged" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "entity", "revNo", "type" ],
+        "type" : "object"
+      },
+      "EntityHierarchyChanged" : {
+        "properties" : {
+          "added" : {
+            "items" : {
+              "$ref" : "#/components/schemas/HierarchyLink"
+            },
+            "type" : "array"
+          },
+          "hierarchy" : {
+            "type" : "string"
+          },
+          "removed" : {
+            "items" : {
+              "$ref" : "#/components/schemas/HierarchyLink"
+            },
+            "type" : "array"
+          },
+          "revNo" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "type" : {
+            "enum" : [ "EntityHierarchyChanged" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "added", "hierarchy", "removed", "revNo", "type" ],
+        "type" : "object"
+      },
       "EntityNode" : {
         "properties" : {
           "deprecated" : {
@@ -337,6 +487,7 @@
             "type" : "string"
           },
           "entityType" : {
+            "enum" : [ "CLASS", "OBJECT_PROPERTY", "DATA_PROPERTY", "ANNOTATION_PROPERTY", "NAMED_INDIVIDUAL", "DATATYPE", "IRI", "ONTOLOGY" ],
             "type" : "string"
           },
           "hasChildren" : {
@@ -346,6 +497,53 @@
             "type" : "string"
           }
         },
+        "required" : [ "deprecated", "displayName", "entityType", "hasChildren", "iri" ],
+        "type" : "object"
+      },
+      "EventEntity" : {
+        "properties" : {
+          "entityType" : {
+            "type" : "string"
+          },
+          "iri" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "HierarchyLink" : {
+        "properties" : {
+          "child" : {
+            "type" : "string"
+          },
+          "parent" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "IndividualPage" : {
+        "properties" : {
+          "individuals" : {
+            "items" : {
+              "$ref" : "#/components/schemas/EntityNode"
+            },
+            "type" : "array"
+          },
+          "page" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "individuals", "page", "size", "total" ],
         "type" : "object"
       },
       "IriValue" : {
@@ -355,6 +553,10 @@
           "properties" : {
             "entity" : {
               "$ref" : "#/components/schemas/EntityNode"
+            },
+            "type" : {
+              "enum" : [ "iri" ],
+              "type" : "string"
             }
           },
           "type" : "object"
@@ -424,6 +626,10 @@
               "type" : "string"
             },
             "lexical" : {
+              "type" : "string"
+            },
+            "type" : {
+              "enum" : [ "literal" ],
               "type" : "string"
             }
           },
@@ -496,6 +702,40 @@
         },
         "type" : "object"
       },
+      "NamedIndividualFrameUpdateResult" : {
+        "properties" : {
+          "frame" : {
+            "$ref" : "#/components/schemas/NamedIndividualFrame"
+          },
+          "revision" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "frame", "revision" ],
+        "type" : "object"
+      },
+      "NewEntitySettings" : {
+        "properties" : {
+          "defaultLang" : {
+            "type" : "string"
+          },
+          "iriPrefix" : {
+            "type" : "string"
+          },
+          "kit" : {
+            "$ref" : "#/components/schemas/EntityCrudKitSettings"
+          },
+          "labelProperty" : {
+            "type" : "string"
+          },
+          "targetOntology" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "defaultLang", "iriPrefix", "kit", "labelProperty", "targetOntology" ],
+        "type" : "object"
+      },
       "ObjectPropertyAssertion" : {
         "properties" : {
           "individual" : {
@@ -558,6 +798,79 @@
         },
         "type" : "object"
       },
+      "ObjectPropertyFrameUpdateResult" : {
+        "properties" : {
+          "frame" : {
+            "$ref" : "#/components/schemas/ObjectPropertyFrame"
+          },
+          "revision" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "frame", "revision" ],
+        "type" : "object"
+      },
+      "OboEntityCrudKit" : {
+        "properties" : {
+          "totalDigits" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "type" : {
+            "enum" : [ "OBO" ],
+            "type" : "string"
+          },
+          "userRanges" : {
+            "items" : {
+              "$ref" : "#/components/schemas/OboUserRange"
+            },
+            "type" : "array"
+          }
+        },
+        "required" : [ "totalDigits", "type", "userRanges" ],
+        "type" : "object"
+      },
+      "OboUserRange" : {
+        "properties" : {
+          "end" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "start" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "userId" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "end", "start", "userId" ],
+        "type" : "object"
+      },
+      "PermissionsChanged" : {
+        "properties" : {
+          "projectId" : {
+            "type" : "string"
+          },
+          "revNo" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "type" : {
+            "enum" : [ "PermissionsChanged" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "projectId", "revNo", "type" ],
+        "type" : "object"
+      },
+      "PrefixSettings" : {
+        "additionalProperties" : {
+          "type" : "string"
+        },
+        "type" : "object"
+      },
       "ProblemDetail" : {
         "additionalProperties" : true,
         "properties" : {
@@ -584,6 +897,34 @@
             "type" : "string"
           }
         },
+        "type" : "object"
+      },
+      "ProjectChanged" : {
+        "properties" : {
+          "changeCount" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "revNo" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "timestamp" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "type" : {
+            "enum" : [ "ProjectChanged" ],
+            "type" : "string"
+          },
+          "user" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "changeCount", "description", "revNo", "timestamp", "type", "user" ],
         "type" : "object"
       },
       "ProjectResponse" : {
@@ -656,6 +997,113 @@
         },
         "type" : "object"
       },
+      "ResyncSignal" : {
+        "properties" : {
+          "type" : {
+            "enum" : [ "resync" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "type" ],
+        "type" : "object"
+      },
+      "RevisionChange" : {
+        "properties" : {
+          "op" : {
+            "type" : "string"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/EntityNode"
+          },
+          "text" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "op", "subject", "text" ],
+        "type" : "object"
+      },
+      "RevisionDiff" : {
+        "properties" : {
+          "changes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RevisionChange"
+            },
+            "type" : "array"
+          },
+          "limit" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "revNo" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "changes", "limit", "revNo", "total" ],
+        "type" : "object"
+      },
+      "RevisionPage" : {
+        "properties" : {
+          "page" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "revisions" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RevisionSummary"
+            },
+            "type" : "array"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "page", "revisions", "size", "total" ],
+        "type" : "object"
+      },
+      "RevisionResponse" : {
+        "properties" : {
+          "revision" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "revision" ],
+        "type" : "object"
+      },
+      "RevisionSummary" : {
+        "properties" : {
+          "changeCount" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "revNo" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "ts" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "userId" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "changeCount", "description", "revNo", "ts", "userId" ],
+        "type" : "object"
+      },
       "RoleRequest" : {
         "properties" : {
           "role" : {
@@ -673,6 +1121,20 @@
             "type" : "array"
           }
         },
+        "type" : "object"
+      },
+      "SuppliedNameEntityCrudKit" : {
+        "properties" : {
+          "type" : {
+            "enum" : [ "SUPPLIED_NAME" ],
+            "type" : "string"
+          },
+          "whiteSpace" : {
+            "enum" : [ "CAMEL_CASE", "UNDERSCORES" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "type", "whiteSpace" ],
         "type" : "object"
       },
       "UpdateAnnotationPropertyFrameRequest" : {
@@ -741,8 +1203,22 @@
         },
         "type" : "object"
       },
+      "UuidEntityCrudKit" : {
+        "properties" : {
+          "type" : {
+            "enum" : [ "UUID" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "type" ],
+        "type" : "object"
+      },
       "ValueNode" : {
         "discriminator" : {
+          "mapping" : {
+            "iri" : "#/components/schemas/IriValue",
+            "literal" : "#/components/schemas/LiteralValue"
+          },
           "propertyName" : "type"
         },
         "properties" : {
@@ -2423,9 +2899,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/RevisionResponse"
                 }
               }
             },
@@ -2508,7 +2984,11 @@
         "responses" : {
           "201" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreatedEntities"
+                }
+              }
             },
             "description" : "Entities created"
           },
@@ -2606,9 +3086,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/RevisionPage"
                 }
               }
             },
@@ -2692,11 +3172,34 @@
             "content" : {
               "text/event-stream" : {
                 "schema" : {
-                  "type" : "object"
+                  "discriminator" : {
+                    "mapping" : {
+                      "BrowserTextChanged" : "#/components/schemas/BrowserTextChanged",
+                      "EntityFrameChanged" : "#/components/schemas/EntityFrameChanged",
+                      "EntityHierarchyChanged" : "#/components/schemas/EntityHierarchyChanged",
+                      "PermissionsChanged" : "#/components/schemas/PermissionsChanged",
+                      "ProjectChanged" : "#/components/schemas/ProjectChanged",
+                      "resync" : "#/components/schemas/ResyncSignal"
+                    },
+                    "propertyName" : "type"
+                  },
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ProjectChanged"
+                  }, {
+                    "$ref" : "#/components/schemas/EntityHierarchyChanged"
+                  }, {
+                    "$ref" : "#/components/schemas/EntityFrameChanged"
+                  }, {
+                    "$ref" : "#/components/schemas/BrowserTextChanged"
+                  }, {
+                    "$ref" : "#/components/schemas/PermissionsChanged"
+                  }, {
+                    "$ref" : "#/components/schemas/ResyncSignal"
+                  } ]
                 }
               }
             },
-            "description" : "OK"
+            "description" : "SSE frames: id is the revision, event is the type name, and data is one project event or a resync signal."
           },
           "400" : {
             "content" : {
@@ -2786,11 +3289,37 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "items" : {
+                    "discriminator" : {
+                      "mapping" : {
+                        "BrowserTextChanged" : "#/components/schemas/BrowserTextChanged",
+                        "EntityFrameChanged" : "#/components/schemas/EntityFrameChanged",
+                        "EntityHierarchyChanged" : "#/components/schemas/EntityHierarchyChanged",
+                        "PermissionsChanged" : "#/components/schemas/PermissionsChanged",
+                        "ProjectChanged" : "#/components/schemas/ProjectChanged",
+                        "resync" : "#/components/schemas/ResyncSignal"
+                      },
+                      "propertyName" : "type"
+                    },
+                    "oneOf" : [ {
+                      "$ref" : "#/components/schemas/ProjectChanged"
+                    }, {
+                      "$ref" : "#/components/schemas/EntityHierarchyChanged"
+                    }, {
+                      "$ref" : "#/components/schemas/EntityFrameChanged"
+                    }, {
+                      "$ref" : "#/components/schemas/BrowserTextChanged"
+                    }, {
+                      "$ref" : "#/components/schemas/PermissionsChanged"
+                    }, {
+                      "$ref" : "#/components/schemas/ResyncSignal"
+                    } ]
+                  },
+                  "type" : "array"
                 }
               }
             },
-            "description" : "OK"
+            "description" : "Events after the cursor, or one resync signal when the cursor has fallen behind."
           },
           "400" : {
             "content" : {
@@ -2868,9 +3397,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/AnnotationPropertyFrame"
                 }
               }
             },
@@ -2953,9 +3482,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/AnnotationPropertyFrameUpdateResult"
                 }
               }
             },
@@ -3037,9 +3566,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/ClassFrame"
                 }
               }
             },
@@ -3122,9 +3651,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/ClassFrameUpdateResult"
                 }
               }
             },
@@ -3206,9 +3735,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/DataPropertyFrame"
                 }
               }
             },
@@ -3291,9 +3820,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/DataPropertyFrameUpdateResult"
                 }
               }
             },
@@ -3375,9 +3904,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/NamedIndividualFrame"
                 }
               }
             },
@@ -3460,9 +3989,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/NamedIndividualFrameUpdateResult"
                 }
               }
             },
@@ -3544,9 +4073,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/ObjectPropertyFrame"
                 }
               }
             },
@@ -3629,9 +4158,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/ObjectPropertyFrameUpdateResult"
                 }
               }
             },
@@ -3720,9 +4249,12 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "items" : {
+                    "$ref" : "#/components/schemas/EntityNode"
+                  },
+                  "type" : "array"
                 }
               }
             },
@@ -3811,9 +4343,15 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "items" : {
+                    "items" : {
+                      "$ref" : "#/components/schemas/EntityNode"
+                    },
+                    "type" : "array"
+                  },
+                  "type" : "array"
                 }
               }
             },
@@ -3895,9 +4433,12 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "items" : {
+                    "$ref" : "#/components/schemas/EntityNode"
+                  },
+                  "type" : "array"
                 }
               }
             },
@@ -3997,9 +4538,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/IndividualPage"
                 }
               }
             },
@@ -4341,9 +4882,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/RevisionPage"
                 }
               }
             },
@@ -4435,9 +4976,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/RevisionDiff"
                 }
               }
             },
@@ -4520,9 +5061,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/RevisionResponse"
                 }
               }
             },
@@ -4620,9 +5161,12 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "items" : {
+                    "$ref" : "#/components/schemas/EntityNode"
+                  },
+                  "type" : "array"
                 }
               }
             },
@@ -4697,9 +5241,12 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "items" : {
+                    "$ref" : "#/components/schemas/DisplayNameSetting"
+                  },
+                  "type" : "array"
                 }
               }
             },
@@ -4773,7 +5320,10 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object"
+                "items" : {
+                  "$ref" : "#/components/schemas/DisplayNameSetting"
+                },
+                "type" : "array"
               }
             }
           },
@@ -4782,9 +5332,12 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "items" : {
+                    "$ref" : "#/components/schemas/DisplayNameSetting"
+                  },
+                  "type" : "array"
                 }
               }
             },
@@ -4859,9 +5412,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/NewEntitySettings"
                 }
               }
             },
@@ -4935,7 +5488,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object"
+                "$ref" : "#/components/schemas/NewEntitySettings"
               }
             }
           },
@@ -4944,9 +5497,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/NewEntitySettings"
                 }
               }
             },
@@ -5021,9 +5574,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/PrefixSettings"
                 }
               }
             },
@@ -5097,7 +5650,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object"
+                "$ref" : "#/components/schemas/PrefixSettings"
               }
             }
           },
@@ -5106,9 +5659,9 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/PrefixSettings"
                 }
               }
             },
