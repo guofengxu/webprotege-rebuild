@@ -727,6 +727,11 @@ export interface components {
             ranges?: string[];
             subject?: components["schemas"]["EntityNode"];
         };
+        AnnotationPropertyFrameUpdateResult: {
+            frame: components["schemas"]["AnnotationPropertyFrame"];
+            /** Format: int64 */
+            revision: number;
+        };
         AnnotationValue: {
             lang?: string;
             property?: components["schemas"]["EntityNode"];
@@ -747,12 +752,28 @@ export interface components {
             email?: string;
             userId?: string;
         };
+        BrowserTextChanged: {
+            displayName: string;
+            entity: components["schemas"]["EventEntity"];
+            /** Format: int64 */
+            revNo: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "BrowserTextChanged";
+        };
         ClassFrame: {
             annotations?: components["schemas"]["AnnotationValue"][];
             otherAxioms?: string[];
             parents?: components["schemas"]["EntityNode"][];
             propertyValues?: components["schemas"]["PropertyValue"][];
             subject?: components["schemas"]["EntityNode"];
+        };
+        ClassFrameUpdateResult: {
+            frame: components["schemas"]["ClassFrame"];
+            /** Format: int64 */
+            revision: number;
         };
         CreateApiKeyRequest: {
             name?: string;
@@ -774,6 +795,11 @@ export interface components {
             initialPassword?: string;
             userId?: string;
         };
+        CreatedEntities: {
+            entities: components["schemas"]["EntityNode"][];
+            /** Format: int64 */
+            revision: number;
+        };
         DataPropertyAssertion: {
             property?: components["schemas"]["EntityNode"];
             value?: components["schemas"]["LiteralValue"];
@@ -786,6 +812,11 @@ export interface components {
             parents?: components["schemas"]["EntityNode"][];
             ranges?: components["schemas"]["EntityNode"][];
             subject?: components["schemas"]["EntityNode"];
+        };
+        DataPropertyFrameUpdateResult: {
+            frame: components["schemas"]["DataPropertyFrame"];
+            /** Format: int64 */
+            revision: number;
         };
         DeleteEntitiesRequest: {
             iris?: string[];
@@ -803,18 +834,69 @@ export interface components {
             /** Format: uuid */
             tokenId?: string;
         };
+        DisplayNameSetting: {
+            annotationProperty: string;
+            lang: string;
+        };
+        EntityCrudKitSettings: components["schemas"]["UuidEntityCrudKit"] | components["schemas"]["SuppliedNameEntityCrudKit"] | components["schemas"]["OboEntityCrudKit"];
+        EntityFrameChanged: {
+            entity: components["schemas"]["EventEntity"];
+            /** Format: int64 */
+            revNo: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "EntityFrameChanged";
+        };
+        EntityHierarchyChanged: {
+            added: components["schemas"]["HierarchyLink"][];
+            hierarchy: string;
+            removed: components["schemas"]["HierarchyLink"][];
+            /** Format: int64 */
+            revNo: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "EntityHierarchyChanged";
+        };
         EntityNode: {
-            deprecated?: boolean;
-            displayName?: string;
+            deprecated: boolean;
+            displayName: string;
+            /** @enum {string} */
+            entityType: "CLASS" | "OBJECT_PROPERTY" | "DATA_PROPERTY" | "ANNOTATION_PROPERTY" | "NAMED_INDIVIDUAL" | "DATATYPE" | "IRI" | "ONTOLOGY";
+            hasChildren: boolean;
+            iri: string;
+        };
+        EventEntity: {
             entityType?: string;
-            hasChildren?: boolean;
             iri?: string;
         };
-        IriValue: {
-            type: "IriValue";
-        } & (Omit<components["schemas"]["ValueNode"], "type"> & {
+        HierarchyLink: {
+            child?: string;
+            parent?: string;
+        };
+        IndividualPage: {
+            individuals: components["schemas"]["EntityNode"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+            /** Format: int64 */
+            total: number;
+        };
+        IriValue: Omit<components["schemas"]["ValueNode"], "type"> & {
             entity?: components["schemas"]["EntityNode"];
-        });
+            /** @enum {string} */
+            type?: "iri";
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "iri";
+        };
         IssueTokenRequest: {
             deviceName?: string;
             password?: string;
@@ -836,13 +918,19 @@ export interface components {
             refreshExpiresAt?: string;
             refreshToken?: string;
         };
-        LiteralValue: {
-            type: "LiteralValue";
-        } & (Omit<components["schemas"]["ValueNode"], "type"> & {
+        LiteralValue: Omit<components["schemas"]["ValueNode"], "type"> & {
             datatype?: string;
             lang?: string;
             lexical?: string;
-        });
+            /** @enum {string} */
+            type?: "literal";
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "literal";
+        };
         LoginRequest: {
             password?: string;
             username?: string;
@@ -860,6 +948,18 @@ export interface components {
             subject?: components["schemas"]["EntityNode"];
             types?: components["schemas"]["EntityNode"][];
         };
+        NamedIndividualFrameUpdateResult: {
+            frame: components["schemas"]["NamedIndividualFrame"];
+            /** Format: int64 */
+            revision: number;
+        };
+        NewEntitySettings: {
+            defaultLang: string;
+            iriPrefix: string;
+            kit: components["schemas"]["EntityCrudKitSettings"];
+            labelProperty: string;
+            targetOntology: string;
+        };
         ObjectPropertyAssertion: {
             individual?: components["schemas"]["EntityNode"];
             property?: components["schemas"]["EntityNode"];
@@ -874,6 +974,41 @@ export interface components {
             ranges?: components["schemas"]["EntityNode"][];
             subject?: components["schemas"]["EntityNode"];
         };
+        ObjectPropertyFrameUpdateResult: {
+            frame: components["schemas"]["ObjectPropertyFrame"];
+            /** Format: int64 */
+            revision: number;
+        };
+        OboEntityCrudKit: {
+            /** Format: int32 */
+            totalDigits: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "OBO";
+            userRanges: components["schemas"]["OboUserRange"][];
+        };
+        OboUserRange: {
+            /** Format: int64 */
+            end: number;
+            /** Format: int64 */
+            start: number;
+            userId: string;
+        };
+        PermissionsChanged: {
+            projectId: string;
+            /** Format: int64 */
+            revNo: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "PermissionsChanged";
+        };
+        PrefixSettings: {
+            [key: string]: string;
+        };
         ProblemDetail: {
             /** @description Stable application error code */
             code?: string;
@@ -887,6 +1022,21 @@ export interface components {
             type?: string;
         } & {
             [key: string]: unknown;
+        };
+        ProjectChanged: {
+            /** Format: int32 */
+            changeCount: number;
+            description: string;
+            /** Format: int64 */
+            revNo: number;
+            /** Format: date-time */
+            timestamp: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ProjectChanged";
+            user: string;
         };
         ProjectResponse: {
             /** Format: date-time */
@@ -914,11 +1064,64 @@ export interface components {
         ResetPasswordRequest: {
             newPassword?: string;
         };
+        ResyncSignal: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "resync";
+        };
+        RevisionChange: {
+            op: string;
+            subject: components["schemas"]["EntityNode"];
+            text: string;
+        };
+        RevisionDiff: {
+            changes: components["schemas"]["RevisionChange"][];
+            /** Format: int32 */
+            limit: number;
+            /** Format: int64 */
+            revNo: number;
+            /** Format: int64 */
+            total: number;
+        };
+        RevisionPage: {
+            /** Format: int32 */
+            page: number;
+            revisions: components["schemas"]["RevisionSummary"][];
+            /** Format: int32 */
+            size: number;
+            /** Format: int64 */
+            total: number;
+        };
+        RevisionResponse: {
+            /** Format: int64 */
+            revision: number;
+        };
+        RevisionSummary: {
+            /** Format: int32 */
+            changeCount: number;
+            description: string;
+            /** Format: int64 */
+            revNo: number;
+            /** Format: date-time */
+            ts: string;
+            userId: string;
+        };
         RoleRequest: {
             role?: string;
         };
         SetAppRolesRequest: {
             appRoles?: string[];
+        };
+        SuppliedNameEntityCrudKit: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SUPPLIED_NAME";
+            /** @enum {string} */
+            whiteSpace: "CAMEL_CASE" | "UNDERSCORES";
         };
         UpdateAnnotationPropertyFrameRequest: {
             from?: components["schemas"]["AnnotationPropertyFrame"];
@@ -943,6 +1146,13 @@ export interface components {
         UpdateProjectRequest: {
             description?: string;
             name?: string;
+        };
+        UuidEntityCrudKit: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "UUID";
         };
         ValueNode: {
             type: string;
@@ -2400,7 +2610,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["CreatedEntities"];
                 };
             };
             /** @description Bad request */
@@ -2471,7 +2681,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["RevisionResponse"];
                 };
             };
             /** @description Bad request */
@@ -2542,7 +2752,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["RevisionPage"];
                 };
             };
             /** @description Bad request */
@@ -2605,13 +2815,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description SSE frames: id is the revision, event is the type name, and data is one project event or a resync signal. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "text/event-stream": Record<string, never>;
+                    "text/event-stream": components["schemas"]["ProjectChanged"] | components["schemas"]["EntityHierarchyChanged"] | components["schemas"]["EntityFrameChanged"] | components["schemas"]["BrowserTextChanged"] | components["schemas"]["PermissionsChanged"] | components["schemas"]["ResyncSignal"];
                 };
             };
             /** @description Bad request */
@@ -2675,13 +2885,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Events after the cursor, or one resync signal when the cursor has fallen behind. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": (components["schemas"]["ProjectChanged"] | components["schemas"]["EntityHierarchyChanged"] | components["schemas"]["EntityFrameChanged"] | components["schemas"]["BrowserTextChanged"] | components["schemas"]["PermissionsChanged"] | components["schemas"]["ResyncSignal"])[];
                 };
             };
             /** @description Bad request */
@@ -2750,7 +2960,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["AnnotationPropertyFrame"];
                 };
             };
             /** @description Bad request */
@@ -2821,7 +3031,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["AnnotationPropertyFrameUpdateResult"];
                 };
             };
             /** @description Bad request */
@@ -2890,7 +3100,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["ClassFrame"];
                 };
             };
             /** @description Bad request */
@@ -2961,7 +3171,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["ClassFrameUpdateResult"];
                 };
             };
             /** @description Bad request */
@@ -3030,7 +3240,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["DataPropertyFrame"];
                 };
             };
             /** @description Bad request */
@@ -3101,7 +3311,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["DataPropertyFrameUpdateResult"];
                 };
             };
             /** @description Bad request */
@@ -3170,7 +3380,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["NamedIndividualFrame"];
                 };
             };
             /** @description Bad request */
@@ -3241,7 +3451,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["NamedIndividualFrameUpdateResult"];
                 };
             };
             /** @description Bad request */
@@ -3310,7 +3520,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["ObjectPropertyFrame"];
                 };
             };
             /** @description Bad request */
@@ -3381,7 +3591,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["ObjectPropertyFrameUpdateResult"];
                 };
             };
             /** @description Bad request */
@@ -3451,7 +3661,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["EntityNode"][];
                 };
             };
             /** @description Bad request */
@@ -3521,7 +3731,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["EntityNode"][][];
                 };
             };
             /** @description Bad request */
@@ -3589,7 +3799,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["EntityNode"][];
                 };
             };
             /** @description Bad request */
@@ -3660,7 +3870,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["IndividualPage"];
                 };
             };
             /** @description Bad request */
@@ -3935,7 +4145,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["RevisionPage"];
                 };
             };
             /** @description Bad request */
@@ -4005,7 +4215,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["RevisionDiff"];
                 };
             };
             /** @description Bad request */
@@ -4073,7 +4283,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["RevisionResponse"];
                 };
             };
             /** @description Bad request */
@@ -4144,7 +4354,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["EntityNode"][];
                 };
             };
             /** @description Bad request */
@@ -4211,7 +4421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["DisplayNameSetting"][];
                 };
             };
             /** @description Bad request */
@@ -4272,7 +4482,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": Record<string, never>;
+                "application/json": components["schemas"]["DisplayNameSetting"][];
             };
         };
         responses: {
@@ -4282,7 +4492,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["DisplayNameSetting"][];
                 };
             };
             /** @description Bad request */
@@ -4349,7 +4559,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["NewEntitySettings"];
                 };
             };
             /** @description Bad request */
@@ -4410,7 +4620,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": Record<string, never>;
+                "application/json": components["schemas"]["NewEntitySettings"];
             };
         };
         responses: {
@@ -4420,7 +4630,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["NewEntitySettings"];
                 };
             };
             /** @description Bad request */
@@ -4487,7 +4697,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["PrefixSettings"];
                 };
             };
             /** @description Bad request */
@@ -4548,7 +4758,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": Record<string, never>;
+                "application/json": components["schemas"]["PrefixSettings"];
             };
         };
         responses: {
@@ -4558,7 +4768,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "application/json": components["schemas"]["PrefixSettings"];
                 };
             };
             /** @description Bad request */

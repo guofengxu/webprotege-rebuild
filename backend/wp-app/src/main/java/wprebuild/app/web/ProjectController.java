@@ -55,11 +55,13 @@ import wprebuild.app.ontology.GetProjectDownload;
 import wprebuild.app.ontology.GetRevisionDiff;
 import wprebuild.app.ontology.HierarchyKind;
 import wprebuild.app.ontology.ImportOntologyFromUpload;
+import wprebuild.app.ontology.IndividualPage;
 import wprebuild.app.ontology.ListEntityRevisions;
 import wprebuild.app.ontology.ListIndividualsByType;
 import wprebuild.app.ontology.ListRevisions;
 import wprebuild.app.ontology.ProjectDownload;
 import wprebuild.app.ontology.RevertRevision;
+import wprebuild.app.ontology.RevisionDiff;
 import wprebuild.app.ontology.UpdateAnnotationPropertyFrame;
 import wprebuild.app.ontology.UpdateClassFrame;
 import wprebuild.app.ontology.UpdateDataPropertyFrame;
@@ -74,6 +76,7 @@ import wprebuild.app.project.ProjectDetails;
 import wprebuild.app.project.ProjectText;
 import wprebuild.app.project.RestoreProjectFromTrash;
 import wprebuild.app.project.UpdateProjectDetails;
+import wprebuild.app.revision.RevisionPage;
 import wprebuild.app.search.SearchEntities;
 import wprebuild.app.search.SearchTypes;
 import wprebuild.kernel.id.ProjectId;
@@ -232,6 +235,12 @@ public class ProjectController {
     }
 
     @Operation(summary = "List hierarchy roots", operationId = "getHierarchyRoots")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(ref = "#/components/schemas/EntityNode"))))
     @GetMapping("/{id}/hierarchies/{kind}/roots")
     public ResponseEntity<?> hierarchyRoots(@PathVariable String id, @PathVariable String kind) {
         return withProject(
@@ -241,6 +250,12 @@ public class ProjectController {
     }
 
     @Operation(summary = "List hierarchy children", operationId = "getHierarchyChildren")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(ref = "#/components/schemas/EntityNode"))))
     @GetMapping("/{id}/hierarchies/{kind}/children")
     public ResponseEntity<?> hierarchyChildren(
             @PathVariable String id, @PathVariable String kind, @RequestParam("parent") String parent) {
@@ -251,6 +266,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "List paths from roots to an entity", operationId = "getHierarchyPaths")
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/{id}/hierarchies/{kind}/paths")
     public ResponseEntity<?> hierarchyPaths(
             @PathVariable String id, @PathVariable String kind, @RequestParam("entity") String entity) {
@@ -261,6 +277,9 @@ public class ProjectController {
     }
 
     @Operation(summary = "List project revisions", operationId = "listRevisions")
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = RevisionPage.class)))
     @GetMapping("/{id}/revisions")
     public ResponseEntity<?> revisions(
             @PathVariable String id,
@@ -272,6 +291,9 @@ public class ProjectController {
     }
 
     @Operation(summary = "Get a revision diff", operationId = "getRevisionDiff")
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = RevisionDiff.class)))
     @GetMapping("/{id}/revisions/{rev}")
     public ResponseEntity<?> revision(
             @PathVariable String id,
@@ -284,6 +306,10 @@ public class ProjectController {
     }
 
     @Operation(summary = "Revert a revision", operationId = "revertRevision")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = RevisionResponse.class)))
     @PostMapping("/{id}/revisions/{rev}/revert")
     public ResponseEntity<?> revert(@PathVariable String id, @PathVariable long rev) {
         return withProject(id, (user, projectId) -> {
@@ -293,6 +319,9 @@ public class ProjectController {
     }
 
     @Operation(summary = "List revisions that touched an entity", operationId = "listEntityRevisions")
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = RevisionPage.class)))
     @GetMapping("/{id}/entities/history")
     public ResponseEntity<?> entityHistory(
             @PathVariable String id,
@@ -306,6 +335,12 @@ public class ProjectController {
     }
 
     @Operation(summary = "Search entities by name", operationId = "searchEntities")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(ref = "#/components/schemas/EntityNode"))))
     @GetMapping("/{id}/search")
     public ResponseEntity<?> search(
             @PathVariable String id,
@@ -319,6 +354,10 @@ public class ProjectController {
     }
 
     @Operation(summary = "Read a class frame", operationId = "getClassFrame")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(ref = "#/components/schemas/ClassFrame")))
     @GetMapping("/{id}/frames/class")
     public ResponseEntity<?> classFrame(@PathVariable String id, @RequestParam("iri") String iri) {
         return withProject(
@@ -328,6 +367,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "Update a class frame", operationId = "updateClassFrame")
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @PutMapping(path = "/{id}/frames/class", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateClassFrame(@PathVariable String id, @RequestBody UpdateClassFrame.Request body) {
         if (body == null || body.from() == null || body.to() == null) {
@@ -341,6 +381,12 @@ public class ProjectController {
     }
 
     @Operation(summary = "Read an object property frame", operationId = "getObjectPropertyFrame")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(ref = "#/components/schemas/ObjectPropertyFrame")))
     @GetMapping("/{id}/frames/object-property")
     public ResponseEntity<?> objectPropertyFrame(@PathVariable String id, @RequestParam("iri") String iri) {
         return withProject(
@@ -350,6 +396,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "Update an object property frame", operationId = "updateObjectPropertyFrame")
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @PutMapping(path = "/{id}/frames/object-property", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateObjectPropertyFrame(
             @PathVariable String id, @RequestBody UpdateObjectPropertyFrame.Request body) {
@@ -364,6 +411,12 @@ public class ProjectController {
     }
 
     @Operation(summary = "Read a data property frame", operationId = "getDataPropertyFrame")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(ref = "#/components/schemas/DataPropertyFrame")))
     @GetMapping("/{id}/frames/data-property")
     public ResponseEntity<?> dataPropertyFrame(@PathVariable String id, @RequestParam("iri") String iri) {
         return withProject(
@@ -373,6 +426,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "Update a data property frame", operationId = "updateDataPropertyFrame")
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @PutMapping(path = "/{id}/frames/data-property", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateDataPropertyFrame(
             @PathVariable String id, @RequestBody UpdateDataPropertyFrame.Request body) {
@@ -387,6 +441,12 @@ public class ProjectController {
     }
 
     @Operation(summary = "Read an annotation property frame", operationId = "getAnnotationPropertyFrame")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(ref = "#/components/schemas/AnnotationPropertyFrame")))
     @GetMapping("/{id}/frames/annotation-property")
     public ResponseEntity<?> annotationPropertyFrame(@PathVariable String id, @RequestParam("iri") String iri) {
         return withProject(
@@ -396,6 +456,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "Update an annotation property frame", operationId = "updateAnnotationPropertyFrame")
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @PutMapping(path = "/{id}/frames/annotation-property", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateAnnotationPropertyFrame(
             @PathVariable String id, @RequestBody UpdateAnnotationPropertyFrame.Request body) {
@@ -410,6 +471,12 @@ public class ProjectController {
     }
 
     @Operation(summary = "Read a named individual frame", operationId = "getNamedIndividualFrame")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(ref = "#/components/schemas/NamedIndividualFrame")))
     @GetMapping("/{id}/frames/individual")
     public ResponseEntity<?> individualFrame(@PathVariable String id, @RequestParam("iri") String iri) {
         return withProject(
@@ -419,6 +486,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "Update a named individual frame", operationId = "updateNamedIndividualFrame")
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @PutMapping(path = "/{id}/frames/individual", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateIndividualFrame(
             @PathVariable String id, @RequestBody UpdateNamedIndividualFrame.Request body) {
@@ -433,6 +501,9 @@ public class ProjectController {
     }
 
     @Operation(summary = "List individuals of a type", operationId = "listIndividualsByType")
+    @ApiResponse(
+            responseCode = "200",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = IndividualPage.class)))
     @GetMapping("/{id}/individuals")
     public ResponseEntity<?> individuals(
             @PathVariable String id,
@@ -449,7 +520,10 @@ public class ProjectController {
     @ApiResponse(
             responseCode = "201",
             description = "Entities created",
-            content = @Content(mediaType = "application/json"))
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = CreateEntities.Body.class)))
     @PostMapping(path = "/{id}/entities", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createEntities(@PathVariable String id, @RequestBody CreateEntitiesRequest body) {
         if (body == null) {
@@ -469,6 +543,10 @@ public class ProjectController {
     }
 
     @Operation(summary = "Delete entities", operationId = "deleteEntities")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = RevisionResponse.class)))
     @DeleteMapping(path = "/{id}/entities", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteEntities(@PathVariable String id, @RequestBody DeleteEntitiesRequest body) {
         if (body == null) {
@@ -647,5 +725,6 @@ public class ProjectController {
 
     public record DeleteEntitiesRequest(List<String> iris) {}
 
+    @Schema(name = "RevisionResponse")
     public record RevisionResponse(long revision) {}
 }

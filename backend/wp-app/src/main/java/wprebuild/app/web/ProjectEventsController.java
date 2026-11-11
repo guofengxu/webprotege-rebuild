@@ -1,6 +1,10 @@
 package wprebuild.app.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -27,7 +31,12 @@ import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import tools.jackson.databind.json.JsonMapper;
 import wprebuild.app.bus.CommandBus;
+import wprebuild.app.events.BrowserTextChanged;
+import wprebuild.app.events.EntityFrameChanged;
+import wprebuild.app.events.EntityHierarchyChanged;
 import wprebuild.app.events.GetProjectEvents;
+import wprebuild.app.events.PermissionsChanged;
+import wprebuild.app.events.ProjectChanged;
 import wprebuild.app.events.ProjectEvent;
 import wprebuild.app.events.ProjectEventHub;
 import wprebuild.app.events.ResyncSignal;
@@ -64,6 +73,23 @@ public class ProjectEventsController {
     }
 
     @Operation(summary = "Subscribe to project events as SSE", operationId = "streamProjectEvents")
+    @ApiResponse(
+            responseCode = "200",
+            description =
+                    "SSE frames: id is the revision, event is the type name, and data is one project event or a resync signal.",
+            content =
+                    @Content(
+                            mediaType = MediaType.TEXT_EVENT_STREAM_VALUE,
+                            schema =
+                                    @Schema(
+                                            oneOf = {
+                                                ProjectChanged.class,
+                                                EntityHierarchyChanged.class,
+                                                EntityFrameChanged.class,
+                                                BrowserTextChanged.class,
+                                                PermissionsChanged.class,
+                                                ResyncSignal.class
+                                            })))
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Object stream(
             @PathVariable String id, @RequestHeader(name = "Last-Event-ID", required = false) String lastEventId) {
@@ -71,6 +97,24 @@ public class ProjectEventsController {
     }
 
     @Operation(summary = "Long-poll project events", operationId = "pollProjectEvents")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Events after the cursor, or one resync signal when the cursor has fallen behind.",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            array =
+                                    @ArraySchema(
+                                            schema =
+                                                    @Schema(
+                                                            oneOf = {
+                                                                ProjectChanged.class,
+                                                                EntityHierarchyChanged.class,
+                                                                EntityFrameChanged.class,
+                                                                BrowserTextChanged.class,
+                                                                PermissionsChanged.class,
+                                                                ResyncSignal.class
+                                                            }))))
     @GetMapping(path = "/poll", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object poll(
             @PathVariable String id,

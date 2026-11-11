@@ -1,5 +1,6 @@
 package wprebuild.app.ontology;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,6 +48,7 @@ public record CreateEntities(
     }
 
     /** HTTP representation of {@link Result}. {@code revision} is the head number, not a nested object. */
+    @Schema(name = "CreatedEntities")
     public record Body(List<EntityNode> entities, long revision) {
 
         public Body {
