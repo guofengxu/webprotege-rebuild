@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: build
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-01]
 ---
 
@@ -69,14 +69,22 @@ python -c "import glob,sys,zipfile; jars=glob.glob('backend/wp-app/target/wp-app
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 没有 `dist` 时 `-Pwith-web` 构建失败并提示先构建 wp-web
-- [ ] 默认 `./mvnw verify` 不需要 Node 或 pnpm
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 没有 `dist` 时 `-Pwith-web` 构建失败并提示先构建 wp-web
+- [x] 默认 `./mvnw verify` 不需要 Node 或 pnpm
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 修改 wp-web 的任何代码
 - Docker 镜像、部署脚本（P6 候选）
 - 在 CI 中构建带前端的 jar（`.github/` 属于开发标准文件，由维护者另行修改）
+
+## 执行记录
+- 日期：2026-11-11
+- 分支：feature/p4-16-single-jar-packaging
+- 测试：2026-11-11T17:30:12+08:00 通过（11 项）
+- 实际改动：默认 package 产出可执行 jar；with-web 在缺少 dist 时失败并提示先构建 wp-web，成功时把 dist 打进 static。SPA 路由回退到 index.html，/api 仍返回 ProblemDetail，静态页带防点击劫持响应头。
+- 偏差：Boot 4.1 在 add-mappings=false 时仍会为 / 注册欢迎页并转发到 index.html，不影响 /api 与带扩展名的资源。验收里的 process-resources -Pwith-web 在干净仓库上会先因 wp-kernel 未进入本地仓库而失败；去掉 dist 后执行 package -Pwith-web 才会走到 require-web-dist，失败信息与卡片要求一致。
+- 审查：code-reviewer
