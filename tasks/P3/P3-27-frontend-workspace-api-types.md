@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: frontend-workspace
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-23]
 ---
 
@@ -53,10 +53,18 @@ test ! -e package.json && test ! -e pnpm-workspace.yaml && test ! -d packages
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 运行时 API 客户端（Web 端用 openapi-fetch，移动端用 uni.request 封装，各自在 P4 / P5 实现）
+
+## 执行记录
+- 日期：2026-11-11
+- 分支：feature/p3-27-frontend-workspace-api-types
+- 测试：2026-11-11T09:35:38+08:00 通过（7 项）
+- 实际改动：在 frontend/ 建立 pnpm 12.18.0 工作区（Node 24，node-linker=isolated）。@wp/api-types 用 openapi-typescript 7.13.0 从 docs/api/openapi.json 生成并提交类型，check 使用同一命令的 --check。CI 在 frontend/** 或该契约改动时执行 frozen install 与 check，并加入 ci-gate。uni-app 验证通过：官方模板 dcloudio/uni-preset-vue 的 vite-ts 分支（@dcloudio/* 3.0.0-5030420261029002）作为工作区成员，使用本卡 .npmrc。pnpm 12 须在 pnpm-workspace.yaml 的 allowBuilds 中允许 esbuild、core-js、core-js-pure，否则 install 因 ERR_PNPM_IGNORED_BUILDS 失败。允许后 install 与 build:h5 均退出码 0（Compiler version 5.34 vue3，DONE Build complete）。vue 留在虚拟存储，没有提升到 frontend/node_modules。peer 警告未导致失败：@dcloudio/types 装到 3.4.32（要求 3.4.31），vue 解析为 3.5.45（模板范围 ^3.4.21，@vue/server-renderer 要求 3.4.21）。因此 wp-mobile 留在工作区。临时工程已删除；目录不存在时 install 仍成功。
+- 偏差：生成的 schema.d.ts 约 4700 行，超过 S 号卡的行数预期；卡片要求提交生成结果。check 用 openapi-typescript --check 在内存中比对，不另写临时文件。
+- 审查：typescript-reviewer

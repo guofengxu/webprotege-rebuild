@@ -81,7 +81,7 @@ flowchart LR
         P3_24["P3-24"]:::done
         P3_25["P3-25"]:::done
         P3_26["P3-26"]:::done
-        P3_27["P3-27"]:::todo
+        P3_27["P3-27"]:::done
     end
     subgraph P4
         P4_00["P4-00"]:::todo

@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "packageManager": "pnpm@12.18.0",
+  "scripts": {
+    "gen": "pnpm --filter @wp/api-types gen",
+    "check": "pnpm --filter @wp/api-types check"
+  }
+}

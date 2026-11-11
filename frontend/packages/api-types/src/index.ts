@@ -1,0 +1,46 @@
+import type { components } from "./schema";
+
+export type { components, paths } from "./schema";
+
+type Schemas = components["schemas"];
+
+export type AdminUserPage = Schemas["AdminUserPage"];
+export type AdminUserResponse = Schemas["AdminUserResponse"];
+export type AnnotationPropertyFrame = Schemas["AnnotationPropertyFrame"];
+export type AnnotationValue = Schemas["AnnotationValue"];
+export type ApiKeyInfo = Schemas["ApiKeyInfo"];
+export type AuthUserResponse = Schemas["AuthUserResponse"];
+export type ClassFrame = Schemas["ClassFrame"];
+export type CreateApiKeyRequest = Schemas["CreateApiKeyRequest"];
+export type CreateEntitiesRequest = Schemas["CreateEntitiesRequest"];
+export type CreateProjectRequest = Schemas["CreateProjectRequest"];
+export type CreateUserRequest = Schemas["CreateUserRequest"];
+export type DataPropertyAssertion = Schemas["DataPropertyAssertion"];
+export type DataPropertyFrame = Schemas["DataPropertyFrame"];
+export type DeleteEntitiesRequest = Schemas["DeleteEntitiesRequest"];
+export type DeviceSession = Schemas["DeviceSession"];
+export type EntityNode = Schemas["EntityNode"];
+export type IriValue = Schemas["IriValue"];
+export type IssueTokenRequest = Schemas["IssueTokenRequest"];
+export type IssuedApiKeyResponse = Schemas["IssuedApiKeyResponse"];
+export type IssuedTokensResponse = Schemas["IssuedTokensResponse"];
+export type LiteralValue = Schemas["LiteralValue"];
+export type LoginRequest = Schemas["LoginRequest"];
+export type MemberResponse = Schemas["MemberResponse"];
+export type NamedIndividualFrame = Schemas["NamedIndividualFrame"];
+export type ObjectPropertyAssertion = Schemas["ObjectPropertyAssertion"];
+export type ObjectPropertyFrame = Schemas["ObjectPropertyFrame"];
+export type ProblemDetail = Schemas["ProblemDetail"];
+export type ProjectResponse = Schemas["ProjectResponse"];
+export type PropertyValue = Schemas["PropertyValue"];
+export type RefreshTokenRequest = Schemas["RefreshTokenRequest"];
+export type ResetPasswordRequest = Schemas["ResetPasswordRequest"];
+export type RoleRequest = Schemas["RoleRequest"];
+export type SetAppRolesRequest = Schemas["SetAppRolesRequest"];
+export type UpdateAnnotationPropertyFrameRequest = Schemas["UpdateAnnotationPropertyFrameRequest"];
+export type UpdateClassFrameRequest = Schemas["UpdateClassFrameRequest"];
+export type UpdateDataPropertyFrameRequest = Schemas["UpdateDataPropertyFrameRequest"];
+export type UpdateNamedIndividualFrameRequest = Schemas["UpdateNamedIndividualFrameRequest"];
+export type UpdateObjectPropertyFrameRequest = Schemas["UpdateObjectPropertyFrameRequest"];
+export type UpdateProjectRequest = Schemas["UpdateProjectRequest"];
+export type ValueNode = Schemas["ValueNode"];
