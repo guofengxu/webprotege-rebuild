@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-02, P4-18]
 ---
 
@@ -64,13 +64,21 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/events/sseParser.s
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 收到 `resync` 时项目数据全部失效；层级变化能让原来的叶子节点出现展开箭头
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 收到 `resync` 时项目数据全部失效；层级变化能让原来的叶子节点出现展开箭头
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 建立连接、重连、`Last-Event-ID`、连接状态界面、接入 `ProjectShell`（P4-29）
 - 长轮询客户端（P5）
 - 推送通知、桌面通知；在界面上显示“谁正在编辑”（后端不提供）
+
+## 执行记录
+- 日期：2026-11-11
+- 分支：feature/p4-14-project-events
+- 测试：2026-11-11T20:45:10+08:00 通过（3 项）
+- 实际改动：解析 SSE 与六种项目事件，并按事件让层级前缀、Frame、个体列表、历史和搜索失效；权限变化时要求重连。测试补上了 paths、另外两种层级、畸形载荷、开发模式警告，以及分块 CRLF、BOM 和多字节字符。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
