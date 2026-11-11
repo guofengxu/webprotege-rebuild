@@ -11,7 +11,7 @@ export type LocaleModule = {
 };
 
 const localeModules = import.meta.glob<LocaleModule>(
-  "/src/**/locales/{zh-CN,en-US}.ts",
+  "/src/**/locales/*.ts",
   { eager: true },
 );
 

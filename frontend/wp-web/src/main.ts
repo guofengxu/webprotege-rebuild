@@ -4,6 +4,7 @@ import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
 import { createApp } from "vue";
 import App from "./App.vue";
+import { handleUnauthorized, installAuthGuard } from "./app/authGuard";
 import { createAppI18n } from "./app/i18n";
 import { createAppQueryClient } from "./app/queryClient";
 import { createAppRouter } from "./app/router";
@@ -11,10 +12,15 @@ import { createApiClient, provideApiClient } from "./shared/api/client";
 
 const app = createApp(App);
 const queryClient = createAppQueryClient();
-// P4-25 passes onUnauthorized so a 401 leaves the current page for the login screen.
-const apiClient = createApiClient();
+const router = createAppRouter();
+const apiClient = createApiClient({
+  onUnauthorized() {
+    handleUnauthorized(router, queryClient);
+  },
+});
+installAuthGuard(router, queryClient, apiClient);
 app.use(createPinia());
-app.use(createAppRouter());
+app.use(router);
 app.use(createAppI18n());
 app.use(ElementPlus);
 app.use(VueQueryPlugin, { queryClient });
