@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,6 +30,7 @@ jobs:
           set -euo pipefail
           if [ "$EVENT_NAME" = "push" ]; then
             echo "backend=true" >> "$GITHUB_OUTPUT"
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           if [ -z "$BASE_REF" ]; then
@@ -40,17 +42,27 @@ jobs:
           # --no-renames 保留旧路径。否则移出 backend/ 的重命名只显示新路径，java 会被跳过。
           git diff --name-only --no-renames "origin/${BASE_REF}...HEAD" > "$diff_out"
           backend=false
+          frontend=false
           while IFS= read -r path || [ -n "$path" ]; do
             [ -z "$path" ] && continue
             case "$path" in
               backend/*|pom.xml|.mvn/*|mvnw|mvnw.cmd|testdata/*|docs/api/openapi.json|.github/workflows/*)
                 backend=true
-                break
                 ;;
             esac
+            case "$path" in
+              frontend/*|docs/api/openapi.json)
+                frontend=true
+                ;;
+            esac
+            if [ "$backend" = true ] && [ "$frontend" = true ]; then
+              break
+            fi
           done < "$diff_out"
           echo "backend=${backend}" >> "$GITHUB_OUTPUT"
+          echo "frontend=${frontend}" >> "$GITHUB_OUTPUT"
           echo "backend=${backend}"
+          echo "frontend=${frontend}"
 
   plan:
     runs-on: ubuntu-latest
@@ -106,8 +118,28 @@ jobs:
           path: "**/target/surefire-reports/**"
           if-no-files-found: ignore
 
+  frontend:
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install
+        run: pnpm -C frontend install --frozen-lockfile
+      - name: Check generated API types
+        run: pnpm -C frontend --filter @wp/api-types run check
+
   ci-gate:
-    needs: [changes, plan, java]
+    needs: [changes, plan, java, frontend]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -116,10 +148,11 @@ jobs:
           CHANGES_RESULT: ${{ needs.changes.result }}
           PLAN_RESULT: ${{ needs.plan.result }}
           JAVA_RESULT: ${{ needs.java.result }}
+          FRONTEND_RESULT: ${{ needs.frontend.result }}
         run: |
           set -euo pipefail
           fail=0
-          for pair in "changes=${CHANGES_RESULT}" "plan=${PLAN_RESULT}" "java=${JAVA_RESULT}"; do
+          for pair in "changes=${CHANGES_RESULT}" "plan=${PLAN_RESULT}" "java=${JAVA_RESULT}" "frontend=${FRONTEND_RESULT}"; do
             name="${pair%%=*}"
             result="${pair#*=}"
             echo "${name}: ${result}"

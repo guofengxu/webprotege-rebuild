@@ -1,0 +1,11 @@
+packages:
+  - wp-web
+  - wp-mobile
+  - packages/*
+# pnpm 12 skips dependency build scripts until they are listed here. The uni-app
+# Vue3 CLI template needs these three before install finishes; H5 build then
+# succeeds with the isolated node-linker (P3-27).
+allowBuilds:
+  core-js: true
+  core-js-pure: true
+  esbuild: true

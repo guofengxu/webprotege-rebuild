@@ -2,11 +2,12 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 70 张卡：完成 66，进行中 0，阻塞 0，待办 4。
+共 70 张卡：完成 67，进行中 0，阻塞 0，待办 3。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P3-27](P3/P3-27-frontend-workspace-api-types.md) 前端 pnpm 工作区与共享 API 类型包
+- [P4-00](P4/P4-00-web-frontend-planning.md) 规划卡：细化 Web 端（Vue）MVP 任务卡
+- [P5-00](P5/P5-00-mobile-planning.md) 规划卡：细化移动端（uni-app）MVP 任务卡
 - [P6-00](P6/P6-00-extensions-planning.md) 规划卡：按优先级细化扩展功能
 
 ## P0
@@ -94,19 +95,19 @@
 | [P3-24](P3/P3-24-backend-acceptance.md) | 后端端到端验收（里程碑 M3） | wp-app | app-service | S | 完成 | P3-23 |
 | [P3-25](P3/P3-25-admin-user-management.md) | 管理员的用户管理 API | wp-app/web（admin 子包） | app-security | S | 完成 | P3-07 |
 | [P3-26](P3/P3-26-mobile-access-tokens.md) | 移动端访问令牌与 CORS | wp-app/access, web | app-security | M | 完成 | P3-05 |
-| [P3-27](P3/P3-27-frontend-workspace-api-types.md) | 前端 pnpm 工作区与共享 API 类型包 | root, packages/api-types | frontend-workspace | S | 待办（可开工） | P3-23 |
+| [P3-27](P3/P3-27-frontend-workspace-api-types.md) | 前端 pnpm 工作区与共享 API 类型包 | root, packages/api-types | frontend-workspace | S | 完成 | P3-23 |
 
 ## P4
 
 | ID | 标题 | 模块 | 类型 | 规模 | 状态 | 依赖 |
 |---|---|---|---|---|---|---|
-| [P4-00](P4/P4-00-web-frontend-planning.md) | 规划卡：细化 Web 端（Vue）MVP 任务卡 | tasks/P4 | planning | S | 待办 | P3-24、P3-27 |
+| [P4-00](P4/P4-00-web-frontend-planning.md) | 规划卡：细化 Web 端（Vue）MVP 任务卡 | tasks/P4 | planning | S | 待办（可开工） | P3-24、P3-27 |
 
 ## P5
 
 | ID | 标题 | 模块 | 类型 | 规模 | 状态 | 依赖 |
 |---|---|---|---|---|---|---|
-| [P5-00](P5/P5-00-mobile-planning.md) | 规划卡：细化移动端（uni-app）MVP 任务卡 | tasks/P5 | planning | S | 待办 | P3-24、P3-27 |
+| [P5-00](P5/P5-00-mobile-planning.md) | 规划卡：细化移动端（uni-app）MVP 任务卡 | tasks/P5 | planning | S | 待办（可开工） | P3-24、P3-27 |
 
 ## P6
 
