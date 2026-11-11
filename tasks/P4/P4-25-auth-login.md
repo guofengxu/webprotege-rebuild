@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-02]
 ---
 
@@ -62,13 +62,21 @@ pnpm -C frontend --filter wp-web exec playwright test e2e/smoke.spec.ts
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 登录后只会跳转到站内路径
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 登录后只会跳转到站内路径
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 顶部栏、用户菜单、语言切换（P4-03）
 - 修改密码、自助重置密码（后端没有对应接口）
 - 移动端访问令牌（P5）
+
+## 执行记录
+- 日期：2026-11-11
+- 分支：feature/p4-25-auth-login
+- 测试：2026-11-11T21:40:49+08:00 通过（5 项）
+- 实际改动：增加登录页、当前用户查询和路由守卫。未登录访问受保护页面会进入登录页；任何 401 都会清空查询缓存并回到登录页；登录成功后只跳转到站内路径。
+- 偏差：文案 glob 从花括号改为 *.ts，仍只合并 zh-CN 与 en-US，因为 Vitest 下原来的花括号模式收不到新建的 auth 文案。401 和登录成功都会清空整份 Vue Query 缓存，并在登录成功后把返回的用户写入 me，避免换账号后读到上一位用户的缓存。Vue Router 不把查询值里的 / 编成 %2F，地址是 /login?redirect=/，查询值仍是站内路径 /。Element Plus 默认主题的对比度留给 P4-03 的设计令牌，本卡的字段错误使用主文字色，没有写十六进制颜色。
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
