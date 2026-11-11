@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-27]
 ---
 
@@ -73,12 +73,12 @@ pnpm -C frontend --filter wp-web run verify
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] `verify` 脚本按 vue-tsc、ESLint、Vitest、vite build 的顺序执行
-- [ ] 开发服务器把 `/api` 代理到 `http://localhost:8080`
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] `verify` 脚本按 vue-tsc、ESLint、Vitest、vite build 的顺序执行
+- [x] 开发服务器把 `/api` 代理到 `http://localhost:8080`
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - API 客户端（P4-02）、登录与路由守卫（P4-25）
@@ -86,3 +86,11 @@ pnpm -C frontend --filter wp-web run verify
 - 把 `dist` 打进 wp-app 的 jar（P4-16）
 - 修改 `.github/workflows/ci.yml`：它属于开发标准文件（`.github/CODEOWNERS`），在 CI 中加入 `wp-web` 的 `verify` 由维护者另行修改；在执行记录中提醒
 - 引入本卡未列出的依赖（例如 Prettier、`unplugin-*` 自动导入、MSW）
+
+## 执行记录
+- 日期：2026-11-11
+- 分支：feature/p4-01-web-skeleton
+- 测试：2026-11-11T15:13:43+08:00 通过（7 项）
+- 实际改动：建立 frontend/wp-web：Vue 3.5.45、Vite 8.3.8、TypeScript 6.0.3、Element Plus 2.14.8、Vue Router 5.4.0。verify 按 vue-tsc、eslint、vitest、vite build 的顺序执行。开发服务器和 preview 都把 /api 代理到 http://localhost:8080（changeOrigin 为 false）。路由与界面文案按功能目录自动收集，占位首页显示中英文标题。pnpm install 没有报 ERR_PNPM_IGNORED_BUILDS。CI 还没有跑 wp-web 的 verify，需要维护者另改 .github/workflows/ci.yml。
+- 偏差：TypeScript 6.0 对 baseUrl 报 TS5101，路径别名写成 @/* 对应 ./src/*，与卡片要求的 src/* 等价，单元测试已通过 @/ 导入。pnpm 12 把 vite@8.3.8 写入 frontend/pnpm-workspace.yaml 的 minimumReleaseAgeExclude，因为该版本仍在发布年龄窗口内。审查后在 src/env.d.ts 增加 element-plus/global 引用，让全局组件进入 vue-tsc，并已重新 test。
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect

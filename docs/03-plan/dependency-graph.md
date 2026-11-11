@@ -85,7 +85,7 @@ flowchart LR
     end
     subgraph P4
         P4_00["P4-00"]:::done
-        P4_01["P4-01"]:::todo
+        P4_01["P4-01"]:::done
         P4_02["P4-02"]:::todo
         P4_03["P4-03"]:::todo
         P4_04["P4-04"]:::todo
