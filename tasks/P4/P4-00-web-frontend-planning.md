@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P3-24, P3-27]
 ---
 
@@ -47,12 +47,20 @@ python tools/plan_lint.py --check
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] EPIC 中每一项都有对应的卡片
-- [ ] 人已评审新卡片
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] EPIC 中每一项都有对应的卡片
+- [x] 人已评审新卡片
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 写任何前端代码
+
+## 执行记录
+- 日期：2026-11-11
+- 分支：docs/p4-00-web-frontend-planning
+- 测试：2026-11-11T14:11:08+08:00 通过（2 项）
+- 实际改动：把 P4 EPIC 的 17 项展开为 P4-01～P4-17（编号与 EPIC 序号一致），另增 P4-18～P4-29；每张卡写到文件、组件与 operationId 一级，ECC 小节与 task.py ecc 一致；EPIC.md 写明展开结果、依赖关系、允许的跨卡文件修改与后端缺口。
+- 偏差：另增 12 张卡：P4-18 补齐 OpenAPI 成功响应的 schema，并修正 ValueNode 判别值与事件 type 的枚举（api-contract）；P4-19/20/21 覆盖 mvp-scope 中 Web 端的下载、个人设置、用户管理；P4-22/23/24/25 分别从第 9-10、10、15、2 项拆出；审查后再从 P4-22、P4-15、P4-21、P4-14 拆出 P4-26（Frame 输入组件）、P4-27（新实体与显示语言）、P4-28（角色与重置密码）、P4-29（事件连接与重连），控制在 400 行内。planner 先审 P4-01～P4-06，第二轮 planner（11 条）与 architect（20 条）覆盖 P4-07～P4-25，结论已对照代码核实并全部处理：补查询前缀键与 search 键的 limit、注册表 props 与 hierarchyToolbar、设置页标签注册表、from 必须回传原始服务端对象、层级事件失效整个层级前缀、内置数据类型与注解属性、显示名称设置写入无语言/zh/en 三项、分页从 0 开始、P4-16 增加已登录不回退测试与安全响应头。为此一并修改了 P4-02、P4-05、P4-25 的跨卡接口。后端缺口（没有“我的权限”接口、事件订阅只在建立连接时校验权限、没有用户搜索）记入 P4-17 的差距清单，建议另开 P3 补卡。
+- 审查：planner, architect
