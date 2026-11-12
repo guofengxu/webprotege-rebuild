@@ -139,3 +139,26 @@ test("mounting with selectedIri calls getHierarchyPaths and highlights the targe
   expect(wrapper.text()).toContain("Target");
   wrapper.unmount();
 });
+
+test("kind is taken from props and requests the matching hierarchy path", async () => {
+  const { wrapper, requests } = await renderWithProviders(HierarchyTree, {
+    props: { projectId: "p1", kind: "object-property", height: 240 },
+    handlers: handlers(),
+  });
+  await flushPromises();
+
+  expect(
+    requests.some(
+      (request) =>
+        request.method === "GET" &&
+        request.path ===
+          "/api/projects/p1/hierarchies/object-property/roots",
+    ),
+  ).toBe(true);
+  expect(
+    requests.every(
+      (request) => !request.path.includes("/hierarchies/class/"),
+    ),
+  ).toBe(true);
+  wrapper.unmount();
+});
