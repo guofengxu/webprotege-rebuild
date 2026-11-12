@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-05]
 ---
 
@@ -51,12 +51,20 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/download/downloadP
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 修订历史页本身（P4-13）
 - 流式下载、断点续传
 - 上传导入（P4-04）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-19-download-menu
+- 测试：2026-11-12T17:16:39+08:00 通过（3 项）
+- 实际改动：新增下载菜单：按格式/修订号调用 downloadProject，解析 Content-Disposition 文件名并 saveBlob；注册到 workspaceToolbar 与 revisionActions。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
