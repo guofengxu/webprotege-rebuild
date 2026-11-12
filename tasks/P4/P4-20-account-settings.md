@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-03]
 ---
 
@@ -53,12 +53,20 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/account/ApiKeysTab
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 明文 API Key 关闭对话框后不再存在于页面和缓存中
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 明文 API Key 关闭对话框后不再存在于页面和缓存中
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 修改自己的密码、显示名称、邮箱（后端没有对应接口）
 - 签发移动端令牌（由移动端登录完成，P5）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-20-account-settings
+- 测试：2026-11-12T21:38:59+08:00 通过（3 项）
+- 实际改动：新增个人设置页 /me：展示当前用户、API Key 创建（明文仅本地对话框，关闭后清除 mutation 缓存）与撤销、已登录设备列表与撤销；含 zh-CN/en-US 文案与 Vitest。
+- 偏差：为刷新 Vitest 的 locale glob 缓存，微调了 app/i18n.ts 注释一行。
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect

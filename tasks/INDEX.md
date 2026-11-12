@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 99 张卡：完成 85，进行中 0，阻塞 0，待办 14。
+共 99 张卡：完成 86，进行中 0，阻塞 0，待办 13。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P4-20](P4/P4-20-account-settings.md) 个人设置页：API Key 的创建与撤销、已登录设备的查看与撤销
 - [P4-21](P4/P4-21-admin-user-management.md) 用户管理页（系统管理员）：用户列表、创建用户
 - [P4-22](P4/P4-22-frame-editor-foundation.md) Frame 编辑机制：useFrameEditor（from / to 与 409 冲突）、保存栏、校验约定、标题与其它公理分区
 - [P4-24](P4/P4-24-project-members.md) 项目成员管理：列出成员、添加成员、修改角色、移除成员
@@ -125,7 +124,7 @@
 | [P4-17](P4/P4-17-web-acceptance.md) | Web 端端到端验收（里程碑 M4）：Playwright 用界面走完 P3-24 的流程，两个浏览器上下文验证实时更新 | wp-web | e2e | M | 待办 | P4-04、P4-08、P4-09、P4-10、P4-11、P4-12、P4-13、P4-15、P4-16、P4-19、P4-20、P4-21、P4-23、P4-24、P4-27、P4-28、P4-29 |
 | [P4-18](P4/P4-18-openapi-response-schemas.md) | 补齐 OpenAPI 中无类型的成功响应（层级、Frame、搜索、修订、个体、设置、事件）并重新生成 @wp/api-types | wp-app, packages/api-types | api-contract | M | 完成 | P3-23、P3-27 |
 | [P4-19](P4/P4-19-download-menu.md) | 下载导出菜单：选择格式与修订号，下载项目本体 | wp-web | web | S | 完成 | P4-05 |
-| [P4-20](P4/P4-20-account-settings.md) | 个人设置页：API Key 的创建与撤销、已登录设备的查看与撤销 | wp-web | web | M | 待办（可开工） | P4-03 |
+| [P4-20](P4/P4-20-account-settings.md) | 个人设置页：API Key 的创建与撤销、已登录设备的查看与撤销 | wp-web | web | M | 完成 | P4-03 |
 | [P4-21](P4/P4-21-admin-user-management.md) | 用户管理页（系统管理员）：用户列表、创建用户 | wp-web | web | M | 待办（可开工） | P4-03 |
 | [P4-22](P4/P4-22-frame-editor-foundation.md) | Frame 编辑机制：useFrameEditor（from / to 与 409 冲突）、保存栏、校验约定、标题与其它公理分区 | wp-web | web | M | 待办（可开工） | P4-05、P4-18 |
 | [P4-23](P4/P4-23-individual-frame-editor.md) | 个体 Frame 编辑器：类型、对象属性断言、数据属性断言、同一个体 | wp-web | web | M | 待办 | P4-22、P4-26 |
