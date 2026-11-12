@@ -9,7 +9,8 @@ import { queryKeys } from "@/shared/api/queryKeys";
 import { createMockFetch, type MockHandler } from "@/shared/testing/mockFetch";
 import LoginPage from "@/features/auth/LoginPage.vue";
 import { featureRoutes as authRoutes } from "@/features/auth/routes";
-import { featureRoutes as homeRoutes } from "@/features/home/routes";
+import { featureRoutes as projectRoutes } from "@/features/projects/routes";
+import ProjectListPage from "@/features/projects/ProjectListPage.vue";
 import { handleUnauthorized, installAuthGuard, safeRedirect } from "./authGuard";
 
 const StubPage = defineComponent({
@@ -32,26 +33,29 @@ afterEach(() => {
   localStorage.removeItem("wp.locale");
 });
 
-test("home is a layout child and login stays a public root route", () => {
-  expect("root" in homeRoutes).toBe(false);
-  expect(homeRoutes.layout?.[0]).toMatchObject({
-    path: "",
-    component: expect.anything(),
-  });
+test("projects list is a layout child and login stays a public root route", () => {
+  expect("root" in projectRoutes).toBe(false);
+  expect(projectRoutes.layout).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ path: "", redirect: "/projects" }),
+      expect.objectContaining({ path: "/projects", component: ProjectListPage }),
+    ]),
+  );
   expect(authRoutes.root?.[0]?.path).toBe("/login");
   expect(authRoutes.root?.[0]?.component).toBe(LoginPage);
 });
 
-test("createAppRouter mounts home under an authenticated AppLayout parent", async () => {
+test("createAppRouter mounts projects under an authenticated AppLayout parent", async () => {
   const { createAppRouter } = await import("./router");
   const { createMemoryHistory } = await import("vue-router");
   const router = createAppRouter(createMemoryHistory());
   await router.push("/");
   const matched = router.currentRoute.value.matched;
+  expect(router.currentRoute.value.path).toBe("/projects");
   expect(matched.length).toBeGreaterThan(1);
   expect(matched[0]?.meta.requiresAuth).toBe(true);
   expect(matched[0]?.components?.default).toBeDefined();
-  expect(matched.at(-1)?.components?.default).toBeDefined();
+  expect(matched.at(-1)?.components?.default).toBe(ProjectListPage);
 });
 
 test("safeRedirect keeps internal paths and drops open redirects", () => {
@@ -81,6 +85,7 @@ test("a signed-in visit to /login returns home", async () => {
     "GET /api/auth/me": () => ({ json: user }),
   });
 
+  // Auth guard sends signed-in users to "/"; startAt stub keeps that path.
   expect(router.currentRoute.value.path).toBe("/");
 });
 

@@ -88,7 +88,7 @@ flowchart LR
         P4_01["P4-01"]:::done
         P4_02["P4-02"]:::done
         P4_03["P4-03"]:::done
-        P4_04["P4-04"]:::todo
+        P4_04["P4-04"]:::done
         P4_05["P4-05"]:::todo
         P4_06["P4-06"]:::todo
         P4_07["P4-07"]:::todo

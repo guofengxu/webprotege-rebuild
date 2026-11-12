@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 99 张卡：完成 75，进行中 0，阻塞 0，待办 24。
+共 99 张卡：完成 76，进行中 0，阻塞 0，待办 23。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P4-04](P4/P4-04-project-list.md) 项目列表：新建空项目、上传导入（进度与错误展示）、回收站
 - [P4-05](P4/P4-05-project-workspace.md) 项目工作台：项目外壳路由、左侧层级面板与右侧详情面板、URL 保存选中状态
 - [P4-20](P4/P4-20-account-settings.md) 个人设置页：API Key 的创建与撤销、已登录设备的查看与撤销
 - [P4-21](P4/P4-21-admin-user-management.md) 用户管理页（系统管理员）：用户列表、创建用户
@@ -108,7 +107,7 @@
 | [P4-01](P4/P4-01-web-skeleton.md) | wp-web 工程骨架：Vue 3.5 + Vite 8 + TypeScript strict + ESLint + Vitest + Playwright | wp-web | web | S | 完成 | P3-27 |
 | [P4-02](P4/P4-02-api-client-auth.md) | API 客户端、CSRF、ProblemDetail 错误处理、查询键、Vue Query 全局配置与测试支持 | wp-web | web | M | 完成 | P4-01 |
 | [P4-03](P4/P4-03-layout-theme-i18n.md) | 主布局与顶部栏、Element Plus 主题与设计令牌、zh-CN / en-US 界面语言切换 | wp-web | web | M | 完成 | P4-25 |
-| [P4-04](P4/P4-04-project-list.md) | 项目列表：新建空项目、上传导入（进度与错误展示）、回收站 | wp-web | web | M | 待办（可开工） | P4-03 |
+| [P4-04](P4/P4-04-project-list.md) | 项目列表：新建空项目、上传导入（进度与错误展示）、回收站 | wp-web | web | M | 完成 | P4-03 |
 | [P4-05](P4/P4-05-project-workspace.md) | 项目工作台：项目外壳路由、左侧层级面板与右侧详情面板、URL 保存选中状态 | wp-web | web | M | 待办（可开工） | P4-03 |
 | [P4-06](P4/P4-06-class-hierarchy-tree.md) | 类层级树：el-tree-v2 虚拟滚动、按需加载子节点、通过 paths 定位选中实体 | wp-web | web | M | 待办 | P4-05、P4-18 |
 | [P4-07](P4/P4-07-property-hierarchy-trees.md) | 对象 / 数据 / 注解属性层级树（复用类层级树组件） | wp-web | web | S | 待办 | P4-06 |
