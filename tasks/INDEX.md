@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 99 张卡：完成 80，进行中 0，阻塞 0，待办 19。
+共 99 张卡：完成 81，进行中 0，阻塞 0，待办 18。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P4-11](P4/P4-11-entity-create-delete.md) 新建 / 删除实体：工具栏与树节点右键菜单，一次输入多个名称，删除前确认
 - [P4-12](P4/P4-12-entity-search.md) 顶部搜索框：结果按实体类型分组，回车跳转并在树中定位
 - [P4-13](P4/P4-13-revision-history.md) 修订历史：项目历史列表、修订差异、实体历史、回滚（二次确认）
 - [P4-15](P4/P4-15-project-settings.md) 项目设置页：标签页注册表与未保存提醒、基本信息、IRI 前缀
@@ -120,7 +119,7 @@
 | [P4-08](P4/P4-08-individual-list.md) | 个体列表：在类树中选类，分页列出该类的直接个体 | wp-web | web | S | 完成 | P4-06 |
 | [P4-09](P4/P4-09-class-frame-editor.md) | 类 Frame 编辑器：多语言注解、父类、三种属性值、只读的其它公理、冲突处理 | wp-web | web | M | 待办 | P4-22、P4-26 |
 | [P4-10](P4/P4-10-property-frame-editors.md) | 对象 / 数据 / 注解属性 Frame 编辑器 | wp-web | web | M | 待办 | P4-22、P4-26 |
-| [P4-11](P4/P4-11-entity-create-delete.md) | 新建 / 删除实体：工具栏与树节点右键菜单，一次输入多个名称，删除前确认 | wp-web | web | M | 待办（可开工） | P4-07、P4-08 |
+| [P4-11](P4/P4-11-entity-create-delete.md) | 新建 / 删除实体：工具栏与树节点右键菜单，一次输入多个名称，删除前确认 | wp-web | web | M | 完成 | P4-07、P4-08 |
 | [P4-12](P4/P4-12-entity-search.md) | 顶部搜索框：结果按实体类型分组，回车跳转并在树中定位 | wp-web | web | M | 待办（可开工） | P4-06 |
 | [P4-13](P4/P4-13-revision-history.md) | 修订历史：项目历史列表、修订差异、实体历史、回滚（二次确认） | wp-web | web | M | 待办（可开工） | P4-05、P4-18 |
 | [P4-14](P4/P4-14-project-events.md) | 实时事件（一）：SSE 解析、事件解析、按事件让 Vue Query 缓存失效 | wp-web | web | M | 完成 | P4-02、P4-18 |
