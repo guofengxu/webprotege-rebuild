@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-05, P4-18]
 ---
 
@@ -57,14 +57,22 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/settings/settingsT
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 离开有未保存修改的标签页时有提醒
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 离开有未保存修改的标签页时有提醒
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 新实体设置、显示语言（P4-27）
 - 成员管理（P4-24）
 - 移入回收站（P4-04 已提供）
 - 视图布局、透视图等旧系统的界面设置（不在 MVP）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-15-project-settings
+- 测试：2026-11-12T16:20:37+08:00 通过（3 项）
+- 实际改动：Added project settings page with tab registry, general (name/description) and IRI prefix forms, dirty-leave confirm, and settings API composables for P4-27 reuse.
+- 偏差：Added a one-line comment in app/i18n.ts so Vite re-expands the locale glob to include the new settings locale modules in local test runs.
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
