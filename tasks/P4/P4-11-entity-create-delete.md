@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-07, P4-08]
 ---
 
@@ -66,12 +66,20 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/entities/CreateEnt
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 删除前一定有确认
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 删除前一定有确认
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 拖拽移动实体、合并实体、批量导入（不在 MVP）
 - 新实体设置本身（P4-15）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-11-entity-create-delete
+- 测试：2026-11-12T13:59:13+08:00 通过（3 项）
+- 实际改动：新增实体新建/删除工具栏与右键菜单：多行名称创建、删除确认、查询失效与选中同步；接入类/属性树与个体列表。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect

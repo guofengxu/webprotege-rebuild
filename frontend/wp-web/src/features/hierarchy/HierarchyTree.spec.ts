@@ -113,6 +113,32 @@ test("clicking a node emits select with the EntityNode", async () => {
   wrapper.unmount();
 });
 
+test("contextmenu on a node label emits contextmenu with the EntityNode", async () => {
+  const { wrapper } = await renderWithProviders(HierarchyTree, {
+    props: { projectId: "p1", kind: "class", height: 240 },
+    handlers: handlers(),
+  });
+  await flushPromises();
+
+  const expandIcon = wrapper.find(".el-tree-node__expand-icon");
+  await expandIcon.trigger("click");
+  await flushPromises();
+
+  const label = wrapper
+    .findAll(".hierarchy-tree__label")
+    .find((node) => node.text().includes("Active"));
+  expect(label).toBeDefined();
+  await label!.trigger("contextmenu");
+  await flushPromises();
+
+  const tree = wrapper.getComponent(HierarchyTree);
+  const emitted = tree.emitted("contextmenu");
+  expect(emitted).toBeTruthy();
+  expect(emitted?.[0]?.[0]).toEqual(ACTIVE);
+  expect(emitted?.[0]?.[1]).toBeInstanceOf(MouseEvent);
+  wrapper.unmount();
+});
+
 test("mounting with selectedIri calls getHierarchyPaths and highlights the target", async () => {
   const { wrapper, requests } = await renderWithProviders(HierarchyTree, {
     props: {

@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   select: [node: EntityNode];
+  "row-contextmenu": [node: EntityNode, event: MouseEvent];
 }>();
 
 const { t } = useI18n();
@@ -53,6 +54,18 @@ const errorText = computed(() => {
 
 function onRowClick(row: EntityNode | Record<string, unknown>): void {
   emit("select", row as EntityNode);
+}
+
+function onRowContextMenu(
+  row: EntityNode | Record<string, unknown>,
+  _column: unknown,
+  event: Event,
+): void {
+  if (!(event instanceof MouseEvent)) {
+    return;
+  }
+  event.preventDefault();
+  emit("row-contextmenu", row as EntityNode, event);
 }
 
 function onPageChange(page: number): void {
@@ -116,6 +129,7 @@ function isSelectedRow(row: { iri?: unknown }): boolean {
         :row-class-name="rowClassName"
         :current-row-key="selectedIri ?? undefined"
         @row-click="onRowClick"
+        @row-contextmenu="onRowContextMenu"
       >
         <el-table-column
           :label="t('individuals.displayName')"

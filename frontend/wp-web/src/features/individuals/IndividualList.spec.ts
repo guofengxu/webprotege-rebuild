@@ -182,6 +182,25 @@ test("clicking a row emits select with the EntityNode", async () => {
   wrapper.unmount();
 });
 
+test("row contextmenu emits row-contextmenu with the EntityNode", async () => {
+  const { wrapper } = await mountList({ typeIri: TYPE_IRI });
+  await flushPromises();
+
+  const row = wrapper
+    .findAll(".el-table__row")
+    .find((entry) => entry.text().includes("Margherita"));
+  expect(row).toBeDefined();
+  await row!.trigger("contextmenu");
+  await flushPromises();
+
+  const list = wrapper.getComponent(IndividualList);
+  const emitted = list.emitted("row-contextmenu");
+  expect(emitted).toBeTruthy();
+  expect(emitted?.[0]?.[0]).toEqual(INDIVIDUALS[0]);
+  expect(emitted?.[0]?.[1]).toBeInstanceOf(MouseEvent);
+  wrapper.unmount();
+});
+
 test("deprecated individuals carry the is-deprecated class", async () => {
   const { wrapper } = await mountList({ typeIri: TYPE_IRI });
   await flushPromises();

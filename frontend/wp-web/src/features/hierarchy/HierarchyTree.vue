@@ -29,6 +29,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   select: [node: EntityNode];
+  contextmenu: [node: EntityNode, event: MouseEvent];
 }>();
 
 const { t } = useI18n();
@@ -190,6 +191,15 @@ function onNodeClick(data: unknown): void {
   }
   activeKey.value = node.key;
   emit("select", node.node);
+}
+
+function onNodeContextMenu(data: unknown, event: MouseEvent): void {
+  const node = asTreeNode(data);
+  if (node === null || node.placeholder === true || node.node === null) {
+    return;
+  }
+  event.preventDefault();
+  emit("contextmenu", node.node, event);
 }
 
 function nodeAccessibleName(data: TreeNodeData): string {
@@ -361,6 +371,7 @@ function focusNode(node: TreeNodeData): void {
             :class="{ 'is-deprecated': data.deprecated }"
             :title="data.iri"
             :aria-label="nodeAccessibleName(data)"
+            @contextmenu="onNodeContextMenu(data, $event)"
           >
             {{ data.label }}
           </span>
