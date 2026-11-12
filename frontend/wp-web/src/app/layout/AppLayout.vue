@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GlobalSearch from "@/features/search/GlobalSearch.vue";
 import AppTopBar from "./AppTopBar.vue";
 </script>
 
@@ -6,7 +7,7 @@ import AppTopBar from "./AppTopBar.vue";
   <div class="app-layout">
     <AppTopBar>
       <template #search>
-        <slot name="search" />
+        <GlobalSearch />
       </template>
     </AppTopBar>
     <main class="app-layout__main">

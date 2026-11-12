@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-06]
 ---
 
@@ -53,11 +53,19 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/search/useEntitySe
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 跨项目搜索、高级搜索语法
 - Frame 编辑器内的实体选择器（P4-26 的 `EntityPicker`）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-12-entity-search
+- 测试：2026-11-12T14:49:11+08:00 通过（3 项）
+- 实际改动：在顶栏接入 GlobalSearch：防抖搜索、按实体类型分组、键盘选择后 push 跳转并定位树；无结果提示显示名称设置。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
