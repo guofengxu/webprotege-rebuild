@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-03]
 ---
 
@@ -65,14 +65,22 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/projects/ProjectLi
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 上传错误（413、400 带行号）在界面上有对应的提示
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 上传错误（413、400 带行号）在界面上有对应的提示
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 项目改名、改描述（P4-15）
 - 下载导出（P4-19）
 - 导入迁移包（P3-10 / P3-11 没有对外的 REST 接口）
 - 项目工作台本身（P4-05）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-04-project-list
+- 测试：2026-11-12T08:36:03+08:00 通过（3 项）
+- 实际改动：新增项目列表页（我的项目/回收站）、新建空项目与上传导入对话框；XHR 上传带进度与 413/解析错误展示；删除 home 占位；i18n glob 收窄为 zh-CN/en-US。
+- 偏差：i18n.ts 的 import.meta.glob 从 *.ts 改为 {zh-CN,en-US}.ts，避免 Vite 内容哈希缓存漏掉新建 locale 文件。审查意见已处理：上传关闭竞态、onUnmounted 清理、aria-describedby、解析错误去重、row-key 与 pending 禁用。
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
