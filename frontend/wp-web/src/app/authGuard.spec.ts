@@ -29,15 +29,29 @@ const user = {
 afterEach(() => {
   vi.restoreAllMocks();
   document.body.innerHTML = "";
+  localStorage.removeItem("wp.locale");
 });
 
-test("home requires a session and login stays a public root route", () => {
-  expect(homeRoutes.root?.[0]).toMatchObject({
-    path: "/",
-    meta: { requiresAuth: true },
+test("home is a layout child and login stays a public root route", () => {
+  expect("root" in homeRoutes).toBe(false);
+  expect(homeRoutes.layout?.[0]).toMatchObject({
+    path: "",
+    component: expect.anything(),
   });
   expect(authRoutes.root?.[0]?.path).toBe("/login");
   expect(authRoutes.root?.[0]?.component).toBe(LoginPage);
+});
+
+test("createAppRouter mounts home under an authenticated AppLayout parent", async () => {
+  const { createAppRouter } = await import("./router");
+  const { createMemoryHistory } = await import("vue-router");
+  const router = createAppRouter(createMemoryHistory());
+  await router.push("/");
+  const matched = router.currentRoute.value.matched;
+  expect(matched.length).toBeGreaterThan(1);
+  expect(matched[0]?.meta.requiresAuth).toBe(true);
+  expect(matched[0]?.components?.default).toBeDefined();
+  expect(matched.at(-1)?.components?.default).toBeDefined();
 });
 
 test("safeRedirect keeps internal paths and drops open redirects", () => {
@@ -84,6 +98,7 @@ test("a current-user 500 opens login with a network reason", async () => {
 });
 
 test("requiresSystemAdmin sends ordinary users home and admits system admins", async () => {
+  localStorage.setItem("wp.locale", "zh-CN");
   const warning = vi.spyOn(ElMessage, "warning").mockImplementation(() => ({
     close: () => undefined,
   }));

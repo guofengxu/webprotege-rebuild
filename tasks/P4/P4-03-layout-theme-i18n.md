@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-25]
 ---
 
@@ -65,13 +65,21 @@ pnpm -C frontend --filter wp-web exec vitest run src/app/locales.spec.ts src/app
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 组件中没有硬编码的颜色值和界面文字
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 组件中没有硬编码的颜色值和界面文字
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 搜索框本身（P4-12）、个人设置页（P4-20）、用户管理页（P4-21）
 - 深色模式
 - 第三种界面语言
+
+## 执行记录
+- 日期：2026-11-11
+- 分支：feature/p4-03-layout-theme-i18n
+- 测试：2026-11-11T22:51:41+08:00 通过（3 项）
+- 实际改动：Added AppLayout/AppTopBar/LocaleSwitcher, --wp-* design tokens with Element Plus overrides, useAppLocale with localStorage persistence, and routed home under the authenticated layout.
+- 偏差：Left document.title and 320px top-bar reflow as follow-ups; auth guard still uses a separate i18n composer for warning copy (no longer writes html lang).
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect, (HIGH, fixes:, html, lang, side, effect, EP, light/dark, scales, Label-in-Name, aria-labels, readonly, locale, via, setLocale, non-colliding, project, query, key)
