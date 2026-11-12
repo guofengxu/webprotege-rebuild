@@ -16,7 +16,7 @@ export type LocaleModule = {
 };
 
 const localeModules = import.meta.glob<LocaleModule>(
-  // Feature locales under src/**/locales are collected here.
+  // Feature locales under src/**/locales/{zh-CN,en-US}.ts (incl. new feature folders).
   "/src/**/locales/{zh-CN,en-US}.ts",
   { eager: true, exhaustive: true },
 );

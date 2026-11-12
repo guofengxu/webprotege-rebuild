@@ -1,0 +1,47 @@
+const enUS = {
+  account: {
+    pageTitle: "Account settings",
+    userId: "User ID",
+    displayName: "Display name",
+    email: "Email",
+    appRoles: "Application roles",
+    noRoles: "None",
+    tabApiKeys: "API keys",
+    tabDevices: "Devices",
+    loading: "Loading…",
+    loadError: "Could not load data",
+    retry: "Retry",
+    name: "Name",
+    createdAt: "Created",
+    lastUsedAt: "Last used",
+    neverUsed: "Never used",
+    revoke: "Revoke",
+    createApiKey: "Create",
+    createApiKeyTitle: "Create API key",
+    apiKeyNameRequired: "Enter a name",
+    create: "Create",
+    cancel: "Cancel",
+    creating: "Creating…",
+    issuedTitle: "API key created",
+    issuedWarning:
+      "This key is shown only once. You will not be able to view the plaintext after closing this dialog.",
+    copy: "Copy",
+    copySuccess: "Copied",
+    copyFailed: "Copy failed. Please copy the key manually.",
+    close: "Close",
+    revokeApiKeyTitle: "Revoke API key",
+    revokeApiKeyMessage:
+      "Revoke “{name}”? Requests using this key will fail immediately.",
+    revokeConfirm: "Revoke",
+    deviceName: "Device",
+    accessExpiresAt: "Access token expires",
+    refreshExpiresAt: "Refresh token expires",
+    revokeDeviceTitle: "Revoke device",
+    revokeDeviceMessage:
+      "Revoke device “{name}”? The device will need to sign in again.",
+    emptyApiKeys: "No API keys yet",
+    emptyDevices: "No signed-in devices",
+  },
+};
+
+export default enUS;
