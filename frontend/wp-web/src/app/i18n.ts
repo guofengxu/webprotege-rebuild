@@ -17,7 +17,7 @@ export type LocaleModule = {
 
 const localeModules = import.meta.glob<LocaleModule>(
   "/src/**/locales/{zh-CN,en-US}.ts",
-  { eager: true },
+  { eager: true, exhaustive: true },
 );
 
 export function mergeLocaleMessages(
