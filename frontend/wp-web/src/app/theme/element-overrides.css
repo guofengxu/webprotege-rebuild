@@ -1,0 +1,53 @@
+:root {
+  --el-color-primary: var(--wp-color-brand);
+  --el-color-primary-light-3: color-mix(in srgb, var(--wp-color-brand) 70%, white);
+  --el-color-primary-light-5: color-mix(in srgb, var(--wp-color-brand) 50%, white);
+  --el-color-primary-light-7: color-mix(in srgb, var(--wp-color-brand) 30%, white);
+  --el-color-primary-light-8: color-mix(in srgb, var(--wp-color-brand) 20%, white);
+  --el-color-primary-light-9: color-mix(in srgb, var(--wp-color-brand) 10%, white);
+  --el-color-primary-dark-2: var(--wp-color-brand-hover);
+
+  --el-color-success: var(--wp-color-success);
+  --el-color-success-light-3: color-mix(in srgb, var(--wp-color-success) 70%, white);
+  --el-color-success-light-5: color-mix(in srgb, var(--wp-color-success) 50%, white);
+  --el-color-success-light-7: color-mix(in srgb, var(--wp-color-success) 30%, white);
+  --el-color-success-light-8: color-mix(in srgb, var(--wp-color-success) 20%, white);
+  --el-color-success-light-9: color-mix(in srgb, var(--wp-color-success) 10%, white);
+  --el-color-success-dark-2: color-mix(in srgb, var(--wp-color-success) 80%, black);
+
+  --el-color-warning: var(--wp-color-warning);
+  --el-color-warning-light-3: color-mix(in srgb, var(--wp-color-warning) 70%, white);
+  --el-color-warning-light-5: color-mix(in srgb, var(--wp-color-warning) 50%, white);
+  --el-color-warning-light-7: color-mix(in srgb, var(--wp-color-warning) 30%, white);
+  --el-color-warning-light-8: color-mix(in srgb, var(--wp-color-warning) 20%, white);
+  --el-color-warning-light-9: color-mix(in srgb, var(--wp-color-warning) 10%, white);
+  --el-color-warning-dark-2: color-mix(in srgb, var(--wp-color-warning) 80%, black);
+
+  --el-color-danger: var(--wp-color-danger);
+  --el-color-danger-light-3: color-mix(in srgb, var(--wp-color-danger) 70%, white);
+  --el-color-danger-light-5: color-mix(in srgb, var(--wp-color-danger) 50%, white);
+  --el-color-danger-light-7: color-mix(in srgb, var(--wp-color-danger) 30%, white);
+  --el-color-danger-light-8: color-mix(in srgb, var(--wp-color-danger) 20%, white);
+  --el-color-danger-light-9: color-mix(in srgb, var(--wp-color-danger) 10%, white);
+  --el-color-danger-dark-2: color-mix(in srgb, var(--wp-color-danger) 80%, black);
+
+  --el-color-info: var(--wp-color-info);
+  --el-color-info-light-3: color-mix(in srgb, var(--wp-color-info) 70%, white);
+  --el-color-info-light-5: color-mix(in srgb, var(--wp-color-info) 50%, white);
+  --el-color-info-light-7: color-mix(in srgb, var(--wp-color-info) 30%, white);
+  --el-color-info-light-8: color-mix(in srgb, var(--wp-color-info) 20%, white);
+  --el-color-info-light-9: color-mix(in srgb, var(--wp-color-info) 10%, white);
+  --el-color-info-dark-2: color-mix(in srgb, var(--wp-color-info) 80%, black);
+
+  --el-text-color-primary: var(--wp-color-text-primary);
+  --el-text-color-regular: var(--wp-color-text-secondary);
+  --el-text-color-secondary: var(--wp-color-text-tertiary);
+  --el-text-color-placeholder: var(--wp-color-text-tertiary);
+
+  --el-border-color: var(--wp-color-border);
+  --el-bg-color: var(--wp-color-bg);
+  --el-bg-color-page: var(--wp-color-bg-muted);
+
+  --el-font-size-base: var(--wp-font-size-md);
+  --el-border-radius-base: var(--wp-radius-md);
+}

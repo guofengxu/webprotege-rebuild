@@ -4,7 +4,7 @@ import type { RouteLocationNormalized, Router } from "vue-router";
 import { currentUserQuery, isSystemAdmin } from "@/features/auth/useAuth";
 import type { ApiClient } from "@/shared/api/client";
 import { ApiError } from "@/shared/api/problem";
-import { createAppI18n } from "./i18n";
+import { createAppI18n, resolveInitialLocale } from "./i18n";
 
 declare module "vue-router" {
   interface RouteMeta {
@@ -13,7 +13,13 @@ declare module "vue-router" {
   }
 }
 
-const guardI18n = createAppI18n();
+const guardI18n = createAppI18n("en-US");
+
+function guardT(key: string): string {
+  // Separate composer for router guards; do not touch <html lang>.
+  guardI18n.global.locale.value = resolveInitialLocale();
+  return String(guardI18n.global.t(key));
+}
 
 /** Same-origin paths only. Rejects scheme-relative and backslash redirects. */
 export function safeRedirect(raw: unknown): string {
@@ -42,7 +48,7 @@ export function installAuthGuard(
         return loginLocation(to.fullPath);
       }
       if (to.meta.requiresSystemAdmin === true && !isSystemAdmin(user)) {
-        ElMessage.warning(guardI18n.global.t("auth.adminRequired"));
+        ElMessage.warning(guardT("auth.adminRequired"));
         return "/";
       }
       return true;

@@ -1,13 +1,17 @@
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { createPinia } from "pinia";
 import ElementPlus from "element-plus";
-import "element-plus/dist/index.css";
 import { createApp } from "vue";
 import App from "./App.vue";
 import { handleUnauthorized, installAuthGuard } from "./app/authGuard";
-import { createAppI18n } from "./app/i18n";
+import {
+  applyDocumentLang,
+  createAppI18n,
+  resolveInitialLocale,
+} from "./app/i18n";
 import { createAppQueryClient } from "./app/queryClient";
 import { createAppRouter } from "./app/router";
+import "./app/theme";
 import { createApiClient, provideApiClient } from "./shared/api/client";
 
 const app = createApp(App);
@@ -19,9 +23,11 @@ const apiClient = createApiClient({
   },
 });
 installAuthGuard(router, queryClient, apiClient);
+const initialLocale = resolveInitialLocale();
 app.use(createPinia());
 app.use(router);
-app.use(createAppI18n());
+app.use(createAppI18n(initialLocale));
+applyDocumentLang(initialLocale);
 app.use(ElementPlus);
 app.use(VueQueryPlugin, { queryClient });
 provideApiClient(app, apiClient);

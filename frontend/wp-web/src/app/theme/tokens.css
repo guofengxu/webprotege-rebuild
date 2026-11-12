@@ -1,0 +1,45 @@
+:root {
+  /* Brand and semantic colors — dense ontology editor, WCAG AA on white */
+  --wp-color-brand: #0f6e6a;
+  --wp-color-brand-hover: #0c5956;
+  --wp-color-success: #15803d;
+  --wp-color-warning: #b45309;
+  --wp-color-danger: #b91c1c;
+  --wp-color-info: #1d4ed8;
+
+  --wp-color-text-primary: #1f2937;
+  --wp-color-text-secondary: #4b5563;
+  --wp-color-text-tertiary: #6b7280;
+
+  --wp-color-border: #e5e7eb;
+  --wp-color-bg: #ffffff;
+  --wp-color-bg-muted: #f3f4f6;
+
+  /* Spacing scale (4px multiples) */
+  --wp-space-1: 4px;
+  --wp-space-2: 8px;
+  --wp-space-3: 12px;
+  --wp-space-4: 16px;
+  --wp-space-5: 20px;
+  --wp-space-6: 24px;
+  --wp-space-7: 32px;
+  --wp-space-8: 40px;
+
+  /* Radii */
+  --wp-radius-sm: 2px;
+  --wp-radius-md: 4px;
+  --wp-radius-lg: 6px;
+
+  /* Type scale — default body 14px for dense editing */
+  --wp-font-size-xs: 12px;
+  --wp-font-size-sm: 13px;
+  --wp-font-size-md: 14px;
+  --wp-font-size-lg: 16px;
+  --wp-font-size-xl: 18px;
+  --wp-font-size-2xl: 20px;
+
+  --wp-font-mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  --wp-topbar-height: 48px;
+}
