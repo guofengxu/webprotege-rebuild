@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-05, P4-18]
 ---
 
@@ -67,14 +67,22 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/hierarchy/useHiera
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 1 万个子节点展开后 DOM 节点数不超过 100
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 1 万个子节点展开后 DOM 节点数不超过 100
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 三种属性层级（P4-07）、个体列表（P4-08）
 - 右键菜单与新建 / 删除（P4-11）
 - 根据事件刷新树（P4-14，本卡只保证“查询失效 → 树更新”）
 - 拖拽调整父类
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-06-class-hierarchy-tree
+- 测试：2026-11-12T09:47:31+08:00 通过（3 项）
+- 实际改动：新增类层级树：el-tree-v2 虚拟滚动、占位子节点懒加载、paths 定位选中、查询失效后就地刷新；注册 ClassHierarchyPanel；含 expand/locate/10000 节点虚拟滚动测试。
+- 偏差：el-tree-v2 无内置键盘导航；本卡在容器上加了方向键/Enter 适配层，虚拟列表下的完整 APG aria-level/aria-selected 仍受 Element Plus 限制。
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
