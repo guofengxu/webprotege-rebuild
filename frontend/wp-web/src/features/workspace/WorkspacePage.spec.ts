@@ -62,5 +62,13 @@ async function renderPage(route: string) {
         ],
       },
     ],
+    handlers: {
+      "GET /api/projects/{id}/hierarchies/{kind}/roots": () => ({ json: [] }),
+      "GET /api/projects/{id}/hierarchies/{kind}/children": () => ({ json: [] }),
+      "GET /api/projects/{id}/hierarchies/{kind}/paths": () => ({ json: [] }),
+      "GET /api/projects/{id}/individuals": () => ({
+        json: { individuals: [], page: 0, size: 50, total: 0 },
+      }),
+    },
   });
 }

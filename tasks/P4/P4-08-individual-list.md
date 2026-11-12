@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-06]
 ---
 
@@ -51,12 +51,20 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/individuals/Indivi
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 个体 Frame 编辑器（P4-23）
 - 新建 / 删除个体（P4-11）
 - 包含子类个体或推理得到的类型（后端不提供）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-08-individual-list
+- 测试：2026-11-12T11:55:09+08:00 通过（3 项）
+- 实际改动：新增 individuals 功能：useIndividuals、IndividualList（el-table+分页）、IndividualsPanel（类树+个体列表）及注册；切换类时清空 entity；WorkspacePage.spec 补齐 hierarchy/individuals mock。
+- 偏差：WorkspacePage.spec.ts 补 mock handlers，消除类/个体面板挂载后未处理的 paths 请求拒绝（全量 vitest 需要）。
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
