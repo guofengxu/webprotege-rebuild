@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-05, P4-18]
 ---
 
@@ -61,12 +61,20 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/history/RevisionHi
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 回滚必须经过二次确认
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 回滚必须经过二次确认
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 下载某个修订的本体文件（P4-19 通过 `revisionActions` 注册，本卡只负责渲染这个扩展点）
 - 修订之间的任意比较（后端只提供单个修订的差异）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-13-revision-history
+- 测试：2026-11-12T15:50:16+08:00 通过（3 项）
+- 实际改动：新增 history 功能：修订列表、差异、实体历史与二次确认回滚；注册 history 路由与 detailTabs；回滚后失效整个 project 查询前缀。审查已处理 append-to-body、键盘可选修订、不可变分组与回滚 aria。
+- 偏差：实现行数（含样式与文案）明显超过约 400 行预估；EntityHistoryTab 按产出保留在本卡未拆。docs 仅为 finish 更新的 INDEX/依赖图。
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
