@@ -12,6 +12,7 @@ type FeatureRouteModule = {
 };
 
 const featureRouteModules = import.meta.glob<FeatureRouteModule>(
+  // One routes.ts per feature folder (account, admin, auth, …).
   "/src/features/*/routes.ts",
   { eager: true, exhaustive: true },
 );

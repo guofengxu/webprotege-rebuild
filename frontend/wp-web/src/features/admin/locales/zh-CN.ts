@@ -1,0 +1,37 @@
+const zhCN = {
+  admin: {
+    pageTitle: "用户管理",
+    createUser: "新建用户",
+    createUserTitle: "新建用户",
+    userId: "用户 ID",
+    displayName: "显示名称",
+    email: "邮箱",
+    appRoles: "应用角色",
+    passwordResetRequired: "需要设置密码",
+    actions: "操作",
+    empty: "暂无用户",
+    usersTableLabel: "用户列表",
+    loading: "加载中…",
+    loadError: "无法加载用户列表",
+    forbidden: "无权限访问用户管理",
+    retry: "重试",
+    retryLoadUsers: "重试加载用户列表",
+    cancel: "取消",
+    create: "创建",
+    creating: "创建中…",
+    initialPassword: "初始密码",
+    generatePassword: "生成随机密码",
+    showPassword: "显示密码",
+    hidePassword: "隐藏密码",
+    userIdInvalid: "用户 ID 须为 2–64 位字母、数字、点、下划线或连字符",
+    displayNameRequired: "请输入显示名称",
+    emailInvalid: "请输入有效的邮箱地址",
+    passwordTooShort: "密码至少 12 位",
+    userIdExists: "用户 ID 已存在",
+    createSuccess:
+      "用户已创建。请立即将初始密码告知用户；关闭对话框后无法再次查看。",
+    noRoles: "无",
+  },
+};
+
+export default zhCN;

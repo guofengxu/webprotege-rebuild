@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-03]
 ---
 
@@ -58,13 +58,21 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/admin/routes.spec.
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 非管理员无法进入用户管理页
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 非管理员无法进入用户管理页
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 修改应用角色、重置密码的界面（P4-28）
 - 删除或停用用户、修改用户的显示名称和邮箱（后端没有对应接口）
 - 批量创建用户、OIDC / 企业微信登录（P6 候选）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-21-admin-user-management
+- 测试：2026-11-12T22:04:48+08:00 通过（3 项）
+- 实际改动：新增系统管理员用户管理页：分页列表、创建用户对话框、随机密码与路由守卫；写操作成功后失效 adminUsers 查询。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
