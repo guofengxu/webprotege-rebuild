@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-03]
 ---
 
@@ -73,13 +73,21 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/workspace/useWorks
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 刷新页面后项目、层级类型、选中实体都能恢复
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 刷新页面后项目、层级类型、选中实体都能恢复
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 层级树（P4-06、P4-07）、个体列表（P4-08）、各种 Frame 编辑器（P4-09、P4-10、P4-23）
 - 修订历史页与项目设置页（P4-13、P4-15），本卡只放链接
 - 事件订阅（P4-14、P4-29）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-05-project-workspace
+- 测试：2026-11-12T09:08:29+08:00 通过（3 项）
+- 实际改动：Added ProjectShell/WorkspacePage with hierarchy and detail panels, URL-backed kind/entity/type selection, layout Pinia store, feature registry, and locale keys. Router nests feature project routes under ProjectShell; import.meta.glob uses exhaustive so new locale/route modules are discovered.
+- 偏差：Set import.meta.glob exhaustive:true on i18n, router, and registry so newly added modules are matched under Vite/Vitest. el-splitter is available in Element Plus 2.14.8 (no flex fallback).
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
