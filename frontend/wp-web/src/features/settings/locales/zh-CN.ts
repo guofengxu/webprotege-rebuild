@@ -1,0 +1,33 @@
+const zhCN = {
+  settings: {
+    pageTitle: "项目设置",
+    general: "基本信息",
+    prefixes: "IRI 前缀",
+    name: "名称",
+    description: "描述",
+    nameRequired: "请输入项目名称",
+    save: "保存",
+    saving: "保存中…",
+    saveSuccess: "已保存",
+    forbidden: "无权限修改此项设置，表单已变为只读",
+    unsavedTitle: "有未保存的修改",
+    unsavedMessage: "离开当前标签页将丢失未保存的修改，是否继续？",
+    unsavedConfirm: "离开",
+    unsavedCancel: "取消",
+    prefixName: "前缀名",
+    prefixIri: "IRI",
+    addPrefix: "新增前缀",
+    removePrefix: "删除",
+    removePrefixNamed: "删除前缀 {prefix}",
+    newPrefixRow: "新行 {n}",
+    prefixRequired: "前缀名不能为空",
+    prefixDuplicate: "前缀名不能重复",
+    iriInvalid: "请输入绝对 IRI",
+    prefixesEmpty: "暂无前缀，可新增一行",
+    loading: "加载中…",
+    loadError: "无法加载设置",
+    retry: "重试",
+  },
+};
+
+export default zhCN;
