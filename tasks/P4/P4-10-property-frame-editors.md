@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-22, P4-26]
 ---
 
@@ -61,11 +61,19 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/frames/property/Ob
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 个体 Frame 编辑器（P4-23）
 - 编辑属性链、不相交属性、等价属性（只读显示在 `otherAxioms` 中）
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p4-10-property-frame-editors
+- 测试：2026-11-13T11:04:34+08:00 通过（3 项）
+- 实际改动：新增对象/数据/注解属性 Frame 编辑器、IriListInput、API、注册与 locales；七种特征勾选、函数型开关、IRI 定义域/值域与 409 冲突处理与类 Frame 一致。
+- 偏差：实现行数（约 1100+，不含测试）明显高于卡片预估 400 行；卡片建议超标时拆出 AnnotationPropertyFrameEditor 与 IriListInput，本卡仍按产出清单交付全部三项编辑器以便一次验收。
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
