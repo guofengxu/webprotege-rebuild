@@ -141,6 +141,31 @@ test("EntityHierarchyChanged invalidates the whole hierarchy prefix, including t
   );
 });
 
+test("EntityHierarchyChanged refetches inactive hierarchy queries (refetchType all)", () => {
+  const client = seededClient();
+  const spy = vi.spyOn(client, "invalidateQueries");
+  applyProjectEvent(client, projectId, {
+    type: "EntityHierarchyChanged",
+    revNo: 8,
+    hierarchy: "class",
+    added: [{ parent, child }],
+    removed: [],
+  });
+  const hierarchyCalls = spy.mock.calls.filter((args) => {
+    const options = args[0] as {
+      queryKey?: readonly unknown[];
+      refetchType?: string;
+    };
+    return (
+      Array.isArray(options.queryKey) &&
+      options.queryKey.includes("hierarchy") &&
+      options.refetchType === "all"
+    );
+  });
+  expect(hierarchyCalls.length).toBeGreaterThan(0);
+  spy.mockRestore();
+});
+
 test("a non-class hierarchy change leaves individuals and the other hierarchies fresh", () => {
   expectEffect(
     {
