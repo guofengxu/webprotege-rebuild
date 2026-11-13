@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 99 张卡：完成 93，进行中 0，阻塞 0，待办 6。
+共 99 张卡：完成 94，进行中 0，阻塞 0，待办 5。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P4-27](P4/P4-27-entity-naming-settings.md) 项目设置：新实体的 IRI 生成规则与显示语言（显示名称设置）
 - [P4-28](P4/P4-28-admin-user-roles-password.md) 用户管理（系统管理员）：修改应用角色、重置密码
 - [P4-29](P4/P4-29-project-events-connection.md) 实时事件（二）：订阅 SSE、断线重连带 Last-Event-ID、连接状态、接入项目外壳
 - [P5-00](P5/P5-00-mobile-planning.md) 规划卡：细化移动端（uni-app）MVP 任务卡
@@ -130,7 +129,7 @@
 | [P4-24](P4/P4-24-project-members.md) | 项目成员管理：列出成员、添加成员、修改角色、移除成员 | wp-web | web | M | 完成 | P4-15 |
 | [P4-25](P4/P4-25-auth-login.md) | 登录页、当前用户、路由守卫与 401 统一跳转 | wp-web | web | M | 完成 | P4-02 |
 | [P4-26](P4/P4-26-frame-inputs.md) | Frame 输入组件：实体选择器（含内置实体）、实体引用列表、字面量输入、注解编辑器 | wp-web | web | M | 完成 | P4-22 |
-| [P4-27](P4/P4-27-entity-naming-settings.md) | 项目设置：新实体的 IRI 生成规则与显示语言（显示名称设置） | wp-web | web | M | 待办（可开工） | P4-15、P4-26 |
+| [P4-27](P4/P4-27-entity-naming-settings.md) | 项目设置：新实体的 IRI 生成规则与显示语言（显示名称设置） | wp-web | web | M | 完成 | P4-15、P4-26 |
 | [P4-28](P4/P4-28-admin-user-roles-password.md) | 用户管理（系统管理员）：修改应用角色、重置密码 | wp-web | web | S | 待办（可开工） | P4-21 |
 | [P4-29](P4/P4-29-project-events-connection.md) | 实时事件（二）：订阅 SSE、断线重连带 Last-Event-ID、连接状态、接入项目外壳 | wp-web | web | M | 待办（可开工） | P4-05、P4-14 |
 

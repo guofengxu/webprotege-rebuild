@@ -111,7 +111,7 @@ flowchart LR
         P4_24["P4-24"]:::done
         P4_25["P4-25"]:::done
         P4_26["P4-26"]:::done
-        P4_27["P4-27"]:::todo
+        P4_27["P4-27"]:::done
         P4_28["P4-28"]:::todo
         P4_29["P4-29"]:::todo
     end
