@@ -27,10 +27,33 @@ const zhCN = {
     displayNameRequired: "请输入显示名称",
     emailInvalid: "请输入有效的邮箱地址",
     passwordTooShort: "密码至少 12 位",
+    passwordHint: "密码至少 12 位",
+    passwordGenerated: "已生成随机密码并显示",
     userIdExists: "用户 ID 已存在",
     createSuccess:
       "用户已创建。请立即将初始密码告知用户；关闭对话框后无法再次查看。",
     noRoles: "无",
+    editRoles: "修改角色",
+    editRolesFor: "修改 {userId} 的应用角色",
+    editRolesTitle: "修改 {userId} 的应用角色",
+    saveRoles: "保存",
+    rolesUpdated: "应用角色已更新",
+    roleSystemAdmin: "系统管理员",
+    roleSystemAdminHint: "可管理全部用户与系统设置",
+    roleProjectCreator: "可创建项目",
+    roleProjectCreatorHint: "可以新建项目",
+    lastSystemAdmin: "不能移除最后一位系统管理员",
+    forbiddenAction: "无权限执行此操作",
+    selfDemoteTitle: "确认取消自己的系统管理员角色",
+    selfDemoteMessage:
+      "你正在取消自己的系统管理员角色，之后可能无法再访问用户管理。是否继续？",
+    selfDemoteConfirm: "确认取消",
+    resetPassword: "重置密码",
+    resetPasswordFor: "重置 {userId} 的密码",
+    resetPasswordTitle: "重置 {userId} 的密码",
+    newPassword: "新密码",
+    resetPasswordSuccess:
+      "密码已重置。请立即将新密码告知用户；关闭对话框后无法再次查看。",
   },
 };
 

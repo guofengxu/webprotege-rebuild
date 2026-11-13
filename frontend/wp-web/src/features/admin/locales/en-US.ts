@@ -28,10 +28,33 @@ const enUS = {
     displayNameRequired: "Enter a display name",
     emailInvalid: "Enter a valid email address",
     passwordTooShort: "Password must be at least 12 characters",
+    passwordHint: "Password must be at least 12 characters",
+    passwordGenerated: "Password generated and shown",
     userIdExists: "User ID already exists",
     createSuccess:
       "User created. Share the initial password with the user now; it cannot be shown again after closing.",
     noRoles: "None",
+    editRoles: "Edit roles",
+    editRolesFor: "Edit application roles for {userId}",
+    editRolesTitle: "Edit application roles for {userId}",
+    saveRoles: "Save",
+    rolesUpdated: "Application roles updated",
+    roleSystemAdmin: "System administrator",
+    roleSystemAdminHint: "Can manage all users and system settings",
+    roleProjectCreator: "Project creator",
+    roleProjectCreatorHint: "Can create new projects",
+    lastSystemAdmin: "The last system administrator cannot be removed",
+    forbiddenAction: "You do not have permission for this action",
+    selfDemoteTitle: "Confirm removing your system administrator role",
+    selfDemoteMessage:
+      "You are removing your own system administrator role and may lose access to user management. Continue?",
+    selfDemoteConfirm: "Confirm",
+    resetPassword: "Reset password",
+    resetPasswordFor: "Reset password for {userId}",
+    resetPasswordTitle: "Reset password for {userId}",
+    newPassword: "New password",
+    resetPasswordSuccess:
+      "Password reset. Share the new password with the user now; it cannot be shown again after closing.",
   },
 };
 
