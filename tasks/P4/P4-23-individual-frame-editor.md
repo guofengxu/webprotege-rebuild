@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-22, P4-26]
 ---
 
@@ -54,11 +54,19 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/frames/individual/
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 个体列表（P4-08）、新建 / 删除个体（P4-11）
 - 负属性断言、`DifferentIndividuals` 等其它个体公理（只读显示在 `otherAxioms` 中）
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p4-23-individual-frame-editor
+- 测试：2026-11-13T11:51:52+08:00 通过（3 项）
+- 实际改动：新增个体 Frame 编辑器（注解、类型、对象/数据属性断言、同一个体），注册 NAMED_INDIVIDUAL 详情面板，保存后失效个体列表与搜索缓存。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
