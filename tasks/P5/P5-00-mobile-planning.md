@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: []
-status: todo
+status: blocked
 depends_on: [P3-24, P3-27]
 ---
 
@@ -55,3 +55,9 @@ python tools/plan_lint.py --check
 
 ## 不在本卡范围
 - 写任何移动端代码
+
+## 阻塞
+- 日期：2026-11-13
+- 原因：人决定移动端（P5）暂时停止开发，在 P6-00 中记录。这不是卡片本身的问题：卡片内容保持不变，依赖（P3-24、P3-27）均已完成。
+- 恢复方式：人决定恢复移动端开发时，把本卡 `status` 改回 `todo` 并删除本节，再按 `python tools/task.py start P5-00` 开工；同时撤销 `tasks/P5/EPIC.md` 顶部的暂停说明。
+- 影响：P6 的卡片都不依赖 P5；`tasks/P6/EPIC.md` 中的“移动端：iOS 与微信小程序”“移动端推送通知”随 P5 一起暂缓。后端已完成的移动端令牌（P3-26）、长轮询（P3-21）与 `@wp/api-types`（P3-27）保持原样，不回退。
