@@ -1,8 +1,10 @@
 package wprebuild.app.access;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -80,6 +82,32 @@ public class AccessService {
         if (!can(userId, projectId, action)) {
             throw denied(userId, projectId, action);
         }
+    }
+
+    /**
+     * Returns the caller's assigned role (if any) and every project-scoped action that {@link
+     * #can(UserId, ProjectId, Action)} allows. Application-scoped actions are omitted. Uses the same
+     * decision tree as {@code can} after one role lookup, so the result stays in lock-step without
+     * repeating those queries per action.
+     */
+    public ProjectAccess projectAccess(UserId userId, ProjectId projectId) {
+        Objects.requireNonNull(userId, "user id");
+        Objects.requireNonNull(projectId, "project id");
+        boolean systemAdmin = appRoles(userId).contains(AppRole.SYSTEM_ADMIN.name());
+        ProjectRole role = assignments.find(projectId, userId).orElse(null);
+        Set<Action> allowed = EnumSet.noneOf(Action.class);
+        for (Action action : Action.values()) {
+            if (!action.projectScoped()) {
+                continue;
+            }
+            // Same rules as can(userId, projectId, action): SYSTEM_ADMIN → CAN_MANAGE, else assignment.
+            boolean permitted =
+                    systemAdmin ? ProjectRole.CAN_MANAGE.allows(action) : role != null && role.allows(action);
+            if (permitted) {
+                allowed.add(action);
+            }
+        }
+        return new ProjectAccess(role, systemAdmin, allowed);
     }
 
     /** The user who creates a project receives {@link ProjectRole#CAN_MANAGE} on it. */

@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: app-security
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-17]
 ---
 
@@ -59,12 +59,20 @@ pnpm -C frontend --filter wp-web run typecheck
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - Web 端按权限显示控件（P6-04、P6-05、P6-06）
 - 应用级权限接口、批量查询多个项目的权限
 - 修改 BS-10 中角色与操作的定义
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p6-01-my-project-permissions
+- 测试：2026-11-13T20:37:18+08:00 通过（6 项）
+- 实际改动：新增 GET /api/projects/{id}/permissions/me：经 CommandBus 要求 VIEW_PROJECT，AccessService.projectAccess 按与 can() 相同的规则返回角色与项目级 actions；更新 OpenAPI 与 api-types。
+- 偏差：审查 MEDIUM 已处理：projectAccess 一次加载角色后按 can() 同规则计算；OpenAPI actions 枚举收窄为项目级。docs/api/openapi.json 属契约快照更新。
+- 审查：security-reviewer, java-reviewer

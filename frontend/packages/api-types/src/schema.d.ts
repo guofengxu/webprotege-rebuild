@@ -559,6 +559,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects/{id}/permissions/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get my permissions on a project */
+        get: operations["getMyProjectPermissions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/projects/{id}/revisions": {
         parameters: {
             query?: never;
@@ -938,6 +955,16 @@ export interface components {
         MemberResponse: {
             role?: string;
             userId?: string;
+        };
+        MyProjectPermissionsResponse: {
+            actions?: ("VIEW_PROJECT" | "VIEW_CHANGES" | "DOWNLOAD_PROJECT" | "EDIT_ONTOLOGY" | "EDIT_ONTOLOGY_ANNOTATIONS" | "CREATE_CLASS" | "DELETE_CLASS" | "CREATE_PROPERTY" | "DELETE_PROPERTY" | "CREATE_INDIVIDUAL" | "DELETE_INDIVIDUAL" | "REVERT_CHANGES" | "EDIT_PROJECT_SETTINGS" | "EDIT_SHARING_SETTINGS" | "EDIT_NEW_ENTITY_SETTINGS" | "EDIT_PROJECT_PREFIXES" | "MOVE_ANY_PROJECT_TO_TRASH")[];
+            projectId?: string;
+            /**
+             * @description Assigned project role, or null when the caller has none
+             * @enum {string|null}
+             */
+            role?: "CAN_VIEW" | "CAN_COMMENT" | "CAN_EDIT" | "CAN_MANAGE" | null;
+            systemAdmin?: boolean;
         };
         NamedIndividualFrame: {
             annotations?: components["schemas"]["AnnotationValue"][];
@@ -4077,6 +4104,73 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getMyProjectPermissions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyProjectPermissionsResponse"];
+                };
             };
             /** @description Bad request */
             400: {

@@ -658,6 +658,30 @@
         },
         "type" : "object"
       },
+      "MyProjectPermissionsResponse" : {
+        "properties" : {
+          "actions" : {
+            "items" : {
+              "description" : "Project-scoped action",
+              "enum" : [ "VIEW_PROJECT", "VIEW_CHANGES", "DOWNLOAD_PROJECT", "EDIT_ONTOLOGY", "EDIT_ONTOLOGY_ANNOTATIONS", "CREATE_CLASS", "DELETE_CLASS", "CREATE_PROPERTY", "DELETE_PROPERTY", "CREATE_INDIVIDUAL", "DELETE_INDIVIDUAL", "REVERT_CHANGES", "EDIT_PROJECT_SETTINGS", "EDIT_SHARING_SETTINGS", "EDIT_NEW_ENTITY_SETTINGS", "EDIT_PROJECT_PREFIXES", "MOVE_ANY_PROJECT_TO_TRASH" ],
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "projectId" : {
+            "type" : "string"
+          },
+          "role" : {
+            "description" : "Assigned project role, or null when the caller has none",
+            "enum" : [ "CAN_VIEW", "CAN_COMMENT", "CAN_EDIT", "CAN_MANAGE" ],
+            "type" : [ "string", "null" ]
+          },
+          "systemAdmin" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
       "NamedIndividualFrame" : {
         "properties" : {
           "annotations" : {
@@ -4848,6 +4872,83 @@
         },
         "summary" : "Set a project member's role",
         "tags" : [ "Project settings" ]
+      }
+    },
+    "/api/projects/{id}/permissions/me" : {
+      "get" : {
+        "operationId" : "getMyProjectPermissions",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MyProjectPermissionsResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          }
+        },
+        "summary" : "Get my permissions on a project",
+        "tags" : [ "Projects" ]
       }
     },
     "/api/projects/{id}/revisions" : {
