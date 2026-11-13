@@ -92,6 +92,18 @@ public class UserService {
         return users.findById(Objects.requireNonNull(userId, "user id"));
     }
 
+    /** Candidate users for the member picker. Does not log the query text. */
+    @Transactional(readOnly = true)
+    public List<UserSummary> search(String query, int limit) {
+        if (query == null || query.isBlank()) {
+            throw new IllegalArgumentException("query must not be blank");
+        }
+        if (limit < 1) {
+            throw new IllegalArgumentException("limit must be at least 1");
+        }
+        return users.search(query, limit);
+    }
+
     @Transactional
     public void setPassword(UserId userId, String rawPassword) {
         Objects.requireNonNull(userId, "user id");
