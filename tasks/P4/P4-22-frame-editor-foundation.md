@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-05, P4-18]
 ---
 
@@ -80,13 +80,21 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/frames/useFrameEdi
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 409 `FRAME_CHANGED` 时草稿不丢失，并可以刷新
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 409 `FRAME_CHANGED` 时草稿不丢失，并可以刷新
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 表单输入组件：`EntityPicker`、`EntityRefList`、`LiteralValueInput`、`AnnotationsEditor`（P4-26）
 - 具体的 Frame 编辑器：类（P4-09）、属性（P4-10）、个体（P4-23）
 - Manchester 语法编辑（不在 MVP，见 `docs/03-plan/mvp-scope.md`）
+
+## 执行记录
+- 日期：2026-11-12
+- 分支：feature/p4-22-frame-editor-foundation
+- 测试：2026-11-12T22:40:14+08:00 通过（3 项）
+- 实际改动：新增 frames 共用编辑机制：frameModel、useFrameEditor（from/to、409/403、可选 normalize）、useUnsavedGuard、FrameSaveBar/Header/OtherAxiomsView 与 framesCommon 文案。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
