@@ -16,11 +16,13 @@ const props = withDefaults(
     allowRawIri?: boolean;
     excludeIris?: readonly string[];
     ariaLabel: string;
+    disabled?: boolean;
   }>(),
   {
     builtins: () => [],
     allowRawIri: false,
     excludeIris: () => [],
+    disabled: false,
   },
 );
 
@@ -84,7 +86,7 @@ function onPick(node: EntityNode | null): void {
       <el-tag
         v-for="entry in tags"
         :key="entry.node.iri"
-        closable
+        :closable="!disabled"
         class="entity-ref-list__tag"
         :class="{ 'entity-ref-list__tag--deprecated': entry.node.deprecated }"
         @close="removeAt(entry.index)"
@@ -106,6 +108,7 @@ function onPick(node: EntityNode | null): void {
       :builtins="builtins"
       :allow-raw-iri="allowRawIri"
       :exclude-iris="excludeIris"
+      :disabled="disabled"
       v-bind="{ ariaLabel }"
       @update:model-value="onPick"
     />

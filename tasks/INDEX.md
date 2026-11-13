@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 99 张卡：完成 90，进行中 0，阻塞 0，待办 9。
+共 99 张卡：完成 91，进行中 0，阻塞 0，待办 8。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P4-09](P4/P4-09-class-frame-editor.md) 类 Frame 编辑器：多语言注解、父类、三种属性值、只读的其它公理、冲突处理
 - [P4-10](P4/P4-10-property-frame-editors.md) 对象 / 数据 / 注解属性 Frame 编辑器
 - [P4-23](P4/P4-23-individual-frame-editor.md) 个体 Frame 编辑器：类型、对象属性断言、数据属性断言、同一个体
 - [P4-27](P4/P4-27-entity-naming-settings.md) 项目设置：新实体的 IRI 生成规则与显示语言（显示名称设置）
@@ -115,7 +114,7 @@
 | [P4-06](P4/P4-06-class-hierarchy-tree.md) | 类层级树：el-tree-v2 虚拟滚动、按需加载子节点、通过 paths 定位选中实体 | wp-web | web | M | 完成 | P4-05、P4-18 |
 | [P4-07](P4/P4-07-property-hierarchy-trees.md) | 对象 / 数据 / 注解属性层级树（复用类层级树组件） | wp-web | web | S | 完成 | P4-06 |
 | [P4-08](P4/P4-08-individual-list.md) | 个体列表：在类树中选类，分页列出该类的直接个体 | wp-web | web | S | 完成 | P4-06 |
-| [P4-09](P4/P4-09-class-frame-editor.md) | 类 Frame 编辑器：多语言注解、父类、三种属性值、只读的其它公理、冲突处理 | wp-web | web | M | 待办（可开工） | P4-22、P4-26 |
+| [P4-09](P4/P4-09-class-frame-editor.md) | 类 Frame 编辑器：多语言注解、父类、三种属性值、只读的其它公理、冲突处理 | wp-web | web | M | 完成 | P4-22、P4-26 |
 | [P4-10](P4/P4-10-property-frame-editors.md) | 对象 / 数据 / 注解属性 Frame 编辑器 | wp-web | web | M | 待办（可开工） | P4-22、P4-26 |
 | [P4-11](P4/P4-11-entity-create-delete.md) | 新建 / 删除实体：工具栏与树节点右键菜单，一次输入多个名称，删除前确认 | wp-web | web | M | 完成 | P4-07、P4-08 |
 | [P4-12](P4/P4-12-entity-search.md) | 顶部搜索框：结果按实体类型分组，回车跳转并在树中定位 | wp-web | web | M | 完成 | P4-06 |
