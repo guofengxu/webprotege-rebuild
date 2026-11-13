@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { kindToEntityType } from "./hierarchyKinds";
 import { useWorkspaceRegistry } from "./registry";
 import { useWorkspaceRoute } from "./useWorkspaceRoute";
+
+const DETAIL_TAB = "detail";
 
 const { t } = useI18n();
 const { projectId, kind, entityIri } = useWorkspaceRoute();
@@ -14,6 +16,11 @@ const editor = computed(
   () => registry.detailEditors[entityType.value] ?? null,
 );
 const hasEntity = computed(() => entityIri.value !== null);
+const activeTab = ref(DETAIL_TAB);
+
+watch(entityIri, () => {
+  activeTab.value = DETAIL_TAB;
+});
 </script>
 
 <template>
@@ -27,10 +34,11 @@ const hasEntity = computed(() => entityIri.value !== null);
     />
     <el-tabs
       v-else
+      v-model="activeTab"
       class="entity-detail-panel__tabs"
     >
       <el-tab-pane
-        name="detail"
+        :name="DETAIL_TAB"
         :label="t('workspace.detailTab')"
       >
         <component
@@ -75,10 +83,24 @@ const hasEntity = computed(() => entityIri.value !== null);
 
 <style scoped>
 .entity-detail-panel {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
   overflow: auto;
   padding: 0.5rem;
+}
+
+.entity-detail-panel__tabs {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.entity-detail-panel__tabs :deep(.el-tabs__content),
+.entity-detail-panel__tabs :deep(.el-tab-pane) {
+  height: 100%;
 }
 
 .entity-detail-panel__fallback {

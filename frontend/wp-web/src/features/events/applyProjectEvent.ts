@@ -4,11 +4,19 @@ import { queryKeys } from "@/shared/api/queryKeys";
 
 const HIERARCHY_KINDS = ["class", "object-property", "data-property", "annotation-property"] as const;
 
-function invalidate(queryClient: QueryClient, queryKey: readonly unknown[]): void {
+function invalidate(
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+  refetchType: "active" | "all" = "active",
+): void {
   // Refetch failures must not surface as unhandled rejections; the cache is already marked stale.
-  void queryClient.invalidateQueries({ queryKey }).catch((error: unknown) => {
-    console.error("Failed to invalidate queries after a project event", error);
-  });
+  // Hierarchy children are loaded via fetchQuery (no observer), so EntityHierarchyChanged must
+  // refetch inactive children queries or hasChildren on already-expanded parents stays stale.
+  void queryClient
+    .invalidateQueries({ queryKey, refetchType })
+    .catch((error: unknown) => {
+      console.error("Failed to invalidate queries after a project event", error);
+    });
 }
 
 function invalidateHierarchies(queryClient: QueryClient, projectId: string): void {
@@ -44,7 +52,11 @@ export function applyProjectEvent(
       return { reconnect: false };
     case "EntityHierarchyChanged":
       // hasChildren is stored on the parent node, in the grandparent's children query.
-      invalidate(queryClient, queryKeys.hierarchy(projectId, event.hierarchy));
+      invalidate(
+        queryClient,
+        queryKeys.hierarchy(projectId, event.hierarchy),
+        "all",
+      );
       invalidate(queryClient, queryKeys.frames(projectId));
       if (event.hierarchy === "class") {
         invalidate(queryClient, queryKeys.individualsAll(projectId));

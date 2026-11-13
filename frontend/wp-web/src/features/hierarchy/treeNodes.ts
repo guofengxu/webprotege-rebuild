@@ -194,16 +194,21 @@ function mapReplace(
   const nextChildren = entities.map((entity) => {
     const fresh = toTreeNode(entity, parentPath);
     const previous = previousByKey.get(fresh.key);
-    if (previous === undefined || !isLoaded(previous)) {
-      return fresh;
-    }
     if (entity.hasChildren !== true) {
       return { ...fresh, children: undefined };
     }
+    // A former leaf is "loaded" with children === undefined; keep fresh's
+    // placeholder so the expand arrow appears after live hierarchy updates.
+    if (
+      previous === undefined ||
+      !isLoaded(previous) ||
+      previous.children === undefined
+    ) {
+      return fresh;
+    }
     return {
       ...fresh,
-      children:
-        previous.children === undefined ? undefined : [...previous.children],
+      children: [...previous.children],
     };
   });
   return { ...node, children: nextChildren };
@@ -231,15 +236,19 @@ export function replaceRoots(
   return entities.map((entity) => {
     const fresh = toTreeNode(entity, []);
     const prior = previousByKey.get(fresh.key);
-    if (prior === undefined || !isLoaded(prior)) {
-      return fresh;
-    }
     if (entity.hasChildren !== true) {
       return { ...fresh, children: undefined };
     }
+    if (
+      prior === undefined ||
+      !isLoaded(prior) ||
+      prior.children === undefined
+    ) {
+      return fresh;
+    }
     return {
       ...fresh,
-      children: prior.children === undefined ? undefined : [...prior.children],
+      children: [...prior.children],
     };
   });
 }

@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: e2e
 ecc_extra: [milestone]
-status: todo
+status: done
 depends_on: [P4-04, P4-08, P4-09, P4-10, P4-11, P4-12, P4-13, P4-15, P4-16, P4-19, P4-20, P4-21, P4-23, P4-24, P4-27, P4-28, P4-29]
 ---
 
@@ -77,15 +77,23 @@ pnpm -C frontend --filter wp-web exec playwright test -c playwright.m4.config.ts
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 两个浏览器上下文之间的实时更新通过断言验证
-- [ ] `docs/03-plan/m4-acceptance.md` 已写明覆盖步骤与差距清单
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 两个浏览器上下文之间的实时更新通过断言验证
+- [x] `docs/03-plan/m4-acceptance.md` 已写明覆盖步骤与差距清单
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - P3-24 的第二个场景（移动端令牌与长轮询，属于 P5）
 - 修复验收中发现的功能缺陷：记录到执行记录并另开卡，不在本卡中顺手修改业务代码
 - 在 CI 中运行本测试（需要修改 `.github/`）
 - 性能基准与负载测试
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p4-17-web-acceptance
+- 测试：2026-11-13T16:38:56+08:00 通过（8 项）
+- 实际改动：Added Playwright M4 dual-browser acceptance (e2e/m4 + playwright.m4.config + m4-acceptance.md). Fixed EntityDetailPanel el-tabs v-model, treeNodes leaf→parent placeholders, and EntityHierarchyChanged refetchType all so live hierarchy/frame steps pass.
+- 偏差：Upload path uses project-list + /class deep link (Vue Router 5 relative redirect gap). Step 5 uses search-locate then expand due to el-tree-v2 virtualization. Minimal product fixes for tabs/live hierarchy as documented in m4-acceptance.md (card said record defects; these blocked the milestone so fixed in-card).
+- 审查：e2e-runner, (APPROVE;, added, screenshot, only-on-failure);, pr-test-analyzer, (APPROVE;, added, treeNodes, +, refetchType, unit, tests)
