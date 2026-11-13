@@ -1,5 +1,7 @@
 # P5 移动端 MVP（uni-app）：卡片清单
 
+> **已暂停（2026-11-13，人的决定，记录于 P6-00）**：移动端暂时停止开发，`P5-00` 的状态为 `blocked`，`python tools/task.py next` 不再列出它。下表保留，作为恢复时的依据；恢复方式见 `P5-00-mobile-planning.md` 的「阻塞」小节。P6 不依赖 P5。
+
 M3 达成且 P3-27 完成后，由 `P5-00` 把下列每一项展开为任务卡。可以与 P4 并行。技术栈见 ADR-014；平台限制见 `.cursor/rules/31-uniapp.mdc`；ECC 使用规则见 `.cursor/skills/wp-ecc-routing/SKILL.md`（`mobile` / `e2e` 类）。
 
 首期目标平台：H5 与 Android App。功能以查阅和跟踪为主（ADR-012）。
