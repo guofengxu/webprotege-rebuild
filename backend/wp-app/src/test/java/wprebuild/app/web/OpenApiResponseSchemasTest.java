@@ -64,7 +64,8 @@ class OpenApiResponseSchemasTest {
             new Success("getDisplayNameSettings", "200", JSON),
             new Success("putDisplayNameSettings", "200", JSON),
             new Success("pollProjectEvents", "200", JSON),
-            new Success("streamProjectEvents", "200", "text/event-stream"));
+            new Success("streamProjectEvents", "200", "text/event-stream"),
+            new Success("getMyProjectPermissions", "200", JSON));
 
     private final MockMvc mockMvc;
 

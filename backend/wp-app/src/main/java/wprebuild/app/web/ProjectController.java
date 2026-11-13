@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import wprebuild.app.access.ProjectAccess;
 import wprebuild.app.bus.CommandBus;
 import wprebuild.app.ontology.CreateEmptyProject;
 import wprebuild.app.ontology.CreateEntities;
@@ -68,6 +69,7 @@ import wprebuild.app.ontology.UpdateDataPropertyFrame;
 import wprebuild.app.ontology.UpdateNamedIndividualFrame;
 import wprebuild.app.ontology.UpdateObjectPropertyFrame;
 import wprebuild.app.ontology.UploadProperties;
+import wprebuild.app.project.GetMyProjectPermissions;
 import wprebuild.app.project.GetProjectDetails;
 import wprebuild.app.project.ListMyProjects;
 import wprebuild.app.project.ListTrashedProjects;
@@ -555,6 +557,21 @@ public class ProjectController {
         return withProject(id, (user, projectId) -> {
             RevisionNumber revision = bus.execute(user, new DeleteEntities(projectId, iris(body.iris())));
             return ResponseEntity.ok(new RevisionResponse(revision.value()));
+        });
+    }
+
+    @Operation(summary = "Get my permissions on a project", operationId = "getMyProjectPermissions")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = MyProjectPermissionsResponse.class)))
+    @GetMapping("/{id}/permissions/me")
+    public ResponseEntity<?> myPermissions(@PathVariable String id) {
+        return withProject(id, (user, projectId) -> {
+            ProjectAccess access = bus.execute(user, new GetMyProjectPermissions(projectId));
+            return ResponseEntity.ok(MyProjectPermissionsResponse.from(projectId, access));
         });
     }
 

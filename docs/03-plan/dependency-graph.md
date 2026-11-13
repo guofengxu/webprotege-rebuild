@@ -120,7 +120,7 @@ flowchart LR
     end
     subgraph P6
         P6_00["P6-00"]:::done
-        P6_01["P6-01"]:::todo
+        P6_01["P6-01"]:::done
         P6_02["P6-02"]:::todo
         P6_03["P6-03"]:::todo
         P6_04["P6-04"]:::todo
