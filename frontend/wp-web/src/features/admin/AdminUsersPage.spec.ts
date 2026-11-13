@@ -113,6 +113,45 @@ test("403 shows permission denied message", async () => {
   wrapper.unmount();
 });
 
+test("action buttons open role and reset dialogs for the row user", async () => {
+  const { wrapper } = await mountPage({
+    "GET /api/admin/users": () => ({
+      json: {
+        page: 0,
+        size: 50,
+        total: 1,
+        users: [USER_READY],
+      } satisfies AdminUserPage,
+    }),
+    "GET /api/auth/me": () => ({
+      json: {
+        userId: "viewer",
+        displayName: "Viewer",
+        email: "viewer@example.org",
+        appRoles: ["SYSTEM_ADMIN"],
+      },
+    }),
+  });
+  await flushPromises();
+
+  const editRoles = wrapper
+    .findAll("button")
+    .find((button) => button.text().includes("修改角色"));
+  expect(editRoles).toBeDefined();
+  await editRoles!.trigger("click");
+  await flushPromises();
+  expect(wrapper.text()).toMatch(/修改 ada 的应用角色/);
+
+  const resetPassword = wrapper
+    .findAll("button")
+    .find((button) => button.text().includes("重置密码"));
+  expect(resetPassword).toBeDefined();
+  await resetPassword!.trigger("click");
+  await flushPromises();
+  expect(wrapper.text()).toMatch(/重置 ada 的密码/);
+  wrapper.unmount();
+});
+
 async function mountPage(
   handlers: NonNullable<
     Parameters<typeof renderWithProviders>[1]

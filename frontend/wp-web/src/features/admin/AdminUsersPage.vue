@@ -4,7 +4,9 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { ApiError, problemMessage } from "@/shared/api/problem";
 import { ADMIN_USERS_PAGE_SIZE, useAdminUsers } from "./api";
+import AppRolesDialog from "./AppRolesDialog.vue";
 import CreateUserDialog from "./CreateUserDialog.vue";
+import ResetPasswordDialog from "./ResetPasswordDialog.vue";
 
 const { t } = useI18n();
 
@@ -12,10 +14,17 @@ const currentPage = ref(1);
 const backendPage = computed(() => Math.max(0, currentPage.value - 1));
 const pageSize = ADMIN_USERS_PAGE_SIZE;
 const createOpen = ref(false);
+const rolesOpen = ref(false);
+const resetOpen = ref(false);
+const selectedUser = ref<AdminUserResponse | null>(null);
 
 const query = useAdminUsers(backendPage, pageSize);
 const rows = computed(() => query.data.value?.users ?? []);
 const total = computed(() => query.data.value?.total ?? 0);
+const selectedUserId = computed(() => selectedUser.value?.userId ?? "");
+const selectedAppRoles = computed(
+  () => [...(selectedUser.value?.appRoles ?? [])] as readonly string[],
+);
 
 const forbidden = computed(
   () =>
@@ -37,6 +46,36 @@ function onPageChange(page: number): void {
 
 function roleLabels(user: AdminUserResponse): string[] {
   return user.appRoles ?? [];
+}
+
+function openRoles(user: AdminUserResponse): void {
+  const userId = user.userId?.trim() ?? "";
+  if (userId.length === 0) {
+    return;
+  }
+  selectedUser.value = {
+    userId,
+    displayName: user.displayName,
+    email: user.email,
+    appRoles: [...(user.appRoles ?? [])],
+    passwordResetRequired: user.passwordResetRequired,
+  };
+  rolesOpen.value = true;
+}
+
+function openResetPassword(user: AdminUserResponse): void {
+  const userId = user.userId?.trim() ?? "";
+  if (userId.length === 0) {
+    return;
+  }
+  selectedUser.value = {
+    userId,
+    displayName: user.displayName,
+    email: user.email,
+    appRoles: [...(user.appRoles ?? [])],
+    passwordResetRequired: user.passwordResetRequired,
+  };
+  resetOpen.value = true;
 }
 </script>
 
@@ -162,10 +201,31 @@ function roleLabels(user: AdminUserResponse): string[] {
           </el-table-column>
           <el-table-column
             :label="t('admin.actions')"
-            min-width="120"
+            min-width="200"
           >
-            <template #default>
-              <!-- P4-28: set roles / reset password -->
+            <template #default="{ row }">
+              <div class="admin-users__actions">
+                <el-button
+                  link
+                  type="primary"
+                  :aria-label="
+                    t('admin.editRolesFor', { userId: row.userId ?? '' })
+                  "
+                  @click="openRoles(row)"
+                >
+                  {{ t("admin.editRoles") }}
+                </el-button>
+                <el-button
+                  link
+                  type="primary"
+                  :aria-label="
+                    t('admin.resetPasswordFor', { userId: row.userId ?? '' })
+                  "
+                  @click="openResetPassword(row)"
+                >
+                  {{ t("admin.resetPassword") }}
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -184,6 +244,15 @@ function roleLabels(user: AdminUserResponse): string[] {
     </template>
 
     <CreateUserDialog v-model="createOpen" />
+    <AppRolesDialog
+      v-model="rolesOpen"
+      :user-id="selectedUserId"
+      :app-roles="selectedAppRoles"
+    />
+    <ResetPasswordDialog
+      v-model="resetOpen"
+      :user-id="selectedUserId"
+    />
   </div>
 </template>
 
@@ -210,6 +279,18 @@ function roleLabels(user: AdminUserResponse): string[] {
 
 .admin-users__role {
   margin-right: 4px;
+}
+
+.admin-users__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-users__actions :deep(.el-button) {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 12px;
 }
 
 .admin-users__pager {

@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-21]
 ---
 
@@ -51,11 +51,19 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/admin/AppRolesDial
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 用户列表与创建用户（P4-21）
 - 删除或停用用户、修改用户的显示名称和邮箱（后端没有对应接口）
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p4-28-admin-user-roles-password
+- 测试：2026-11-13T13:49:32+08:00 通过（3 项）
+- 实际改动：Added AppRolesDialog and ResetPasswordDialog on the admin users page: edit SYSTEM_ADMIN/PROJECT_CREATOR with LAST_SYSTEM_ADMIN and self-demote confirm, reset password (min 12) with generate/show-hide and clear-on-close.
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
