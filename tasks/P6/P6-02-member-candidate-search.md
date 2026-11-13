@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: app-security
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-01]
 ---
 
@@ -64,12 +64,20 @@ pnpm -C frontend --filter wp-web run typecheck
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - Web 端成员页的查找输入框（P6-07）
 - 按邮箱查找、邀请链接、邀请邮件
 - 系统级用户列表的搜索（`/api/admin/users`，P3-25）
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p6-02-member-candidate-search
+- 测试：2026-11-13T21:08:59+08:00 通过（6 项）
+- 实际改动：Added GET /api/projects/{id}/member-candidates with EDIT_SHARING_SETTINGS, UserSummary search (ILIKE escape + ranking), OpenAPI/api-types regen, and MemberCandidatesTest.
+- 偏差：无
+- 审查：security-reviewer, (PASS);, java-reviewer, (PASS;, MEDIUM:, blank, query, rejected, in, UserService.search)

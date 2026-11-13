@@ -115,6 +115,47 @@ public class JdbcUserRepository {
         });
     }
 
+    /**
+     * Matches {@code user_id} prefix or {@code display_name} substring. {@code %}, {@code _} and
+     * {@code \} in the query are escaped so they are literal. Rank: exact id (ignore case), then id
+     * prefix, then display-name-only; ties by {@code user_id} ascending.
+     */
+    List<UserSummary> search(String query, int limit) {
+        Objects.requireNonNull(query, "query");
+        if (limit < 1) {
+            throw new IllegalArgumentException("limit must be at least 1");
+        }
+        String escaped = escapeLike(query);
+        String prefix = escaped + "%";
+        String contains = "%" + escaped + "%";
+        return jdbc.sql("""
+                        select user_id, display_name
+                        from users
+                        where user_id ilike ? escape '\\'
+                           or display_name ilike ? escape '\\'
+                        order by
+                          case
+                            when lower(user_id) = lower(?) then 0
+                            when user_id ilike ? escape '\\' then 1
+                            else 2
+                          end,
+                          user_id
+                        limit ?
+                        """)
+                .param(prefix)
+                .param(contains)
+                .param(query)
+                .param(prefix)
+                .param(limit)
+                .query((rs, row) -> new UserSummary(new UserId(rs.getString("user_id")), rs.getString("display_name")))
+                .list();
+    }
+
+    /** Escape LIKE metacharacters for {@code escape '\\'}. */
+    static String escapeLike(String raw) {
+        return raw.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
+
     private static void bind(PreparedStatement ps, UserAccount account) throws SQLException {
         ps.setString(1, account.userId().value());
         ps.setString(2, account.displayName());

@@ -20,16 +20,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.JsonNode;
 import wprebuild.app.access.ProjectRole;
 import wprebuild.app.access.RoleAssignment;
+import wprebuild.app.access.UserSummary;
 import wprebuild.app.bus.CommandBus;
 import wprebuild.app.project.GetProjectMembers;
 import wprebuild.app.project.GetProjectSetting;
 import wprebuild.app.project.ProjectSettingKeys;
 import wprebuild.app.project.PutProjectSetting;
 import wprebuild.app.project.RemoveProjectMember;
+import wprebuild.app.project.SearchMemberCandidates;
 import wprebuild.app.project.SetProjectMember;
 import wprebuild.app.web.openapi.SettingsSchemas.DisplayNameSetting;
 import wprebuild.app.web.openapi.SettingsSchemas.NewEntitySettings;
@@ -159,6 +162,25 @@ public class ProjectSettingsController {
         return withProject(id, (user, projectId) -> {
             List<RoleAssignment> listed = bus.execute(user, new GetProjectMembers(projectId));
             return ResponseEntity.ok(listed.stream().map(MemberResponse::from).toList());
+        });
+    }
+
+    @Operation(summary = "Search users to add as project members", operationId = "searchMemberCandidates")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = UserSummaryResponse.class))))
+    @GetMapping("/{id}/member-candidates")
+    public ResponseEntity<?> memberCandidates(
+            @PathVariable String id,
+            @RequestParam("q") String query,
+            @RequestParam(name = "limit", defaultValue = "10") int limit) {
+        return withProject(id, (user, projectId) -> {
+            List<UserSummary> found = bus.execute(user, new SearchMemberCandidates(projectId, query, limit));
+            return ResponseEntity.ok(
+                    found.stream().map(UserSummaryResponse::from).toList());
         });
     }
 
