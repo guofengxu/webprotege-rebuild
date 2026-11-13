@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, provide, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
+import {
+  projectEventsConnectionKey,
+  useProjectEvents,
+} from "@/features/events/useProjectEvents";
 import { useApiClient } from "@/shared/api/client";
 import { ApiError, problemMessage, unwrap } from "@/shared/api/problem";
 import { queryKeys } from "@/shared/api/queryKeys";
@@ -60,6 +64,16 @@ const showError = computed(() => projectQuery.isError.value);
 const showWorkspace = computed(
   () => projectQuery.isSuccess.value && !projectQuery.isError.value,
 );
+
+const eventsProjectId = computed(() => projectId.value ?? "");
+const eventsEnabled = computed(
+  () => projectQuery.isSuccess.value && projectId.value !== undefined,
+);
+const { status, stopReason, retry } = useProjectEvents(
+  eventsProjectId,
+  eventsEnabled,
+);
+provide(projectEventsConnectionKey, { status, stopReason, retry });
 
 watch(showError, async (isError) => {
   if (!isError) {
