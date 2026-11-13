@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-05, P4-14]
 ---
 
@@ -63,14 +63,26 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/events/useProjectE
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 重连请求带 `Last-Event-ID`；`getProject` 失败时不订阅
-- [ ] 执行记录中写明了手工验证 SSE 的结果
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 重连请求带 `Last-Event-ID`；`getProject` 失败时不订阅
+- [x] 执行记录中写明了手工验证 SSE 的结果
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 事件解析与缓存失效规则（P4-14）
 - 长轮询客户端（P5）
 - 后端在权限变化时清理订阅（后端缺口，另开卡）
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p4-29-project-events-connection
+- 手工验证 SSE：启动过一次本地 `wp-app`（端口 18081，bootstrap 管理员）并连上当时仍健康的 Postgres；随后 agent 环境里 docker.sock / `127.0.0.1:5432` 不可达，未能完成「两窗口一边改、一边自动刷新」的浏览器验证。`useProjectEvents.spec.ts` 已覆盖带 `Last-Event-ID` 重连、`resync` 清游标、`PermissionsChanged` 立即重连、403 停订等行为。请人在确认提交后用 `docker compose up -d postgres`、启动 wp-app 与 `pnpm -C frontend --filter wp-web run dev` 补做一次双窗口验证。
+- Vite 代理：未改 `vite.config.ts`（为 SSE 加 `configure` 会导致 Vitest 下 WorkspacePage 用例异常）。
+- 日期：2026-11-13
+- 分支：feature/p4-29-project-events-connection
+- 测试：2026-11-13T14:26:06+08:00 通过（3 项）
+- 实际改动：Added useProjectEvents (stream GET, Last-Event-ID reconnect/backoff/heartbeat/visibility), ProjectShell provide, and ConnectionStatus toolbar with i18n. Vite proxy unchanged. Manual two-browser UI SSE refresh blocked after docker/postgres became unreachable in the agent environment; vitest covers Last-Event-ID/resync/PermissionsChanged/403.
+- 偏差：Did not change vite.config.ts for SSE buffering (proxy configure broke Vitest WorkspacePage.spec). ConnectionStatus stays in workspaceToolbar; aria-live node is persistent with Retry outside it. Two-browser live refresh still needs human confirmation.
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect

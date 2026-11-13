@@ -69,6 +69,15 @@ async function renderPage(route: string) {
       "GET /api/projects/{id}/individuals": () => ({
         json: { individuals: [], page: 0, size: 50, total: 0 },
       }),
+      "GET /api/projects/{id}/events": () => ({
+        status: 200,
+        headers: { "content-type": "text/event-stream" },
+        body: new ReadableStream<Uint8Array>({
+          start() {
+            // Idle open stream if a parent shell ever subscribes during this page test.
+          },
+        }),
+      }),
     },
   });
 }
