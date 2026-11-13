@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-15, P4-26]
 ---
 
@@ -56,13 +56,21 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/settings/naming/Ne
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 显示名称设置为空时界面说明内置默认值
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 显示名称设置为空时界面说明内置默认值
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 设置页外壳、基本信息、前缀（P4-15）
 - 成员管理（P4-24）
 - OBO 区间按用户名搜索用户（后端没有用户搜索接口，只能输入用户 ID）
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p4-27-entity-naming-settings
+- 测试：2026-11-13T13:31:47+08:00 通过（3 项）
+- 实际改动：在项目设置中注册新实体与显示语言两个标签页：支持 UUID/用户输入名/OBO 的 IRI 生成规则编辑，以及有序显示名称注解属性列表（空列表提示内置默认并支持以默认值开始编辑）；403 时只读，文案走 settingsNaming。审查已处理脏状态序列化、OBO 校验、行级 ariaLabel、fieldset、按钮命中区。
+- 偏差：实现体量约 1169 行（两张大表单 SFC + locales），超过 M 卡预期 400 行；产出与卡片一致，未扩大范围。标签属性 IRI 优先匹配 BUILTIN_ANNOTATION_PROPERTIES 再退回 rawIriNode，便于显示短名。
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
