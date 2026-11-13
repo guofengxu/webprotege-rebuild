@@ -31,11 +31,13 @@ const props = withDefaults(
     allowRawIri?: boolean;
     excludeIris?: readonly string[];
     ariaLabel: string;
+    disabled?: boolean;
   }>(),
   {
     builtins: () => [],
     allowRawIri: false,
     excludeIris: () => [],
+    disabled: false,
   },
 );
 
@@ -250,6 +252,7 @@ function isAbsoluteIri(value: string): boolean {
     filterable
     remote
     clearable
+    :disabled="disabled"
     :remote-method="onRemoteMethod"
     :loading="searchQuery.isFetching.value"
     :aria-label="ariaLabel"

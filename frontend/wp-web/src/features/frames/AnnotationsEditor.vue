@@ -16,10 +16,16 @@ import {
 } from "./frameModel";
 import LiteralValueInput from "./LiteralValueInput.vue";
 
-const props = defineProps<{
-  projectId: string;
-  modelValue: AnnotationValue[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    projectId: string;
+    modelValue: AnnotationValue[];
+    disabled?: boolean;
+  }>(),
+  {
+    disabled: false,
+  },
+);
 
 const emit = defineEmits<{
   "update:modelValue": [value: AnnotationValue[]];
@@ -167,11 +173,15 @@ function iriEntityOf(annotation: AnnotationValue): EntityNode | null {
     <div class="annotations-editor__toolbar">
       <el-button
         data-testid="add-label"
+        :disabled="disabled"
         @click="addLabel"
       >
         {{ t("framesInputs.addLabel") }}
       </el-button>
-      <el-button @click="addBlank">
+      <el-button
+        :disabled="disabled"
+        @click="addBlank"
+      >
         {{ t("framesInputs.addAnnotation") }}
       </el-button>
     </div>
@@ -186,6 +196,7 @@ function iriEntityOf(annotation: AnnotationValue): EntityNode | null {
         :types="['annotation-property']"
         :model-value="row.annotation.property ?? null"
         :builtins="BUILTIN_ANNOTATION_PROPERTIES"
+        :disabled="disabled"
         v-bind="{ ariaLabel: t('framesInputs.property') }"
         @update:model-value="(value) => setProperty(row.index, value)"
       />
@@ -199,6 +210,7 @@ function iriEntityOf(annotation: AnnotationValue): EntityNode | null {
           data-testid="value-type-literal"
           :type="valueKind(row.annotation) === 'literal' ? 'primary' : 'default'"
           :aria-pressed="valueKind(row.annotation) === 'literal'"
+          :disabled="disabled"
           @click="setValueKind(row.index, 'literal')"
         >
           {{ t("framesInputs.valueTypeLiteral") }}
@@ -207,6 +219,7 @@ function iriEntityOf(annotation: AnnotationValue): EntityNode | null {
           data-testid="value-type-iri"
           :type="valueKind(row.annotation) === 'iri' ? 'primary' : 'default'"
           :aria-pressed="valueKind(row.annotation) === 'iri'"
+          :disabled="disabled"
           @click="setValueKind(row.index, 'iri')"
         >
           {{ t("framesInputs.valueTypeIri") }}
@@ -216,6 +229,7 @@ function iriEntityOf(annotation: AnnotationValue): EntityNode | null {
       <LiteralValueInput
         v-if="valueKind(row.annotation) === 'literal'"
         :model-value="literalOf(row.annotation)"
+        :disabled="disabled"
         @update:model-value="(value) => setLiteral(row.index, value)"
       />
       <EntityPicker
@@ -231,6 +245,7 @@ function iriEntityOf(annotation: AnnotationValue): EntityNode | null {
         ]"
         :model-value="iriEntityOf(row.annotation)"
         allow-raw-iri
+        :disabled="disabled"
         v-bind="{ ariaLabel: t('framesInputs.value') }"
         @update:model-value="(value) => setIriEntity(row.index, value)"
       />
@@ -238,6 +253,7 @@ function iriEntityOf(annotation: AnnotationValue): EntityNode | null {
       <el-button
         :data-testid="`remove-annotation-${row.index}`"
         :aria-label="t('framesInputs.removeAnnotation')"
+        :disabled="disabled"
         @click="removeAt(row.index)"
       >
         {{ t("framesInputs.removeAnnotation") }}

@@ -9,9 +9,15 @@ import {
 } from "./builtins";
 import { literalValue } from "./frameModel";
 
-const props = defineProps<{
-  modelValue: LiteralValue;
-}>();
+const props = withDefaults(
+  defineProps<{
+    modelValue: LiteralValue;
+    disabled?: boolean;
+  }>(),
+  {
+    disabled: false,
+  },
+);
 
 const emit = defineEmits<{
   "update:modelValue": [value: LiteralValue];
@@ -95,6 +101,7 @@ function datatypeLabel(iri: string): string {
         type="textarea"
         :rows="2"
         data-testid="annotation-lexical"
+        :disabled="disabled"
         :aria-label="t('framesInputs.lexical')"
       />
     </label>
@@ -103,6 +110,7 @@ function datatypeLabel(iri: string): string {
       <el-select
         v-model="datatype"
         data-testid="annotation-datatype"
+        :disabled="disabled"
         :aria-label="t('framesInputs.datatype')"
       >
         <el-option
@@ -118,7 +126,7 @@ function datatypeLabel(iri: string): string {
       <el-input
         v-model="lang"
         data-testid="annotation-lang"
-        :disabled="!langEditable"
+        :disabled="disabled || !langEditable"
         :aria-label="t('framesInputs.lang')"
       />
     </label>

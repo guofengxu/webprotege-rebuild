@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-22, P4-26]
 ---
 
@@ -66,13 +66,21 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/frames/class/Class
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 保存请求带 `from`，409 `FRAME_CHANGED` 时有提示并可刷新
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 保存请求带 `from`，409 `FRAME_CHANGED` 时有提示并可刷新
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 属性与个体的 Frame 编辑器（P4-10、P4-23）
 - 编辑 `otherAxioms`、Manchester 语法输入
 - 实体历史标签页（P4-13）
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p4-09-class-frame-editor
+- 测试：2026-11-13T10:14:03+08:00 通过（3 项）
+- 实际改动：实现类 Frame 编辑器（注解/父类/三种属性值/只读其它公理）、409 冲突刷新、保存后失效类层级与搜索；共享输入组件增加 disabled。
+- 偏差：为满足 readOnly 禁用，给 EntityPicker/LiteralValueInput/AnnotationsEditor/EntityRefList 增加了可选 disabled（P4-26 组件小扩展）。
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
