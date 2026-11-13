@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-22]
 ---
 
@@ -57,13 +57,21 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/frames/EntityPicke
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 内置数据类型与注解属性在搜索无结果时仍可选择
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 内置数据类型与注解属性在搜索无结果时仍可选择
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 编辑机制（`useFrameEditor`、`FrameSaveBar`，P4-22）
 - 具体的 Frame 编辑器（P4-09、P4-10、P4-23）
 - 顶部全局搜索框（P4-12）；本卡的 `EntityPicker` 只是表单内的选择器
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p4-26-frame-inputs
+- 测试：2026-11-13T09:05:53+08:00 通过（3 项）
+- 实际改动：新增 builtins、EntityPicker、EntityRefList、LiteralValueInput、AnnotationsEditor 与 framesInputs 文案；新项目搜索为空时仍可选内置数据类型与注解属性；审查后补上 aria-pressed、只读内置列表与模板绑定修复。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
