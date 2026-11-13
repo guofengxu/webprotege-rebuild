@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-15]
 ---
 
@@ -54,11 +54,19 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/settings/members/M
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 用户搜索、邀请链接、按邮箱邀请（后端不提供）
 - 系统级的用户管理（P4-21）
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p4-24-project-members
+- 测试：2026-11-13T08:29:25+08:00 通过（3 项）
+- 实际改动：在项目设置页注册成员标签页：列表/按用户 ID 添加/行内改角色/移除；处理 403、404、LAST_MANAGER 与自管确认；始终 update:dirty(false)。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
