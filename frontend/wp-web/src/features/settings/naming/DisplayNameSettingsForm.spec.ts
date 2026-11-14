@@ -128,10 +128,67 @@ test("editing emits update:dirty(true)", async () => {
   wrapper.unmount();
 });
 
-async function mountForm(initial: DisplayNameSetting[]) {
+test("without EDIT_PROJECT_SETTINGS the form is read-only", async () => {
+  const { wrapper, requests } = await mountForm(
+    [{ annotationProperty: RDFS_LABEL.iri, lang: "en" }],
+    { actions: ["VIEW_PROJECT"] },
+  );
+  await flushPromises();
+
+  expect(wrapper.text()).toContain("只读：需要管理权限才能修改");
+  expect(findSaveButton(wrapper).exists()).toBe(false);
+  expect(
+    wrapper
+      .findAll('input[name="lang"]')
+      .every((input) => input.attributes("disabled") !== undefined),
+  ).toBe(true);
+  expect(
+    requests.filter(
+      (request) =>
+        request.method === "PUT" &&
+        request.path === "/api/projects/p1/settings/display-names",
+    ),
+  ).toHaveLength(0);
+  wrapper.unmount();
+});
+
+test("with EDIT_PROJECT_SETTINGS can save", async () => {
+  document.cookie = "XSRF-TOKEN=csrf-token";
+  const { wrapper, requests } = await mountForm(
+    [{ annotationProperty: RDFS_LABEL.iri, lang: "en" }],
+    { actions: ["VIEW_PROJECT", "EDIT_PROJECT_SETTINGS"] },
+  );
+  await flushPromises();
+
+  expect(wrapper.text()).not.toContain("只读：需要管理权限才能修改");
+  expect(findSaveButton(wrapper).exists()).toBe(true);
+
+  await wrapper.get('input[name="lang"]').setValue("zh");
+  await wrapper.get("form").trigger("submit");
+  await flushPromises();
+
+  expect(
+    requests.some(
+      (request) =>
+        request.method === "PUT" &&
+        request.path === "/api/projects/p1/settings/display-names",
+    ),
+  ).toBe(true);
+  wrapper.unmount();
+});
+
+async function mountForm(
+  initial: DisplayNameSetting[],
+  {
+    actions = ["VIEW_PROJECT", "EDIT_PROJECT_SETTINGS"] as const,
+  }: { actions?: readonly string[] } = {},
+) {
   const rendered = await renderWithProviders(DisplayNameSettingsForm, {
     props: { projectId: "p1" },
     handlers: {
+      "GET /api/projects/{id}/permissions/me": () => ({
+        json: { actions: [...actions] },
+      }),
       "GET /api/projects/{id}/settings/display-names": () => ({
         json: initial,
       }),
@@ -143,6 +200,16 @@ async function mountForm(initial: DisplayNameSetting[]) {
   });
   mergeNamingLocales(rendered.wrapper);
   return rendered;
+}
+
+function findSaveButton(wrapper: VueWrapper) {
+  return (
+    wrapper
+      .findAll("button")
+      .find((button) => /保存|Save/.test(button.text())) ?? {
+      exists: () => false,
+    }
+  );
 }
 
 function mergeNamingLocales(wrapper: VueWrapper): void {

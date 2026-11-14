@@ -59,10 +59,12 @@ test("save body is a prefix-to-IRI object", async () => {
 test("putPrefixSettings 403 makes the form read-only", async () => {
   document.cookie = "XSRF-TOKEN=csrf-token";
   const { wrapper } = await mountForm({
-    "PUT /api/projects/{id}/settings/prefixes": () => ({
-      status: 403,
-      problem: { status: 403, code: "PERMISSION_DENIED" },
-    }),
+    handlers: {
+      "PUT /api/projects/{id}/settings/prefixes": () => ({
+        status: 403,
+        problem: { status: 403, code: "PERMISSION_DENIED" },
+      }),
+    },
   });
   await flushPromises();
 
@@ -79,8 +81,59 @@ test("putPrefixSettings 403 makes the form read-only", async () => {
   wrapper.unmount();
 });
 
-async function mountForm(
-  extraHandlers: Record<
+test("without EDIT_PROJECT_PREFIXES the form is read-only", async () => {
+  const { wrapper, requests } = await mountForm({
+    actions: ["VIEW_PROJECT"],
+  });
+  await flushPromises();
+
+  expect(wrapper.text()).toContain("只读：需要管理权限才能修改");
+  expect(findSaveButton(wrapper).exists()).toBe(false);
+  expect(
+    wrapper
+      .findAll("input")
+      .every((input) => input.attributes("disabled") !== undefined),
+  ).toBe(true);
+  expect(
+    requests.filter(
+      (request) =>
+        request.method === "PUT" &&
+        request.path === "/api/projects/p1/settings/prefixes",
+    ),
+  ).toHaveLength(0);
+  wrapper.unmount();
+});
+
+test("with EDIT_PROJECT_PREFIXES can save", async () => {
+  document.cookie = "XSRF-TOKEN=csrf-token";
+  const { wrapper, requests } = await mountForm({
+    actions: ["VIEW_PROJECT", "EDIT_PROJECT_PREFIXES"],
+  });
+  await flushPromises();
+
+  expect(wrapper.text()).not.toContain("只读：需要管理权限才能修改");
+  expect(findSaveButton(wrapper).exists()).toBe(true);
+
+  await setRow(wrapper, 0, "ex", "http://example.org/");
+  await wrapper.get("form").trigger("submit");
+  await flushPromises();
+
+  expect(
+    requests.some(
+      (request) =>
+        request.method === "PUT" &&
+        request.path === "/api/projects/p1/settings/prefixes",
+    ),
+  ).toBe(true);
+  wrapper.unmount();
+});
+
+async function mountForm({
+  actions = ["VIEW_PROJECT", "EDIT_PROJECT_PREFIXES"] as const,
+  handlers = {},
+}: {
+  actions?: readonly string[];
+  handlers?: Record<
     string,
     (req: {
       params: Record<string, string>;
@@ -88,18 +141,31 @@ async function mountForm(
       headers: Headers;
       body: unknown;
     }) => { status?: number; json?: unknown; problem?: object }
-  > = {},
-) {
+  >;
+} = {}) {
   return renderWithProviders(PrefixSettingsForm, {
     props: { projectId: "p1" },
     handlers: {
+      "GET /api/projects/{id}/permissions/me": () => ({
+        json: { actions: [...actions] },
+      }),
       "GET /api/projects/{id}/settings/prefixes": () => ({ json: PREFIXES }),
       "PUT /api/projects/{id}/settings/prefixes": (req) => ({
         json: req.body,
       }),
-      ...extraHandlers,
+      ...handlers,
     },
   });
+}
+
+function findSaveButton(wrapper: VueWrapper) {
+  return (
+    wrapper
+      .findAll("button")
+      .find((button) => /保存|Save/.test(button.text())) ?? {
+      exists: () => false,
+    }
+  );
 }
 
 async function setRow(

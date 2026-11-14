@@ -85,16 +85,18 @@ test("overlapping OBO ranges cannot save", async () => {
 test("switching back to UUID keeps kit with only type", async () => {
   document.cookie = "XSRF-TOKEN=csrf-token";
   const { wrapper, requests } = await mountForm({
-    "GET /api/projects/{id}/settings/new-entity": () => ({
-      json: {
-        ...SETTINGS,
-        kit: {
-          type: "OBO",
-          totalDigits: 7,
-          userRanges: [{ userId: "alice", start: 1, end: 10 }],
+    handlers: {
+      "GET /api/projects/{id}/settings/new-entity": () => ({
+        json: {
+          ...SETTINGS,
+          kit: {
+            type: "OBO",
+            totalDigits: 7,
+            userRanges: [{ userId: "alice", start: 1, end: 10 }],
+          },
         },
-      },
-    }),
+      }),
+    },
   });
   await flushPromises();
 
@@ -118,7 +120,9 @@ test("switching back to UUID keeps kit with only type", async () => {
 
 test("empty search still allows choosing rdfs:label for label property", async () => {
   const { wrapper } = await mountForm({
-    "GET /api/projects/{id}/search": () => ({ json: [] }),
+    handlers: {
+      "GET /api/projects/{id}/search": () => ({ json: [] }),
+    },
   });
   await flushPromises();
 
@@ -147,8 +151,59 @@ test("empty search still allows choosing rdfs:label for label property", async (
   wrapper.unmount();
 });
 
-async function mountForm(
-  extraHandlers: Record<
+test("without EDIT_NEW_ENTITY_SETTINGS the form is read-only", async () => {
+  const { wrapper, requests } = await mountForm({
+    actions: ["VIEW_PROJECT"],
+  });
+  await flushPromises();
+
+  expect(wrapper.text()).toContain("只读：需要管理权限才能修改");
+  expect(findSaveButton(wrapper).exists()).toBe(false);
+  expect(
+    wrapper
+      .findAll("input")
+      .every((input) => input.attributes("disabled") !== undefined),
+  ).toBe(true);
+  expect(
+    requests.filter(
+      (request) =>
+        request.method === "PUT" &&
+        request.path === "/api/projects/p1/settings/new-entity",
+    ),
+  ).toHaveLength(0);
+  wrapper.unmount();
+});
+
+test("with EDIT_NEW_ENTITY_SETTINGS can save", async () => {
+  document.cookie = "XSRF-TOKEN=csrf-token";
+  const { wrapper, requests } = await mountForm({
+    actions: ["VIEW_PROJECT", "EDIT_NEW_ENTITY_SETTINGS"],
+  });
+  await flushPromises();
+
+  expect(wrapper.text()).not.toContain("只读：需要管理权限才能修改");
+  expect(findSaveButton(wrapper).exists()).toBe(true);
+
+  await setInput(wrapper, "defaultLang", "zh");
+  await wrapper.get("form").trigger("submit");
+  await flushPromises();
+
+  expect(
+    requests.some(
+      (request) =>
+        request.method === "PUT" &&
+        request.path === "/api/projects/p1/settings/new-entity",
+    ),
+  ).toBe(true);
+  wrapper.unmount();
+});
+
+async function mountForm({
+  actions = ["VIEW_PROJECT", "EDIT_NEW_ENTITY_SETTINGS"] as const,
+  handlers = {},
+}: {
+  actions?: readonly string[];
+  handlers?: Record<
     string,
     (req: {
       params: Record<string, string>;
@@ -156,11 +211,14 @@ async function mountForm(
       headers: Headers;
       body: unknown;
     }) => { status?: number; json?: unknown; problem?: object }
-  > = {},
-) {
+  >;
+} = {}) {
   const rendered = await renderWithProviders(NewEntitySettingsForm, {
     props: { projectId: "p1" },
     handlers: {
+      "GET /api/projects/{id}/permissions/me": () => ({
+        json: { actions: [...actions] },
+      }),
       "GET /api/projects/{id}/settings/new-entity": () => ({
         json: SETTINGS,
       }),
@@ -168,11 +226,21 @@ async function mountForm(
         json: req.body,
       }),
       "GET /api/projects/{id}/search": () => ({ json: [] }),
-      ...extraHandlers,
+      ...handlers,
     },
   });
   mergeNamingLocales(rendered.wrapper);
   return rendered;
+}
+
+function findSaveButton(wrapper: VueWrapper) {
+  return (
+    wrapper
+      .findAll("button")
+      .find((button) => /保存|Save/.test(button.text())) ?? {
+      exists: () => false,
+    }
+  );
 }
 
 function mergeNamingLocales(wrapper: VueWrapper): void {

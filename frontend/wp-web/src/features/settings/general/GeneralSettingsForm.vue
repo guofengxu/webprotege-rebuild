@@ -2,6 +2,10 @@
 import { ElMessage } from "element-plus";
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import {
+  useProjectPermissions,
+  type PermissionState,
+} from "@/features/permissions/useProjectPermissions";
 import { ApiError, problemMessage } from "@/shared/api/problem";
 import { useProjectDetails, useUpdateProject } from "../api";
 
@@ -16,12 +20,33 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const projectQuery = useProjectDetails(() => props.projectId);
 const updateProject = useUpdateProject(() => props.projectId);
+const { permission } = useProjectPermissions(() => props.projectId);
+const editPermissionRaw = permission("EDIT_PROJECT_SETTINGS");
+const forbiddenByServer = ref(false);
+
+watch(editPermissionRaw, (state) => {
+  if (state === "allowed") {
+    forbiddenByServer.value = false;
+  }
+});
+
+const editPermission = computed((): PermissionState => {
+  if (forbiddenByServer.value) {
+    return "denied";
+  }
+  return editPermissionRaw.value;
+});
+
+const readOnly = computed(
+  () =>
+    editPermission.value === "denied" || editPermission.value === "pending",
+);
+const showReadOnlyHint = computed(() => editPermission.value === "denied");
 
 const name = ref("");
 const description = ref("");
 const nameError = ref("");
 const submitError = ref("");
-const readOnly = ref(false);
 const seeded = ref(false);
 let submitLock = false;
 
@@ -93,8 +118,7 @@ async function onSubmit(): Promise<void> {
       ElMessage.success(t("settings.saveSuccess"));
     } catch (error) {
       if (error instanceof ApiError && error.status === 403) {
-        readOnly.value = true;
-        submitError.value = t("settings.forbidden");
+        forbiddenByServer.value = true;
         emit("update:dirty", false);
         return;
       }
@@ -139,11 +163,12 @@ async function onSubmit(): Promise<void> {
         :closable="false"
       />
       <el-alert
-        v-else-if="readOnly"
-        :title="t('settings.forbidden')"
-        type="warning"
+        v-else-if="showReadOnlyHint"
+        :title="t('settings.readOnlyDenied')"
+        type="info"
         show-icon
         :closable="false"
+        role="status"
       />
 
       <label class="general-settings__field">
@@ -176,11 +201,14 @@ async function onSubmit(): Promise<void> {
         />
       </label>
 
-      <div class="general-settings__actions">
+      <div
+        v-if="!readOnly"
+        class="general-settings__actions"
+      >
         <el-button
           type="primary"
           native-type="submit"
-          :disabled="readOnly || pending || !isDirty"
+          :disabled="pending || !isDirty"
           :loading="pending"
         >
           {{ pending ? t("settings.saving") : t("settings.save") }}

@@ -72,10 +72,72 @@ test("saves {name, description} and invalidates project caches", async () => {
   wrapper.unmount();
 });
 
-async function mountForm() {
+test("without EDIT_PROJECT_SETTINGS the form is read-only", async () => {
+  const { wrapper, requests } = await mountForm({
+    actions: ["VIEW_PROJECT"],
+  });
+  await flushPromises();
+
+  expect(wrapper.text()).toContain("只读：需要管理权限才能修改");
+  expect(findSaveButton(wrapper).exists()).toBe(false);
+  expect(
+    wrapper
+      .findAll('input[name="name"], textarea[name="description"]')
+      .every((input) => input.attributes("disabled") !== undefined),
+  ).toBe(true);
+  expect(
+    requests.filter(
+      (request) =>
+        request.method === "PATCH" && request.path === "/api/projects/p1",
+    ),
+  ).toHaveLength(0);
+  wrapper.unmount();
+});
+
+test("with EDIT_PROJECT_SETTINGS can save", async () => {
+  document.cookie = "XSRF-TOKEN=csrf-token";
+  const { wrapper, requests } = await mountForm({
+    actions: ["VIEW_PROJECT", "EDIT_PROJECT_SETTINGS"],
+  });
+  await flushPromises();
+
+  expect(wrapper.text()).not.toContain("只读：需要管理权限才能修改");
+  expect(findSaveButton(wrapper).exists()).toBe(true);
+
+  await setInput(wrapper, "name", "Manager Rename");
+  await wrapper.get("form").trigger("submit");
+  await flushPromises();
+
+  expect(
+    requests.some(
+      (request) =>
+        request.method === "PATCH" && request.path === "/api/projects/p1",
+    ),
+  ).toBe(true);
+  wrapper.unmount();
+});
+
+async function mountForm({
+  actions = ["VIEW_PROJECT", "EDIT_PROJECT_SETTINGS"] as const,
+  handlers = {},
+}: {
+  actions?: readonly string[];
+  handlers?: Record<
+    string,
+    (req: {
+      params: Record<string, string>;
+      query: URLSearchParams;
+      headers: Headers;
+      body: unknown;
+    }) => { status?: number; json?: unknown; problem?: object }
+  >;
+} = {}) {
   return renderWithProviders(GeneralSettingsForm, {
     props: { projectId: "p1" },
     handlers: {
+      "GET /api/projects/{id}/permissions/me": () => ({
+        json: { actions: [...actions] },
+      }),
       "GET /api/projects/{id}": () => ({ json: PROJECT }),
       "PATCH /api/projects/{id}": (req) => ({
         json: {
@@ -97,8 +159,19 @@ async function mountForm() {
               : PROJECT.description,
         },
       }),
+      ...handlers,
     },
   });
+}
+
+function findSaveButton(wrapper: VueWrapper) {
+  return (
+    wrapper
+      .findAll("button")
+      .find((button) => /保存|Save/.test(button.text())) ?? {
+      exists: () => false,
+    }
+  );
 }
 
 async function setInput(

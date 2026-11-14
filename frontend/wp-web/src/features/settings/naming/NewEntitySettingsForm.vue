@@ -12,6 +12,10 @@ import {
   BUILTIN_ANNOTATION_PROPERTIES,
 } from "@/features/frames/builtins";
 import { rawIriNode } from "@/features/frames/frameModel";
+import {
+  useProjectPermissions,
+  type PermissionState,
+} from "@/features/permissions/useProjectPermissions";
 import { ApiError, problemMessage } from "@/shared/api/problem";
 import { useProjectSetting, useSaveProjectSetting } from "../api";
 
@@ -39,6 +43,28 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const settingsQuery = useProjectSetting(() => props.projectId, "new-entity");
 const saveSettings = useSaveProjectSetting(() => props.projectId, "new-entity");
+const { permission } = useProjectPermissions(() => props.projectId);
+const editPermissionRaw = permission("EDIT_NEW_ENTITY_SETTINGS");
+const forbiddenByServer = ref(false);
+
+watch(editPermissionRaw, (state) => {
+  if (state === "allowed") {
+    forbiddenByServer.value = false;
+  }
+});
+
+const editPermission = computed((): PermissionState => {
+  if (forbiddenByServer.value) {
+    return "denied";
+  }
+  return editPermissionRaw.value;
+});
+
+const readOnly = computed(
+  () =>
+    editPermission.value === "denied" || editPermission.value === "pending",
+);
+const showReadOnlyHint = computed(() => editPermission.value === "denied");
 
 const iriPrefix = ref("");
 const kitType = ref<KitType>("UUID");
@@ -49,7 +75,6 @@ const labelProperty = ref<EntityNode | null>(null);
 const defaultLang = ref("");
 const targetOntology = ref("");
 const formError = ref("");
-const readOnly = ref(false);
 const seeded = ref(false);
 let rowSeq = 0;
 let submitLock = false;
@@ -169,8 +194,7 @@ async function onSubmit(): Promise<void> {
       ElMessage.success(t("settingsNaming.saveSuccess"));
     } catch (error) {
       if (error instanceof ApiError && error.status === 403) {
-        readOnly.value = true;
-        formError.value = t("settingsNaming.forbidden");
+        forbiddenByServer.value = true;
         emit("update:dirty", false);
         return;
       }
@@ -312,11 +336,12 @@ function isAbsoluteIri(value: string): boolean {
         :closable="false"
       />
       <el-alert
-        v-else-if="readOnly"
-        :title="t('settingsNaming.forbidden')"
-        type="warning"
+        v-else-if="showReadOnlyHint"
+        :title="t('settings.readOnlyDenied')"
+        type="info"
         show-icon
         :closable="false"
+        role="status"
       />
 
       <label class="new-entity-settings__field">
@@ -502,11 +527,14 @@ function isAbsoluteIri(value: string): boolean {
         />
       </label>
 
-      <div class="new-entity-settings__actions">
+      <div
+        v-if="!readOnly"
+        class="new-entity-settings__actions"
+      >
         <el-button
           type="primary"
           native-type="submit"
-          :disabled="readOnly || pending || !isDirty"
+          :disabled="pending || !isDirty"
           :loading="pending"
         >
           {{

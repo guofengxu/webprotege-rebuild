@@ -11,6 +11,8 @@ const enUS = {
     saveSuccess: "Saved",
     forbidden:
       "You do not have permission to change these settings. The form is now read-only.",
+    readOnlyDenied:
+      "Read-only: management permission is required to make changes",
     unsavedTitle: "Unsaved changes",
     unsavedMessage:
       "Leaving this tab will discard unsaved changes. Continue?",

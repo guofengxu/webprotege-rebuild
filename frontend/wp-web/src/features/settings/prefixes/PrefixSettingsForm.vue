@@ -3,6 +3,10 @@ import { ElMessage } from "element-plus";
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { PrefixSettings } from "@wp/api-types";
+import {
+  useProjectPermissions,
+  type PermissionState,
+} from "@/features/permissions/useProjectPermissions";
 import { ApiError, problemMessage } from "@/shared/api/problem";
 import { useProjectSetting, useSaveProjectSetting } from "../api";
 
@@ -23,10 +27,31 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const prefixesQuery = useProjectSetting(() => props.projectId, "prefixes");
 const savePrefixes = useSaveProjectSetting(() => props.projectId, "prefixes");
+const { permission } = useProjectPermissions(() => props.projectId);
+const editPermissionRaw = permission("EDIT_PROJECT_PREFIXES");
+const forbiddenByServer = ref(false);
+
+watch(editPermissionRaw, (state) => {
+  if (state === "allowed") {
+    forbiddenByServer.value = false;
+  }
+});
+
+const editPermission = computed((): PermissionState => {
+  if (forbiddenByServer.value) {
+    return "denied";
+  }
+  return editPermissionRaw.value;
+});
+
+const readOnly = computed(
+  () =>
+    editPermission.value === "denied" || editPermission.value === "pending",
+);
+const showReadOnlyHint = computed(() => editPermission.value === "denied");
 
 const rows = ref<PrefixRow[]>([]);
 const formError = ref("");
-const readOnly = ref(false);
 const seeded = ref(false);
 let rowSeq = 0;
 let submitLock = false;
@@ -120,8 +145,7 @@ async function onSubmit(): Promise<void> {
       ElMessage.success(t("settings.saveSuccess"));
     } catch (error) {
       if (error instanceof ApiError && error.status === 403) {
-        readOnly.value = true;
-        formError.value = t("settings.forbidden");
+        forbiddenByServer.value = true;
         emit("update:dirty", false);
         return;
       }
@@ -225,11 +249,12 @@ function isAbsoluteIri(value: string): boolean {
         :closable="false"
       />
       <el-alert
-        v-else-if="readOnly"
-        :title="t('settings.forbidden')"
-        type="warning"
+        v-else-if="showReadOnlyHint"
+        :title="t('settings.readOnlyDenied')"
+        type="info"
         show-icon
         :closable="false"
+        role="status"
       />
 
       <p
@@ -279,9 +304,12 @@ function isAbsoluteIri(value: string): boolean {
         </el-button>
       </div>
 
-      <div class="prefix-settings__actions">
+      <div
+        v-if="!readOnly"
+        class="prefix-settings__actions"
+      >
         <el-button
-          :disabled="readOnly || pending"
+          :disabled="pending"
           @click="addRow"
         >
           {{ t("settings.addPrefix") }}
@@ -289,7 +317,7 @@ function isAbsoluteIri(value: string): boolean {
         <el-button
           type="primary"
           native-type="submit"
-          :disabled="readOnly || pending || !isDirty"
+          :disabled="pending || !isDirty"
           :loading="pending"
         >
           {{ pending ? t("settings.saving") : t("settings.save") }}
