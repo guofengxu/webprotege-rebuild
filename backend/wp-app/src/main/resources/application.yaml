@@ -29,3 +29,5 @@ wp:
     refresh-ttl: 30d
   cors:
     allowed-origins: []
+  mcp:
+    max-result-bytes: 262144

@@ -30,9 +30,12 @@ public final class SearchEntitiesTool {
 
     private final JsonMapper json;
 
-    SearchEntitiesTool(CommandBus bus, JsonMapper json) {
+    private final McpResultLimits limits;
+
+    SearchEntitiesTool(CommandBus bus, JsonMapper json, McpResultLimits limits) {
         this.bus = Objects.requireNonNull(bus, "command bus");
         this.json = Objects.requireNonNull(json, "json mapper");
+        this.limits = Objects.requireNonNull(limits, "result limits");
     }
 
     Tool definition() {
@@ -81,11 +84,7 @@ public final class SearchEntitiesTool {
             Map<String, Object> arguments = request.arguments() == null ? Map.of() : request.arguments();
             SearchEntities command = parse(arguments);
             List<EntityNode> hits = bus.execute(user, command);
-            String payload = json.writeValueAsString(McpToolResult.of(hits));
-            return CallToolResult.builder()
-                    .addTextContent(payload)
-                    .isError(false)
-                    .build();
+            return limits.encode(hits, McpResultLimits.HINT_SEARCH_ARRAY);
         } catch (Exception failure) {
             return McpToolErrors.from(failure, json);
         }

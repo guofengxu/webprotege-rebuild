@@ -9,6 +9,7 @@ import tools.jackson.databind.json.JsonMapper;
 import wprebuild.app.shared.ConflictException;
 import wprebuild.app.shared.NotFoundException;
 import wprebuild.app.shared.PermissionDeniedException;
+import wprebuild.app.web.ProblemDetailsAdvice;
 
 /** Maps application failures to MCP {@code tools/call} error results without leaking stacks. */
 public final class McpToolErrors {
@@ -28,6 +29,13 @@ public final class McpToolErrors {
         }
         if (failure instanceof ConflictException conflict) {
             return coded(conflict.code(), conflict.getMessage(), json);
+        }
+        if (failure instanceof IllegalArgumentException invalid) {
+            String message = invalid.getMessage();
+            if (message == null || message.isBlank()) {
+                message = "Invalid tool arguments";
+            }
+            return coded(ProblemDetailsAdvice.VALIDATION_FAILED, message, json);
         }
         log.error("MCP tool failed", failure);
         return coded("INTERNAL_ERROR", GENERIC_MESSAGE, json);

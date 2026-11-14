@@ -5,6 +5,7 @@ import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.McpStatelessSyncServer;
 import io.modelcontextprotocol.server.transport.HttpServletStatelessServerTransport;
 import java.util.Objects;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import wprebuild.app.bus.CommandBus;
  * mounts the servlet; {@link wprebuild.app.web.security.SecurityConfig} protects {@code /mcp}.
  */
 @Configuration
+@EnableConfigurationProperties(McpProperties.class)
 public class McpServerConfiguration {
 
     @Bean
@@ -32,16 +34,33 @@ public class McpServerConfiguration {
     }
 
     @Bean
-    SearchEntitiesTool searchEntitiesTool(CommandBus bus, JsonMapper json) {
-        return new SearchEntitiesTool(bus, json);
+    McpResultLimits mcpResultLimits(JsonMapper json, McpProperties properties) {
+        return new McpResultLimits(json, properties);
+    }
+
+    @Bean
+    SearchEntitiesTool searchEntitiesTool(CommandBus bus, JsonMapper json, McpResultLimits limits) {
+        return new SearchEntitiesTool(bus, json, limits);
+    }
+
+    @Bean
+    BrowseTools browseTools(CommandBus bus, JsonMapper json, McpResultLimits limits) {
+        return new BrowseTools(bus, json, limits);
     }
 
     @Bean(destroyMethod = "closeGracefully")
-    McpStatelessSyncServer mcpServer(HttpServletStatelessServerTransport transport, SearchEntitiesTool search) {
-        return McpServer.sync(transport)
+    McpStatelessSyncServer mcpServer(
+            HttpServletStatelessServerTransport transport, SearchEntitiesTool search, BrowseTools browse) {
+        // Tool handlers map IllegalArgumentException to VALIDATION_FAILED; disable SDK schema
+        // rejection so missing/invalid arguments share that error envelope.
+        var builder = McpServer.sync(transport)
                 .serverInfo("wp-ontology", AppInfo.VERSION)
-                .toolCall(search.definition(), search::call)
-                .build();
+                .validateToolInputs(false);
+        builder.toolCall(search.definition(), search::call);
+        for (BrowseTools.ToolBinding binding : browse.bindings()) {
+            builder.toolCall(binding.definition(), binding.handler());
+        }
+        return builder.build();
     }
 
     @Bean

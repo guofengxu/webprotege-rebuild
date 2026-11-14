@@ -100,9 +100,13 @@ class McpEndpointTest {
         try (McpSyncClient client = mcpClient(apiKey)) {
             client.initialize();
             List<Tool> tools = client.listTools().tools();
-            assertThat(tools).extracting(Tool::name).containsExactly("search_entities");
-            assertThat(tools.getFirst().inputSchema()).isNotNull();
-            assertThat(tools.getFirst().inputSchema().get("properties")).isInstanceOf(Map.class);
+            assertThat(tools).extracting(Tool::name).contains("search_entities");
+            Tool search = tools.stream()
+                    .filter(tool -> "search_entities".equals(tool.name()))
+                    .findFirst()
+                    .orElseThrow();
+            assertThat(search.inputSchema()).isNotNull();
+            assertThat(search.inputSchema().get("properties")).isInstanceOf(Map.class);
 
             CallToolResult result = client.callTool(CallToolRequest.builder("search_entities")
                     .arguments(Map.of("projectId", projectId, "query", "托盘", "limit", 20))

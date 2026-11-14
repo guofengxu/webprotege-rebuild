@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-14]
 ---
 
@@ -63,12 +63,20 @@ AI Agent 通过 MCP 可以像 Web 端一样浏览本体：列出自己能访问�
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 个体列表、修订历史与差异工具、MCP 使用说明（P6-16）
 - 写操作工具
 - MCP 的 `resources` 与 `prompts` 能力
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-15-mcp-browse-tools
+- 测试：2026-11-14T19:51:55+08:00 通过（3 项）
+- 实际改动：注册 list_projects / hierarchy / get_entity_frame 五个只读 MCP 工具；新增 McpResultLimits（wp.mcp.max-result-bytes，默认 256KB）对数组与分页条目截断，Frame 超限返回 RESULT_TOO_LARGE；参数错误映射为 VALIDATION_FAILED。
+- 偏差：非测试代码约 483 行，略超 M 卡 400 行预期；超出部分主要在 BrowseTools 五个工具的 schema/handler 与 McpResultLimits 截断逻辑。审查后已处理空截断信封超限与 search hint。
+- 审查：java-reviewer, code-reviewer
