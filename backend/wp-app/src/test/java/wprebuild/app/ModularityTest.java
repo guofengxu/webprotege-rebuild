@@ -25,6 +25,7 @@ class ModularityTest {
             Map.entry("search", new ModuleDeclaration(false, "bus", "ontology", "ontology :: dto", "access", "shared")),
             Map.entry("events", new ModuleDeclaration(false, "bus", "ontology", "access", "shared", "project")),
             Map.entry("migration", new ModuleDeclaration(false, "bus", "ontology", "project", "access", "shared")),
+            Map.entry("projection", new ModuleDeclaration(false, "ontology", "shared")),
             Map.entry(
                     "web",
                     new ModuleDeclaration(
@@ -37,7 +38,8 @@ class ModularityTest {
                             "ontology",
                             "search",
                             "events",
-                            "migration")));
+                            "migration",
+                            "projection")));
 
     private static final ApplicationModules MODULES = ApplicationModules.of(WpApplication.class);
 

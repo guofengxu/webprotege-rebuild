@@ -9,6 +9,7 @@
             "ontology",
             "search",
             "events",
-            "migration"
+            "migration",
+            "projection"
         })
 package wprebuild.app.web;
