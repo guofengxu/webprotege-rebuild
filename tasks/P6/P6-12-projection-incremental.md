@@ -19,6 +19,7 @@ depends_on: [P6-11, P6-08]
 ## 参考
 - P6-08：`revision/OutboxConsumer`（`startFrom()`；`long accept(batch)` 返回已处理到的 `id`，支持部分确认；在中继事务内执行）、`revision/OutboxRetryLater`、`revision/OutboxMessage`
 - P6-09：`projection/ProjectionWriter`（`lockProject`、`replaceProject`）、`projection.project_state`；P6-10：`ProjectionRows.compute`、`ProjectionRebuilder`；P6-11：PoC 结论（本卡只在 PoC 达标后开工）
+- P6-17：`ProjectionRebuilder.rebuild` 在事务提交之后刷新 5 张投影表的统计信息（`ProjectionWriter.refreshStatistics()`）；在中继事务内调用时，刷新发生在中继事务提交之后，回滚时不刷新。本卡的增量路径（`replaceSubjects`）**不**调用 `refreshStatistics`，小批变更交给 autoanalyze
 - 内核：`wprebuild.kernel.revision.RevisionLog#read(ProjectId, RevisionNumber, RevisionNumber)`（实现为 `revision/JdbcRevisionLog`）；`wprebuild.kernel.change` 中的 `AddAxiom`、`RemoveAxiom`（以及不影响投影的 `AddImport`、`RemoveImport`、`AddOntologyAnnotation`、`RemoveOntologyAnnotation`、`DeclareOntology`）
 - `wprebuild.kernel.runtime.ChangePipeline#commit`：outbox 行可见时，内存模型可能还没有应用这次修订
 - `bus/ProjectExistenceCheck.java`（`ACTIVE` / `TRASHED` / `MISSING`）；`ontology/ProjectRuntimeRegistry.java`
@@ -38,6 +39,7 @@ depends_on: [P6-11, P6-08]
 - 测试：
   - `projection/AffectedSubjectsTest.java`：子类公理、注解断言（主体是 IRI）、定义域 / 值域公理、导入变更各一例；
   - `projection/ProjectionIncrementalTest.java`（Testcontainers，`wp.projection.enabled=true`；导入 `testdata/ontologies/warehouse-sample.ttl`，通过命令总线编辑）：新建类、加父类、改标签、给属性加定义域、删除实体、回滚一个修订，每一步之后等待 `project_state.rev_no` 等于 `runtime.head()`（最多 10 秒），再断言数据库中的行等于 `ProjectionRows.compute(runtime)` 的结果；
+  - 同一测试中：第一次经中继完成全量重建后，`projection.hierarchy_edges` 的 `pg_stat_user_tables.analyze_count` 增加（P6-17 的提交后刷新在中继事务中生效；统计视图可能有短暂延迟，最多轮询 5 秒）；
   - 同一测试中：受影响的 IRI 超过阈值（测试中把阈值设为 3）时走全量重建，结果仍然相等；先有一批历史 outbox 行、后启用投影时，先全量重建一次，再跳过全部历史行；两个项目都需要全量重建时，分两批完成（部分确认生效）；
   - 内存模型落后：直接调用消费者，传入一条修订号大于 `runtime.head()` 的消息，断言抛出 `OutboxRetryLater` 且投影不变；
   - 回收站：项目移入回收站后编辑不了，恢复后再编辑一次，投影追上全部修订。
