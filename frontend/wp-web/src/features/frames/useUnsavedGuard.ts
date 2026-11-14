@@ -1,13 +1,16 @@
 import { ElMessageBox } from "element-plus";
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from "vue-router";
 import { useI18n } from "vue-i18n";
-import type { Ref } from "vue";
+import { toValue, type MaybeRefOrGetter } from "vue";
 
-export function useUnsavedGuard(isDirty: Ref<boolean>): void {
+export function useUnsavedGuard(
+  isDirty: MaybeRefOrGetter<boolean>,
+  readOnly: MaybeRefOrGetter<boolean> = false,
+): void {
   const { t } = useI18n();
 
   async function confirmLeave(): Promise<boolean> {
-    if (!isDirty.value) {
+    if (toValue(readOnly) || !toValue(isDirty)) {
       return true;
     }
     try {

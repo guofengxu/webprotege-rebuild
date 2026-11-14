@@ -1,9 +1,10 @@
 import { flushPromises } from "@vue/test-utils";
 import { defineComponent, h } from "vue";
-import { expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { queryKeys } from "@/shared/api/queryKeys";
 import { ApiError } from "@/shared/api/problem";
 import { renderWithProviders } from "@/shared/testing/renderWithProviders";
+import type { MockResponse } from "@/shared/testing/mockFetch";
 import {
   cloneFrame,
   framesEqual,
@@ -13,6 +14,29 @@ import {
 import { useFrameEditor } from "./useFrameEditor";
 
 type Editor = ReturnType<typeof useFrameEditor<ClassFrame>>;
+
+const VIEW_ACTIONS = [
+  "VIEW_PROJECT",
+  "VIEW_CHANGES",
+  "DOWNLOAD_PROJECT",
+] as const;
+
+const EDIT_ACTIONS = [
+  ...VIEW_ACTIONS,
+  "EDIT_ONTOLOGY",
+  "EDIT_ONTOLOGY_ANNOTATIONS",
+  "CREATE_CLASS",
+  "DELETE_CLASS",
+  "CREATE_PROPERTY",
+  "DELETE_PROPERTY",
+  "CREATE_INDIVIDUAL",
+  "DELETE_INDIVIDUAL",
+  "REVERT_CHANGES",
+] as const;
+
+afterEach(() => {
+  localStorage.removeItem("wp.locale");
+});
 
 function subject(name: string): ClassFrame["subject"] {
   return {
@@ -171,7 +195,65 @@ test("403 sets readOnly and keeps the draft", async () => {
   await flushPromises();
 
   expect(editor.readOnly.value).toBe(true);
+  expect(editor.editPermission.value).toBe("denied");
   expect(editor.draft.value?.subject?.displayName).toBe("Edited");
+});
+
+test("readOnly when EDIT_ONTOLOGY denied and save does not request", async () => {
+  const save = vi.fn(async (body: { from: ClassFrame; to: ClassFrame }) => ({
+    frame: body.to,
+    revision: 1,
+  }));
+  const { editor } = await mountEditor({
+    initial: frameOf("A"),
+    save,
+    actions: [...VIEW_ACTIONS],
+  });
+  await flushPromises();
+
+  expect(editor.readOnly.value).toBe(true);
+  expect(editor.editPermission.value).toBe("denied");
+  editor.draft.value = frameOf("Edited");
+  await editor.save();
+  await flushPromises();
+
+  expect(save).not.toHaveBeenCalled();
+});
+
+test("pending EDIT_ONTOLOGY keeps readOnly and blocks save", async () => {
+  const save = vi.fn(async (body: { from: ClassFrame; to: ClassFrame }) => ({
+    frame: body.to,
+    revision: 1,
+  }));
+  let resolveResponse: ((value: MockResponse) => void) | undefined;
+  const { editor } = await mountEditor({
+    initial: frameOf("A"),
+    save,
+    permissionsHandler: () =>
+      new Promise<MockResponse>((resolve) => {
+        resolveResponse = resolve;
+      }),
+  });
+
+  expect(editor.readOnly.value).toBe(true);
+  expect(editor.editPermission.value).toBe("pending");
+  editor.draft.value = frameOf("Edited");
+  await editor.save();
+  expect(save).not.toHaveBeenCalled();
+
+  for (let attempt = 0; attempt < 20 && resolveResponse === undefined; attempt += 1) {
+    await flushPromises();
+  }
+  resolveResponse?.({
+    json: {
+      projectId: "p1",
+      role: "CAN_EDIT",
+      systemAdmin: false,
+      actions: [...EDIT_ACTIONS],
+    },
+  });
+  await flushPromises();
+  expect(editor.readOnly.value).toBe(false);
 });
 
 test("normalize fills draft arrays without marking dirty", async () => {
@@ -232,6 +314,8 @@ async function mountEditor(options: {
   }>;
   onSaved?: (result: { frame: ClassFrame; revision: number }) => void;
   normalize?: (frame: ClassFrame) => ClassFrame;
+  actions?: readonly string[];
+  permissionsHandler?: () => MockResponse | Promise<MockResponse>;
 }) {
   const load = options.load ?? (async () => options.initial);
   const save =
@@ -242,12 +326,14 @@ async function mountEditor(options: {
     }));
   const onSaved = options.onSaved;
   const normalize = options.normalize;
+  const actions = options.actions ?? [...EDIT_ACTIONS];
   let editor!: Editor;
 
   const Probe = defineComponent({
     name: "FrameEditorProbe",
     setup() {
       editor = useFrameEditor<ClassFrame>({
+        projectId: "p1",
         queryKey: queryKeys.frame("p1", "CLASS", "http://ex.org#A"),
         load,
         save,
@@ -258,7 +344,20 @@ async function mountEditor(options: {
     },
   });
 
-  const rendered = await renderWithProviders(Probe);
+  const rendered = await renderWithProviders(Probe, {
+    handlers: {
+      "GET /api/projects/{id}/permissions/me":
+        options.permissionsHandler ??
+        (() => ({
+          json: {
+            projectId: "p1",
+            role: actions.includes("EDIT_ONTOLOGY") ? "CAN_EDIT" : "CAN_VIEW",
+            systemAdmin: false,
+            actions: [...actions],
+          },
+        })),
+    },
+  });
   await flushPromises();
   return { ...rendered, editor };
 }

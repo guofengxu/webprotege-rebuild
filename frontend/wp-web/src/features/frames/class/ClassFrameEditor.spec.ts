@@ -238,6 +238,81 @@ test("successful save invalidates class hierarchy query", async () => {
   wrapper.unmount();
 });
 
+test("without EDIT_ONTOLOGY inputs are disabled and no PUT is sent", async () => {
+  const { wrapper, requests } = await mountEditor({
+    handlers: {
+      "GET /api/projects/{id}/permissions/me": () => ({
+        json: {
+          projectId: "p1",
+          role: "CAN_VIEW",
+          systemAdmin: false,
+          actions: [...VIEW_ACTIONS],
+        },
+      }),
+    },
+  });
+  await flushPromises();
+
+  const lexical = wrapper.get('[data-testid="annotation-lexical"]');
+  expect((lexical.element as HTMLTextAreaElement).disabled).toBe(true);
+  expect(wrapper.get('[data-testid="add-label"]').attributes("disabled")).toBeDefined();
+  expect(
+    wrapper.findAll(".el-select__wrapper.is-disabled").length +
+      wrapper.findAll(".el-select .is-disabled").length,
+  ).toBeGreaterThan(0);
+  expect(wrapper.find('[aria-label="保存"]').exists()).toBe(false);
+  expect(wrapper.text()).toContain("只读：你在本项目中没有编辑权限");
+
+  await lexical.setValue("不应保存");
+  await flushPromises();
+  expect(
+    requests.some(
+      (entry) =>
+        entry.method === "PUT" && entry.path === "/api/projects/p1/frames/class",
+    ),
+  ).toBe(false);
+  wrapper.unmount();
+});
+
+test("with EDIT_ONTOLOGY save still works", async () => {
+  const { wrapper, requests } = await mountEditor();
+  await flushPromises();
+
+  const lexical = wrapper.get('[data-testid="annotation-lexical"]');
+  expect((lexical.element as HTMLTextAreaElement).disabled).toBe(false);
+  await lexical.setValue("可编辑");
+  await flushPromises();
+  await clickSave(wrapper);
+  await flushPromises();
+
+  expect(
+    requests.some(
+      (entry) =>
+        entry.method === "PUT" && entry.path === "/api/projects/p1/frames/class",
+    ),
+  ).toBe(true);
+  wrapper.unmount();
+});
+
+const VIEW_ACTIONS = [
+  "VIEW_PROJECT",
+  "VIEW_CHANGES",
+  "DOWNLOAD_PROJECT",
+] as const;
+
+const EDIT_ACTIONS = [
+  ...VIEW_ACTIONS,
+  "EDIT_ONTOLOGY",
+  "EDIT_ONTOLOGY_ANNOTATIONS",
+  "CREATE_CLASS",
+  "DELETE_CLASS",
+  "CREATE_PROPERTY",
+  "DELETE_PROPERTY",
+  "CREATE_INDIVIDUAL",
+  "DELETE_INDIVIDUAL",
+  "REVERT_CHANGES",
+] as const;
+
 async function mountEditor(options?: {
   handlers?: Record<
     string,
@@ -279,6 +354,14 @@ async function mountEditor(options?: {
         };
       },
       "GET /api/projects/{id}/search": () => ({ json: [] as EntityNode[] }),
+      "GET /api/projects/{id}/permissions/me": () => ({
+        json: {
+          projectId: "p1",
+          role: "CAN_EDIT",
+          systemAdmin: false,
+          actions: [...EDIT_ACTIONS],
+        },
+      }),
       ...(options?.handlers ?? {}),
     },
   });

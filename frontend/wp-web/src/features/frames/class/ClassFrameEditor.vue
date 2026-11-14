@@ -36,6 +36,7 @@ const frameKey = computed(() =>
 );
 
 const editor = useFrameEditor<ClassFrame>({
+  projectId: () => props.projectId,
   queryKey: frameKey,
   load: () => loadClassFrame(client, props.projectId, props.iri),
   save: async ({ from, to }) => {
@@ -58,7 +59,7 @@ const editor = useFrameEditor<ClassFrame>({
   },
 });
 
-useUnsavedGuard(editor.isDirty);
+useUnsavedGuard(editor.isDirty, editor.readOnly);
 
 const {
   draft,
@@ -67,6 +68,7 @@ const {
   conflict,
   serverChanged,
   readOnly,
+  editPermission,
   save,
   reset,
   reloadFromServer,
@@ -154,10 +156,10 @@ function setPropertyValues(value: PropertyValue[]): void {
             name="propertyValues"
           >
             <PropertyValuesEditor
+              v-model:valid="propertyValuesValid"
               :project-id="projectId"
               :model-value="draft.propertyValues ?? []"
               :disabled="readOnly"
-              v-model:valid="propertyValuesValid"
               @update:model-value="setPropertyValues"
             />
           </el-collapse-item>
@@ -178,6 +180,7 @@ function setPropertyValues(value: PropertyValue[]): void {
         :server-changed="serverChanged"
         :invalid="!propertyValuesValid"
         :read-only="readOnly"
+        :edit-permission="editPermission"
         @save="save"
         @reset="reset"
         @reload="reloadFromServer"

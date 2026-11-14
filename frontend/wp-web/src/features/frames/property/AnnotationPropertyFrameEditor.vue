@@ -38,6 +38,7 @@ const frameKey = computed(() =>
 );
 
 const editor = useFrameEditor<AnnotationPropertyFrame>({
+  projectId: () => props.projectId,
   queryKey: frameKey,
   load: () => loadAnnotationPropertyFrame(client, props.projectId, props.iri),
   save: async ({ from, to }) => {
@@ -63,7 +64,7 @@ const editor = useFrameEditor<AnnotationPropertyFrame>({
   },
 });
 
-useUnsavedGuard(editor.isDirty);
+useUnsavedGuard(editor.isDirty, editor.readOnly);
 
 const {
   draft,
@@ -72,6 +73,7 @@ const {
   conflict,
   serverChanged,
   readOnly,
+  editPermission,
   save,
   reset,
   reloadFromServer,
@@ -200,6 +202,7 @@ function setRanges(value: string[]): void {
         :conflict="conflict"
         :server-changed="serverChanged"
         :read-only="readOnly"
+        :edit-permission="editPermission"
         @save="save"
         @reset="reset"
         @reload="reloadFromServer"

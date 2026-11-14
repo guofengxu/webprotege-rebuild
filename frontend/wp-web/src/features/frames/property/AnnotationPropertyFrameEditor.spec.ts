@@ -118,6 +118,26 @@ test("invalid IRI cannot be added to domains", async () => {
   wrapper.unmount();
 });
 
+
+const VIEW_ACTIONS = [
+  "VIEW_PROJECT",
+  "VIEW_CHANGES",
+  "DOWNLOAD_PROJECT",
+] as const;
+
+const EDIT_ACTIONS = [
+  ...VIEW_ACTIONS,
+  "EDIT_ONTOLOGY",
+  "EDIT_ONTOLOGY_ANNOTATIONS",
+  "CREATE_CLASS",
+  "DELETE_CLASS",
+  "CREATE_PROPERTY",
+  "DELETE_PROPERTY",
+  "CREATE_INDIVIDUAL",
+  "DELETE_INDIVIDUAL",
+  "REVERT_CHANGES",
+] as const;
+
 async function mountEditor(options?: {
   handlers?: Record<
     string,
@@ -161,6 +181,14 @@ async function mountEditor(options?: {
         };
       },
       "GET /api/projects/{id}/search": () => ({ json: [] as EntityNode[] }),
+      "GET /api/projects/{id}/permissions/me": () => ({
+        json: {
+          projectId: "p1",
+          role: "CAN_EDIT",
+          systemAdmin: false,
+          actions: [...EDIT_ACTIONS],
+        },
+      }),
       ...(options?.handlers ?? {}),
     },
   });

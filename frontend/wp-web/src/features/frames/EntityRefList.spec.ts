@@ -53,6 +53,31 @@ test("adding a duplicate IRI does not create a second item", async () => {
   wrapper.unmount();
 });
 
+test("disabled prevents remove and keeps picker disabled", async () => {
+  const model = ref<EntityNode[]>([CLASS_A]);
+  const { wrapper } = await mountList({
+    model,
+    types: ["class"],
+    disabled: true,
+    handlers: {
+      "GET /api/projects/{id}/search": () => ({ json: [CLASS_A] }),
+    },
+  });
+
+  const picker = wrapper.findComponent(EntityPicker);
+  expect(picker.props("disabled")).toBe(true);
+  const tag = wrapper.get(".el-tag");
+  expect(tag.find(".el-tag__close").exists()).toBe(false);
+  const select = wrapper.get(".el-select");
+  expect(
+    select.find(".el-select__wrapper.is-disabled").exists() ||
+      select.attributes("aria-disabled") === "true" ||
+      select.find(".is-disabled").exists(),
+  ).toBe(true);
+  expect(model.value).toEqual([CLASS_A]);
+  wrapper.unmount();
+});
+
 test("DATATYPE tags are not navigable links", async () => {
   const model = ref<EntityNode[]>([DATATYPE, CLASS_A]);
   const { wrapper, router } = await mountList({
@@ -82,6 +107,7 @@ test("DATATYPE tags are not navigable links", async () => {
 async function mountList(options: {
   model: ReturnType<typeof ref<EntityNode[]>>;
   types: SearchType[];
+  disabled?: boolean;
   handlers?: Parameters<typeof renderWithProviders>[1] extends infer T
     ? T extends { handlers?: infer H }
       ? H
@@ -101,6 +127,7 @@ async function mountList(options: {
           },
           builtins: BUILTIN_DATATYPES,
           ariaLabel: "实体列表",
+          disabled: options.disabled ?? false,
         });
     },
   });

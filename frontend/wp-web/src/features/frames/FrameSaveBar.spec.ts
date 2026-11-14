@@ -33,6 +33,35 @@ test("save is disabled when clean or invalid", async () => {
   invalid.wrapper.unmount();
 });
 
+test("denied hides save actions and shows read-only hint", async () => {
+  const { wrapper } = await mountBar({
+    isDirty: true,
+    isSaving: false,
+    conflict: false,
+    serverChanged: false,
+    readOnly: true,
+    editPermission: "denied",
+  });
+  expect(wrapper.find('[aria-label="保存"]').exists()).toBe(false);
+  expect(wrapper.find('[aria-label="撤销修改"]').exists()).toBe(false);
+  expect(wrapper.text()).toContain("只读：你在本项目中没有编辑权限");
+  wrapper.unmount();
+});
+
+test("pending hides save actions and does not show read-only hint", async () => {
+  const { wrapper } = await mountBar({
+    isDirty: true,
+    isSaving: false,
+    conflict: false,
+    serverChanged: false,
+    readOnly: true,
+    editPermission: "pending",
+  });
+  expect(wrapper.find('[aria-label="保存"]').exists()).toBe(false);
+  expect(wrapper.text()).not.toContain("只读：你在本项目中没有编辑权限");
+  wrapper.unmount();
+});
+
 test("conflict shows alert and confirmed reload emits reload", async () => {
   vi.spyOn(ElMessageBox, "confirm").mockResolvedValue("confirm" as never);
   const { wrapper } = await mountBar({
@@ -66,6 +95,7 @@ async function mountBar(props: {
   serverChanged: boolean;
   invalid?: boolean;
   readOnly?: boolean;
+  editPermission?: "allowed" | "denied" | "pending";
 }) {
   const rendered = await renderWithProviders(FrameSaveBar, { props });
   mergeFramesLocales(rendered.wrapper);

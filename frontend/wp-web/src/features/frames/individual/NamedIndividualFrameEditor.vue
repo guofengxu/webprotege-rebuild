@@ -46,6 +46,7 @@ const frameKey = computed(() =>
 );
 
 const editor = useFrameEditor<NamedIndividualFrame>({
+  projectId: () => props.projectId,
   queryKey: frameKey,
   load: () => loadNamedIndividualFrame(client, props.projectId, props.iri),
   save: async ({ from, to }) => {
@@ -73,7 +74,7 @@ const editor = useFrameEditor<NamedIndividualFrame>({
   },
 });
 
-useUnsavedGuard(editor.isDirty);
+useUnsavedGuard(editor.isDirty, editor.readOnly);
 
 const {
   draft,
@@ -82,6 +83,7 @@ const {
   conflict,
   serverChanged,
   readOnly,
+  editPermission,
   save,
   reset,
   reloadFromServer,
@@ -241,6 +243,7 @@ function setSameIndividuals(value: EntityNode[]): void {
         :server-changed="serverChanged"
         :invalid="assertionsInvalid"
         :read-only="readOnly"
+        :edit-permission="editPermission"
         @save="save"
         @reset="reset"
         @reload="reloadFromServer"

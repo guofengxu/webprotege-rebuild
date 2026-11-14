@@ -113,6 +113,27 @@ test("excludeIris hides entities from options", async () => {
   wrapper.unmount();
 });
 
+test("disabled picker cannot open the select dropdown", async () => {
+  const { wrapper, model } = await mountPicker({
+    types: ["datatype"],
+    disabled: true,
+    handlers: {
+      "GET /api/projects/{id}/search": () => ({ json: [SEARCHED] }),
+    },
+  });
+
+  const picker = wrapper.findComponent(EntityPicker);
+  expect(picker.props("disabled")).toBe(true);
+  const select = wrapper.get(".el-select");
+  expect(
+    select.find(".el-select__wrapper.is-disabled").exists() ||
+      select.attributes("aria-disabled") === "true" ||
+      select.find(".is-disabled").exists(),
+  ).toBe(true);
+  expect(model.value).toBeNull();
+  wrapper.unmount();
+});
+
 test("allowRawIri offers use-IRI option that emits entityType IRI", async () => {
   const selected = ref<EntityNode | null>(null);
   const { wrapper } = await mountPicker({
@@ -166,6 +187,7 @@ async function mountPicker(options: {
   builtins?: readonly EntityNode[];
   excludeIris?: readonly string[];
   allowRawIri?: boolean;
+  disabled?: boolean;
   modelRef?: ReturnType<typeof ref<EntityNode | null>>;
   handlers?: Parameters<typeof renderWithProviders>[1] extends infer T
     ? T extends { handlers?: infer H }
@@ -194,6 +216,7 @@ async function mountPicker(options: {
           ...(options.excludeIris !== undefined
             ? { excludeIris: options.excludeIris }
             : {}),
+          disabled: options.disabled ?? false,
           ariaLabel: "实体",
         });
     },
