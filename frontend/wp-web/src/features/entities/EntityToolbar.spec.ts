@@ -4,6 +4,7 @@ import { defineComponent, h } from "vue";
 import { afterEach, expect, test, vi } from "vitest";
 import type { WorkspaceKind } from "@/features/workspace/hierarchyKinds";
 import { WORKSPACE_KIND_PATH } from "@/features/workspace/routes";
+import type { MockResponse } from "@/shared/testing/mockFetch";
 import { renderWithProviders } from "@/shared/testing/renderWithProviders";
 import EntityToolbar from "./EntityToolbar.vue";
 import entitiesEn from "./locales/en-US";
@@ -18,6 +19,25 @@ const SETTINGS: NewEntitySettings = {
   labelProperty: "http://www.w3.org/2000/01/rdf-schema#label",
   targetOntology: "http://ex.org/ont",
 };
+
+const VIEW_ACTIONS = [
+  "VIEW_PROJECT",
+  "VIEW_CHANGES",
+  "DOWNLOAD_PROJECT",
+] as const;
+
+const EDIT_ACTIONS = [
+  ...VIEW_ACTIONS,
+  "EDIT_ONTOLOGY",
+  "EDIT_ONTOLOGY_ANNOTATIONS",
+  "CREATE_CLASS",
+  "DELETE_CLASS",
+  "CREATE_PROPERTY",
+  "DELETE_PROPERTY",
+  "CREATE_INDIVIDUAL",
+  "DELETE_INDIVIDUAL",
+  "REVERT_CHANGES",
+] as const;
 
 afterEach(() => {
   document.cookie =
@@ -100,6 +120,79 @@ test("without selected entity 删除 is disabled", async () => {
   wrapper.unmount();
 });
 
+test("CAN_VIEW hides create and delete", async () => {
+  const { wrapper } = await renderToolbar("/projects/p1/class", "class", {
+    "GET /api/projects/{id}/permissions/me": () => ({
+      json: {
+        projectId: "p1",
+        role: "CAN_VIEW",
+        systemAdmin: false,
+        actions: [...VIEW_ACTIONS],
+      },
+    }),
+  });
+  await flushPromises();
+
+  expect(findToolbarButton(wrapper, "新建")).toBeUndefined();
+  expect(findToolbarButton(wrapper, "删除")).toBeUndefined();
+  wrapper.unmount();
+});
+
+test("CAN_EDIT shows create and delete", async () => {
+  const { wrapper } = await renderToolbar("/projects/p1/class", "class");
+  await flushPromises();
+
+  expect(findToolbarButton(wrapper, "新建")).toBeDefined();
+  expect(findToolbarButton(wrapper, "删除")).toBeDefined();
+  wrapper.unmount();
+});
+
+test("pending permissions disable create and delete", async () => {
+  let resolveResponse: ((value: MockResponse) => void) | undefined;
+  const { wrapper } = await renderToolbar("/projects/p1/class", "class", {
+    "GET /api/projects/{id}/permissions/me": () =>
+      new Promise<MockResponse>((resolve) => {
+        resolveResponse = resolve;
+      }),
+  });
+
+  const create = findToolbarButton(wrapper, "新建");
+  const remove = findToolbarButton(wrapper, "删除");
+  expect(create).toBeDefined();
+  expect(remove).toBeDefined();
+  expect(create!.attributes("disabled")).toBeDefined();
+  expect(remove!.attributes("disabled")).toBeDefined();
+
+  for (let attempt = 0; attempt < 20 && resolveResponse === undefined; attempt += 1) {
+    await flushPromises();
+  }
+  resolveResponse?.({
+    json: {
+      projectId: "p1",
+      role: "CAN_EDIT",
+      systemAdmin: false,
+      actions: [...EDIT_ACTIONS],
+    },
+  });
+  await flushPromises();
+  wrapper.unmount();
+});
+
+test("permissions 500 still shows create and delete", async () => {
+  const { wrapper } = await renderToolbar("/projects/p1/class", "class", {
+    "GET /api/projects/{id}/permissions/me": () => ({
+      status: 500,
+      problem: { status: 500, code: "INTERNAL_ERROR", title: "Error" },
+    }),
+  });
+  await flushPromises();
+
+  expect(findToolbarButton(wrapper, "新建")).toBeDefined();
+  expect(findToolbarButton(wrapper, "删除")).toBeDefined();
+  expect(findToolbarButton(wrapper, "新建")!.attributes("disabled")).toBeUndefined();
+  wrapper.unmount();
+});
+
 async function renderToolbar(
   route: string,
   kind: WorkspaceKind,
@@ -117,6 +210,14 @@ async function renderToolbar(
     route,
     handlers: {
       "GET /api/projects/{id}/settings/new-entity": () => ({ json: SETTINGS }),
+      "GET /api/projects/{id}/permissions/me": () => ({
+        json: {
+          projectId: "p1",
+          role: "CAN_EDIT",
+          systemAdmin: false,
+          actions: [...EDIT_ACTIONS],
+        },
+      }),
       ...handlers,
     },
     routes: [

@@ -114,7 +114,30 @@ async function renderToolbar(
   });
   const rendered = await renderWithProviders(Host, {
     route,
-    handlers,
+    handlers: {
+      "GET /api/projects/{id}/permissions/me": () => ({
+        json: {
+          projectId: "p1",
+          role: "CAN_EDIT",
+          systemAdmin: false,
+          actions: [
+            "VIEW_PROJECT",
+            "VIEW_CHANGES",
+            "DOWNLOAD_PROJECT",
+            "EDIT_ONTOLOGY",
+            "EDIT_ONTOLOGY_ANNOTATIONS",
+            "CREATE_CLASS",
+            "DELETE_CLASS",
+            "CREATE_PROPERTY",
+            "DELETE_PROPERTY",
+            "CREATE_INDIVIDUAL",
+            "DELETE_INDIVIDUAL",
+            "REVERT_CHANGES",
+          ],
+        },
+      }),
+      ...handlers,
+    },
     routes: [
       {
         path: "/projects/:projectId",

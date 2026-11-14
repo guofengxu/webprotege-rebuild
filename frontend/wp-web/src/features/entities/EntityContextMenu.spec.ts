@@ -4,12 +4,32 @@ import { defineComponent, h, nextTick, ref } from "vue";
 import { afterEach, expect, test, vi } from "vitest";
 import type { WorkspaceKind } from "@/features/workspace/hierarchyKinds";
 import { WORKSPACE_KIND_PATH } from "@/features/workspace/routes";
+import type { MockResponse } from "@/shared/testing/mockFetch";
 import { renderWithProviders } from "@/shared/testing/renderWithProviders";
 import EntityContextMenu, {
   type ContextMenuTarget,
 } from "./EntityContextMenu.vue";
 import entitiesEn from "./locales/en-US";
 import entitiesZh from "./locales/zh-CN";
+
+const VIEW_ACTIONS = [
+  "VIEW_PROJECT",
+  "VIEW_CHANGES",
+  "DOWNLOAD_PROJECT",
+] as const;
+
+const EDIT_ACTIONS = [
+  ...VIEW_ACTIONS,
+  "EDIT_ONTOLOGY",
+  "EDIT_ONTOLOGY_ANNOTATIONS",
+  "CREATE_CLASS",
+  "DELETE_CLASS",
+  "CREATE_PROPERTY",
+  "DELETE_PROPERTY",
+  "CREATE_INDIVIDUAL",
+  "DELETE_INDIVIDUAL",
+  "REVERT_CHANGES",
+] as const;
 
 const CLASS_NODE: EntityNode = {
   iri: "http://ex.org/Pizza",
@@ -108,9 +128,110 @@ test("Esc closes menu", async () => {
   wrapper.unmount();
 });
 
+test("CAN_VIEW hides create and delete menu items", async () => {
+  const { wrapper, openMenu, target } = await mountMenu("class", undefined, {
+    "GET /api/projects/{id}/permissions/me": () => ({
+      json: {
+        projectId: "p1",
+        role: "CAN_VIEW",
+        systemAdmin: false,
+        actions: [...VIEW_ACTIONS],
+      },
+    }),
+  });
+  await openMenu({
+    node: CLASS_NODE,
+    clientX: 120,
+    clientY: 80,
+    source: "tree",
+  });
+  await flushPromises();
+
+  expect(findMenuItem("新建子类")).toBeNull();
+  expect(findMenuItem("删除")).toBeNull();
+  expect(target.value).toBeNull();
+  wrapper.unmount();
+});
+
+test("CAN_EDIT shows create and delete menu items", async () => {
+  const { wrapper, openMenu } = await mountMenu("class");
+  await openMenu({
+    node: CLASS_NODE,
+    clientX: 120,
+    clientY: 80,
+    source: "tree",
+  });
+  await flushPromises();
+
+  expect(findMenuItem("新建子类")).not.toBeNull();
+  expect(findMenuItem("删除")).not.toBeNull();
+  wrapper.unmount();
+});
+
+test("pending permissions disable menu items", async () => {
+  let resolveResponse: ((value: MockResponse) => void) | undefined;
+  const { wrapper, openMenu } = await mountMenu("class", undefined, {
+    "GET /api/projects/{id}/permissions/me": () =>
+      new Promise<MockResponse>((resolve) => {
+        resolveResponse = resolve;
+      }),
+  });
+  await openMenu({
+    node: CLASS_NODE,
+    clientX: 120,
+    clientY: 80,
+    source: "tree",
+  });
+
+  const create = findMenuItem("新建子类");
+  const remove = findMenuItem("删除");
+  expect(create).not.toBeNull();
+  expect(remove).not.toBeNull();
+  expect(create!.getAttribute("aria-disabled")).toBe("true");
+  expect(remove!.getAttribute("aria-disabled")).toBe("true");
+
+  for (let attempt = 0; attempt < 20 && resolveResponse === undefined; attempt += 1) {
+    await flushPromises();
+  }
+  resolveResponse?.({
+    json: {
+      projectId: "p1",
+      role: "CAN_EDIT",
+      systemAdmin: false,
+      actions: [...EDIT_ACTIONS],
+    },
+  });
+  await flushPromises();
+  wrapper.unmount();
+});
+
+test("permissions 500 still shows menu items", async () => {
+  const { wrapper, openMenu } = await mountMenu("class", undefined, {
+    "GET /api/projects/{id}/permissions/me": () => ({
+      status: 500,
+      problem: { status: 500, code: "INTERNAL_ERROR", title: "Error" },
+    }),
+  });
+  await openMenu({
+    node: CLASS_NODE,
+    clientX: 120,
+    clientY: 80,
+    source: "tree",
+  });
+  await flushPromises();
+
+  expect(findMenuItem("新建子类")).not.toBeNull();
+  expect(findMenuItem("删除")).not.toBeNull();
+  expect(findMenuItem("新建子类")!.getAttribute("aria-disabled")).not.toBe("true");
+  wrapper.unmount();
+});
+
 async function mountMenu(
   kind: WorkspaceKind,
   route = `/projects/p1/${kind}`,
+  handlers: NonNullable<
+    Parameters<typeof renderWithProviders>[1]
+  >["handlers"] = {},
 ) {
   const target = ref<ContextMenuTarget | null>(null);
   const Host = defineComponent({
@@ -139,6 +260,15 @@ async function mountMenu(
           targetOntology: "http://ex.org/ont",
         },
       }),
+      "GET /api/projects/{id}/permissions/me": () => ({
+        json: {
+          projectId: "p1",
+          role: "CAN_EDIT",
+          systemAdmin: false,
+          actions: [...EDIT_ACTIONS],
+        },
+      }),
+      ...handlers,
     },
     routes: [
       {
