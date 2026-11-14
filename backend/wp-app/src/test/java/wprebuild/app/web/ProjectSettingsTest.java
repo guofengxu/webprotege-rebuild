@@ -176,8 +176,8 @@ class ProjectSettingsTest {
 
         CountDownLatch resync = new CountDownLatch(1);
         AtomicReference<ProjectEventHub.Delivery> seen = new AtomicReference<>();
-        ProjectEventHub.Subscription subscription =
-                hub.subscribe(projectId, OptionalLong.empty(), new ProjectEventHub.LiveSink() {
+        ProjectEventHub.Subscription subscription = hub.subscribe(
+                projectId, new UserId(owner.userId()), OptionalLong.empty(), new ProjectEventHub.LiveSink() {
                     @Override
                     public void onEvents(ProjectEventHub.Delivery delivery) {
                         if (delivery.resync()) {

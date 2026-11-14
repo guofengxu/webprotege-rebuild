@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 115 张卡：完成 100，进行中 0，阻塞 1，待办 14。
+共 115 张卡：完成 101，进行中 0，阻塞 1，待办 13。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-03](P6/P6-03-event-subscription-revocation.md) 后端：成员失去查看权限或项目移入回收站时，关闭对应的事件订阅
 - [P6-04](P6/P6-04-web-permission-aware-actions.md) Web 端：读取“我的权限”，按权限显示新建、删除与回滚操作
 - [P6-08](P6/P6-08-outbox-relay.md) outbox 中继：按消费者记录进度，按提交顺序投递修订事件
 - [P6-14](P6/P6-14-mcp-poc.md) MCP PoC：选定 MCP Java SDK，在 /mcp 提供 API Key 认证的只读工具 search_entities
@@ -150,7 +149,7 @@
 | [P6-00](P6/P6-00-extensions-planning.md) | 规划卡：按优先级细化扩展功能 | tasks/P6 | planning | S | 完成 | P3-24 |
 | [P6-01](P6/P6-01-my-project-permissions.md) | 后端：查询“我在本项目中的角色与可用操作” | wp-app, packages/api-types | app-security | S | 完成 | P4-17 |
 | [P6-02](P6/P6-02-member-candidate-search.md) | 后端：按用户 ID 或显示名称查找用户，供成员管理添加成员 | wp-app, packages/api-types | app-security | S | 完成 | P6-01 |
-| [P6-03](P6/P6-03-event-subscription-revocation.md) | 后端：成员失去查看权限或项目移入回收站时，关闭对应的事件订阅 | wp-app | app-service | M | 待办（可开工） | P4-17 |
+| [P6-03](P6/P6-03-event-subscription-revocation.md) | 后端：成员失去查看权限或项目移入回收站时，关闭对应的事件订阅 | wp-app | app-service | M | 完成 | P4-17 |
 | [P6-04](P6/P6-04-web-permission-aware-actions.md) | Web 端：读取“我的权限”，按权限显示新建、删除与回滚操作 | wp-web | web | M | 待办（可开工） | P6-01 |
 | [P6-05](P6/P6-05-web-read-only-editors.md) | Web 端：没有编辑权限时，Frame 编辑器为只读 | wp-web | web | M | 待办 | P6-04 |
 | [P6-06](P6/P6-06-web-read-only-settings.md) | Web 端：没有对应权限时，项目设置表单为只读 | wp-web | web | S | 待办 | P6-04 |

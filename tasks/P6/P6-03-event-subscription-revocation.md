@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P4-17]
 ---
 
@@ -69,13 +69,21 @@ depends_on: [P4-17]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 新的事件类型；项目从回收站恢复时的通知
 - Web 端改动（重连得到 403 / 409 时的处理已在 P4-29 完成）
 - 项目详情接口的缓存时间
 - 移动端（P5 已暂停）
+
+## 执行记录
+- 日期：2026-11-13
+- 分支：feature/p6-03-event-subscription-revocation
+- 测试：2026-11-13T22:57:32+08:00 通过（3 项）
+- 实际改动：Hub tracks UserId; revoke after role changes; trash → resync + disconnectAll; second access check after subscribe/park; EventSubscriptionRevocationTest + events→project modulith.
+- 偏差：无
+- 审查：java-reviewer, code-reviewer, silent-failure-hunter, (fixed, revoke, fail-open, via, disconnectAll, fallback;, closeSubscribers, sync, fallback, if, delivery, queue, rejects)

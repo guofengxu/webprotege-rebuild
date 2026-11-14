@@ -12,8 +12,11 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import wprebuild.app.bus.ProjectExistenceCheck;
 import wprebuild.app.shared.ConflictException;
 import wprebuild.app.shared.NotFoundException;
@@ -33,8 +36,11 @@ public class JdbcProjectRepository implements ProjectRepository, ProjectExistenc
 
     private final JdbcClient jdbc;
 
-    public JdbcProjectRepository(JdbcClient jdbc) {
+    private final ApplicationEventPublisher events;
+
+    public JdbcProjectRepository(JdbcClient jdbc, ApplicationEventPublisher events) {
         this.jdbc = Objects.requireNonNull(jdbc, "jdbc");
+        this.events = Objects.requireNonNull(events, "events");
     }
 
     @Override
@@ -146,7 +152,22 @@ public class JdbcProjectRepository implements ProjectRepository, ProjectExistenc
             }
             throw inactive(projectId);
         }
+        publishTrashChange(projectId, inTrash);
         return find(projectId).orElseThrow(() -> new NotFoundException("project not found"));
+    }
+
+    private void publishTrashChange(ProjectId projectId, boolean trashed) {
+        ProjectTrashStateChanged event = new ProjectTrashStateChanged(projectId, trashed);
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            events.publishEvent(event);
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                events.publishEvent(event);
+            }
+        });
     }
 
     @Override
