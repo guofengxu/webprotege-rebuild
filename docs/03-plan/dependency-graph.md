@@ -130,7 +130,7 @@ flowchart LR
         P6_08["P6-08"]:::done
         P6_09["P6-09"]:::done
         P6_10["P6-10"]:::done
-        P6_11["P6-11"]:::todo
+        P6_11["P6-11"]:::blocked
         P6_12["P6-12"]:::todo
         P6_13["P6-13"]:::todo
         P6_14["P6-14"]:::todo
