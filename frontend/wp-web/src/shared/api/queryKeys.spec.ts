@@ -39,11 +39,27 @@ test("project data keys start with project(id)", () => {
     queryKeys.entityHistory(id, iri, 0, 20),
     queryKeys.settings(id, "prefixes"),
     queryKeys.members(id),
+    queryKeys.memberCandidates(id, "ada"),
     queryKeys.myPermissions(id),
   ];
   for (const key of keys) {
     expectPrefix(key, prefix);
   }
+});
+
+test("memberCandidates starts with members(id) and includes the query", () => {
+  expectPrefix(queryKeys.memberCandidates(id, "托"), queryKeys.members(id));
+  expect(queryKeys.memberCandidates(id, "托")).toEqual([
+    ...queryKeys.members(id),
+    "candidates",
+    "托",
+  ]);
+  expect(queryKeys.memberCandidates(id, "ada")).not.toEqual(
+    queryKeys.memberCandidates(id, "bob"),
+  );
+  expect(queryKeys.memberCandidates(id, "ada")).not.toEqual(
+    queryKeys.memberCandidates("other", "ada"),
+  );
 });
 
 test("myPermissions starts with project(id)", () => {

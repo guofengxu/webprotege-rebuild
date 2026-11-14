@@ -1,17 +1,36 @@
 <script setup lang="ts">
-import type { MemberResponse } from "@wp/api-types";
+import type { components, MemberResponse } from "@wp/api-types";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useCurrentUser } from "@/features/auth/useAuth";
 import { ApiError, problemMessage } from "@/shared/api/problem";
-import { useDeleteMember, useMembers, usePutMember } from "./api";
+import {
+  useDeleteMember,
+  useMemberCandidates,
+  useMembers,
+  usePutMember,
+} from "./api";
+
+type UserSummaryResponse = components["schemas"]["UserSummaryResponse"];
 
 export type ProjectRole =
   | "CAN_VIEW"
   | "CAN_COMMENT"
   | "CAN_EDIT"
   | "CAN_MANAGE";
+
+type CandidateSuggestion = {
+  readonly value: string;
+  readonly userId: string;
+  readonly displayName: string;
+  readonly alreadyMember: boolean;
+  readonly disabled: boolean;
+  readonly isError: boolean;
+  readonly label: string;
+};
+
+type CandidateWaitOutcome = "ready" | "superseded" | "cleared";
 
 const PROJECT_ROLES: readonly ProjectRole[] = [
   "CAN_VIEW",
@@ -42,6 +61,8 @@ const roleDrafts = reactive<Record<string, ProjectRole>>({});
 const busyUsers = reactive<Record<string, boolean>>({});
 let removeLock = false;
 
+const candidatesQuery = useMemberCandidates(() => props.projectId, addUserId);
+
 onMounted(() => {
   emit("update:dirty", false);
 });
@@ -64,11 +85,27 @@ const loadError = computed(() => {
 
 const currentUserId = computed(() => currentUser.data.value?.userId ?? "");
 
-const addDescribedBy = computed(() =>
-  addError.value !== ""
-    ? "members-add-error members-user-hint"
-    : "members-user-hint",
-);
+const candidateStatus = computed(() => {
+  if (
+    candidatesQuery.isError.value &&
+    candidatesQuery.debouncedQuery.value.length > 0 &&
+    addUserId.value.trim().length > 0
+  ) {
+    return t("members.candidateSearchError");
+  }
+  return "";
+});
+
+const addDescribedBy = computed(() => {
+  const parts: string[] = [];
+  if (candidateStatus.value !== "") {
+    parts.push("members-candidate-status");
+  }
+  if (addError.value !== "") {
+    parts.push("members-add-error");
+  }
+  return parts.length > 0 ? parts.join(" ") : undefined;
+});
 
 watch(
   rows,
@@ -130,6 +167,141 @@ function isExistingMember(userId: string): boolean {
 function memberRole(userId: string): ProjectRole {
   const fromServer = rows.value.find((member) => member.userId === userId)?.role;
   return roleDrafts[userId] ?? normalizeRole(fromServer);
+}
+
+function formatCandidateLabel(user: UserSummaryResponse): string {
+  const userId = user.userId?.trim() ?? "";
+  const displayName = user.displayName?.trim() ?? "";
+  if (displayName.length === 0) {
+    return userId;
+  }
+  return `${displayName}（${userId}）`;
+}
+
+function buildSuggestions(): CandidateSuggestion[] {
+  const typed = addUserId.value;
+  if (candidatesQuery.isError.value) {
+    return [
+      {
+        value: typed,
+        userId: "",
+        displayName: "",
+        alreadyMember: false,
+        disabled: true,
+        isError: true,
+        label: t("members.candidateSearchError"),
+      },
+    ];
+  }
+  const hits = candidatesQuery.data.value ?? [];
+  return hits.map((user) => {
+    const userId = user.userId?.trim() ?? "";
+    const displayName = user.displayName?.trim() ?? "";
+    const alreadyMember = userId.length > 0 && isExistingMember(userId);
+    return {
+      // Keep the typed query as value so selecting a disabled row does not
+      // overwrite the input with a real userId (Element Plus always applies valueKey).
+      value: alreadyMember ? typed : userId,
+      userId,
+      displayName,
+      alreadyMember,
+      disabled: alreadyMember,
+      isError: false,
+      label: formatCandidateLabel(user),
+    };
+  });
+}
+
+function whenCandidatesReady(
+  expected: string,
+): Promise<CandidateWaitOutcome> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (outcome: CandidateWaitOutcome): void => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      stop();
+      resolve(outcome);
+    };
+    const stop = watch(
+      [
+        () => addUserId.value,
+        () => candidatesQuery.debouncedQuery.value,
+        () => candidatesQuery.isFetching.value,
+        () => candidatesQuery.status.value,
+      ],
+      () => {
+        const current = addUserId.value.trim();
+        if (current.length === 0) {
+          finish("cleared");
+          return;
+        }
+        if (current !== expected) {
+          finish("superseded");
+          return;
+        }
+        if (candidatesQuery.debouncedQuery.value !== expected) {
+          return;
+        }
+        if (candidatesQuery.isFetching.value) {
+          return;
+        }
+        const status = candidatesQuery.status.value;
+        if (status === "success" || status === "error") {
+          finish("ready");
+        }
+      },
+      { flush: "post", immediate: true },
+    );
+  });
+}
+
+function markDisabledOptions(): void {
+  for (const li of document.querySelectorAll<HTMLElement>(
+    ".el-autocomplete-suggestion li[role='option'], .el-autocomplete__popper li[role='option']",
+  )) {
+    const disabled = li.querySelector("[data-disabled='true']") !== null;
+    if (disabled) {
+      li.setAttribute("aria-disabled", "true");
+    } else {
+      li.removeAttribute("aria-disabled");
+    }
+  }
+}
+
+async function fetchSuggestions(
+  queryString: string,
+): Promise<CandidateSuggestion[] | void> {
+  const trimmed = queryString.trim();
+  if (trimmed.length === 0) {
+    return [];
+  }
+  const outcome = await whenCandidatesReady(trimmed);
+  if (outcome === "superseded") {
+    // Skip cb so a newer in-flight fetch keeps ownership of loading/results.
+    return;
+  }
+  if (outcome === "cleared") {
+    return [];
+  }
+  const items = buildSuggestions();
+  void nextTick(() => {
+    markDisabledOptions();
+  });
+  return items;
+}
+
+function onCandidateSelect(item: Record<string, unknown>): void {
+  const disabled = item.disabled === true;
+  const alreadyMember = item.alreadyMember === true;
+  const isError = item.isError === true;
+  const userId = typeof item.userId === "string" ? item.userId : "";
+  if (disabled || alreadyMember || isError || userId.length === 0) {
+    return;
+  }
+  addUserId.value = userId;
 }
 
 async function onAddMember(): Promise<void> {
@@ -318,26 +490,50 @@ function memberErrorMessage(error: unknown): string {
             :aria-label="t('members.addMember')"
           >
             <p
-              id="members-user-hint"
-              class="members-tab__hint"
+              id="members-candidate-status"
+              class="sr-only"
+              role="status"
+              aria-live="polite"
             >
-              {{ t("members.userIdHint") }}
+              {{ candidateStatus }}
             </p>
             <form
               class="members-tab__add-row"
               @submit.prevent="onAddMember"
             >
               <label class="members-tab__field">
-                <span class="sr-only">{{ t("members.userId") }}</span>
-                <el-input
+                <span class="sr-only">{{ t("members.userSearchPlaceholder") }}</span>
+                <el-autocomplete
                   v-model="addUserId"
                   name="userId"
                   data-testid="add-user-id"
-                  :placeholder="t('members.userId')"
+                  value-key="value"
+                  :debounce="0"
+                  :trigger-on-focus="false"
+                  :fetch-suggestions="fetchSuggestions"
+                  :placeholder="t('members.userSearchPlaceholder')"
                   :disabled="adding"
                   :aria-invalid="addError !== ''"
                   :aria-describedby="addDescribedBy"
-                />
+                  @select="onCandidateSelect"
+                >
+                  <template #default="{ item }">
+                    <div
+                      class="members-tab__suggestion"
+                      :class="{ 'is-disabled': item.disabled }"
+                      :aria-disabled="item.disabled ? 'true' : undefined"
+                      :data-disabled="item.disabled ? 'true' : undefined"
+                    >
+                      <span>{{ item.label }}</span>
+                      <span
+                        v-if="item.alreadyMember"
+                        class="members-tab__suggestion-badge"
+                      >
+                        {{ t("members.alreadyMemberBadge") }}
+                      </span>
+                    </div>
+                  </template>
+                </el-autocomplete>
               </label>
               <label class="members-tab__field members-tab__field--role">
                 <span class="sr-only">{{ t("members.role") }}</span>
@@ -461,12 +657,6 @@ function memberErrorMessage(error: unknown): string {
   gap: var(--wp-space-2);
 }
 
-.members-tab__hint {
-  margin: 0;
-  font-size: var(--wp-font-size-sm);
-  color: var(--wp-color-text-secondary, var(--el-text-color-secondary));
-}
-
 .members-tab__add-row {
   display: flex;
   flex-wrap: wrap;
@@ -506,6 +696,25 @@ function memberErrorMessage(error: unknown): string {
 .members-tab__hit {
   min-height: 32px;
   min-width: 32px;
+}
+
+.members-tab__suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wp-space-2);
+  width: 100%;
+}
+
+.members-tab__suggestion.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.members-tab__suggestion-badge {
+  flex-shrink: 0;
+  font-size: var(--wp-font-size-sm);
+  color: var(--wp-color-text-secondary, var(--el-text-color-secondary));
 }
 
 .sr-only {

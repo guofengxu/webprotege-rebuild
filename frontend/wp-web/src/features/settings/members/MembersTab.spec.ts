@@ -1,11 +1,17 @@
 import { flushPromises, type VueWrapper } from "@vue/test-utils";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { afterEach, expect, test, vi } from "vitest";
-import type { AuthUserResponse, MemberResponse } from "@wp/api-types";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import type {
+  AuthUserResponse,
+  components,
+  MemberResponse,
+} from "@wp/api-types";
 import { renderWithProviders } from "@/shared/testing/renderWithProviders";
 import MembersTab from "./MembersTab.vue";
 import membersEn from "./locales/en-US";
 import membersZh from "./locales/zh-CN";
+
+type UserSummaryResponse = components["schemas"]["UserSummaryResponse"];
 
 const PROJECT_ID = "p1";
 
@@ -21,12 +27,25 @@ const MEMBERS: MemberResponse[] = [
   { userId: "bob", role: "CAN_EDIT" },
 ];
 
+const CANDIDATES: UserSummaryResponse[] = [
+  { userId: "tuo-pan", displayName: "周转托盘" },
+  { userId: "ada", displayName: "Ada" },
+];
+
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
 afterEach(() => {
+  vi.useRealTimers();
   document.cookie =
     "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
   vi.restoreAllMocks();
   localStorage.removeItem("wp.locale");
   document.body.querySelectorAll(".el-overlay").forEach((node) => node.remove());
+  document.body
+    .querySelectorAll(".el-autocomplete__popper, .el-popper")
+    .forEach((node) => node.remove());
 });
 
 test("renders the member list", async () => {
@@ -195,6 +214,177 @@ test("adding an unknown user id shows 用户 ID 不存在", async () => {
   wrapper.unmount();
 });
 
+test("typing 托 debounces then requests member-candidates and shows results", async () => {
+  const { wrapper, requests } = await mountTab({
+    "GET /api/auth/me": () => ({ json: CURRENT_USER }),
+    "GET /api/projects/{id}/members": () => ({ json: MEMBERS }),
+    "GET /api/projects/{id}/member-candidates": () => ({ json: CANDIDATES }),
+  });
+
+  await setAddUserId(wrapper, "托");
+  await vi.advanceTimersByTimeAsync(299);
+  await flushPromises();
+  expect(
+    requests.filter((entry) => entry.path.includes("/member-candidates")),
+  ).toHaveLength(0);
+
+  await vi.advanceTimersByTimeAsync(1);
+  await flushPromises();
+
+  const candidateRequests = requests.filter(
+    (entry) =>
+      entry.method === "GET" &&
+      entry.path === `/api/projects/${PROJECT_ID}/member-candidates`,
+  );
+  expect(candidateRequests).toHaveLength(1);
+  expect(candidateRequests[0]?.query.get("q")).toBe("托");
+  expect(candidateRequests[0]?.query.get("limit")).toBe("10");
+
+  const labels = suggestionLabels();
+  expect(labels.some((text) => text.includes("周转托盘") && text.includes("tuo-pan"))).toBe(
+    true,
+  );
+  expect(labels.some((text) => text.includes("Ada") && text.includes("ada"))).toBe(
+    true,
+  );
+  wrapper.unmount();
+});
+
+test("existing members show 已是成员 and are not selectable", async () => {
+  const { wrapper } = await mountTab({
+    "GET /api/auth/me": () => ({ json: CURRENT_USER }),
+    "GET /api/projects/{id}/members": () => ({ json: MEMBERS }),
+    "GET /api/projects/{id}/member-candidates": () => ({ json: CANDIDATES }),
+  });
+
+  await setAddUserId(wrapper, "托");
+  await vi.advanceTimersByTimeAsync(300);
+  await flushPromises();
+
+  const adaItem = suggestionItems().find((node) =>
+    (node.textContent ?? "").includes("ada"),
+  );
+  expect(adaItem).toBeDefined();
+  expect(adaItem!.textContent).toContain("已是成员");
+  expect(
+    adaItem!.classList.contains("is-disabled") ||
+      adaItem!.getAttribute("aria-disabled") === "true" ||
+      adaItem!.querySelector("[aria-disabled='true'], .is-disabled") !== null ||
+      adaItem!.hasAttribute("data-disabled"),
+  ).toBe(true);
+
+  const before = addUserIdValue(wrapper);
+  adaItem!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  await flushPromises();
+  expect(addUserIdValue(wrapper)).toBe(before);
+  wrapper.unmount();
+});
+
+test("selecting a candidate then adding sends PUT for that userId", async () => {
+  document.cookie = "XSRF-TOKEN=csrf-token";
+  let listed = [...MEMBERS];
+  const { wrapper, requests } = await mountTab({
+    "GET /api/auth/me": () => ({ json: CURRENT_USER }),
+    "GET /api/projects/{id}/members": () => ({ json: listed }),
+    "GET /api/projects/{id}/member-candidates": () => ({ json: CANDIDATES }),
+    "PUT /api/projects/{id}/members/{userId}": (req) => {
+      const member: MemberResponse = {
+        userId: req.params.userId,
+        role: (req.body as { role?: string }).role,
+      };
+      listed = [...listed, member];
+      return { json: member };
+    },
+  });
+
+  await setAddUserId(wrapper, "托");
+  await vi.advanceTimersByTimeAsync(300);
+  await flushPromises();
+
+  const selectable = suggestionItems().find((node) =>
+    (node.textContent ?? "").includes("tuo-pan"),
+  );
+  expect(selectable).toBeDefined();
+  selectable!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  await flushPromises();
+  expect(addUserIdValue(wrapper)).toBe("tuo-pan");
+
+  await wrapper.get("form.members-tab__add-row").trigger("submit");
+  await flushPromises();
+
+  expect(
+    requests.some(
+      (entry) =>
+        entry.method === "PUT" &&
+        entry.path === `/api/projects/${PROJECT_ID}/members/tuo-pan`,
+    ),
+  ).toBe(true);
+  wrapper.unmount();
+});
+
+test("whitespace-only query does not request member-candidates", async () => {
+  const { wrapper, requests } = await mountTab({
+    "GET /api/auth/me": () => ({ json: CURRENT_USER }),
+    "GET /api/projects/{id}/members": () => ({ json: MEMBERS }),
+    "GET /api/projects/{id}/member-candidates": () => ({ json: CANDIDATES }),
+  });
+
+  await setAddUserId(wrapper, "   ");
+  await vi.advanceTimersByTimeAsync(300);
+  await flushPromises();
+
+  expect(
+    requests.filter((entry) => entry.path.includes("/member-candidates")),
+  ).toHaveLength(0);
+  wrapper.unmount();
+});
+
+test("candidate search failure shows error in dropdown but still allows manual add", async () => {
+  document.cookie = "XSRF-TOKEN=csrf-token";
+  let listed = [...MEMBERS];
+  const { wrapper, requests } = await mountTab({
+    "GET /api/auth/me": () => ({ json: CURRENT_USER }),
+    "GET /api/projects/{id}/members": () => ({ json: listed }),
+    "GET /api/projects/{id}/member-candidates": () => ({
+      status: 500,
+      problem: {
+        status: 500,
+        title: "Server Error",
+        code: "INTERNAL",
+        detail: "boom",
+      },
+    }),
+    "PUT /api/projects/{id}/members/{userId}": (req) => {
+      const member: MemberResponse = {
+        userId: req.params.userId,
+        role: (req.body as { role?: string }).role,
+      };
+      listed = [...listed, member];
+      return { json: member };
+    },
+  });
+
+  await setAddUserId(wrapper, "托");
+  await vi.advanceTimersByTimeAsync(300);
+  await flushPromises();
+
+  const labels = suggestionLabels().join(" ");
+  expect(labels).toMatch(/查找|失败|error|failed/i);
+
+  await setAddUserId(wrapper, "carol");
+  await wrapper.get("form.members-tab__add-row").trigger("submit");
+  await flushPromises();
+
+  expect(
+    requests.some(
+      (entry) =>
+        entry.method === "PUT" &&
+        entry.path === `/api/projects/${PROJECT_ID}/members/carol`,
+    ),
+  ).toBe(true);
+  wrapper.unmount();
+});
+
 async function mountTab(
   handlers: NonNullable<
     Parameters<typeof renderWithProviders>[1]
@@ -243,6 +433,38 @@ async function setAddUserId(
   expect(input.exists()).toBe(true);
   await input.setValue(value);
   await input.trigger("input");
+  const autocomplete = wrapper.findComponent({ name: "ElAutocomplete" });
+  if (!autocomplete.exists()) {
+    return;
+  }
+  const vm = autocomplete.vm as unknown as {
+    activated: boolean;
+    getData: (query: string) => Promise<void>;
+  };
+  vm.activated = true;
+  // Do not await: getData waits on the 300ms candidate debounce (fake timers).
+  void vm.getData(value);
+}
+
+function addUserIdValue(
+  wrapper: Awaited<ReturnType<typeof renderWithProviders>>["wrapper"],
+): string {
+  const input = wrapper.find(
+    'input[name="userId"], input[data-testid="add-user-id"]',
+  ).element as HTMLInputElement;
+  return input.value;
+}
+
+function suggestionItems(): HTMLElement[] {
+  return Array.from(
+    document.body.querySelectorAll<HTMLElement>(
+      ".el-autocomplete-suggestion li, .el-autocomplete__popper li, [role='option']",
+    ),
+  );
+}
+
+function suggestionLabels(): string[] {
+  return suggestionItems().map((node) => node.textContent?.trim() ?? "");
 }
 
 async function clickRemoveForUser(

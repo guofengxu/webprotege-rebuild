@@ -68,6 +68,9 @@ export const queryKeys = {
   members(id: string) {
     return [...queryKeys.project(id), "members"] as const;
   },
+  memberCandidates(id: string, q: string) {
+    return [...queryKeys.members(id), "candidates", q] as const;
+  },
   myPermissions(id: string) {
     return [...queryKeys.project(id), "permissions", "me"] as const;
   },
