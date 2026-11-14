@@ -2,6 +2,8 @@
 
 `openapi.json` is the committed OpenAPI snapshot of wp-app. `OpenApiContractTest` starts the application, fetches `/v3/api-docs`, and fails unless the live document matches this file (after JSON canonicalization). Errors are RFC 9457 `ProblemDetail`.
 
+MCP (Model Context Protocol) read-only tools are documented in [`mcp.md`](mcp.md).
+
 ## Generate TypeScript types
 
 Frontend packages must not hand-write request or response types (ADR-008). Point `openapi-typescript` 7.x at this snapshot:

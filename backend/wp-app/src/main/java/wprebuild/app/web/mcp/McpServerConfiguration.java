@@ -48,9 +48,17 @@ public class McpServerConfiguration {
         return new BrowseTools(bus, json, limits);
     }
 
+    @Bean
+    HistoryTools historyTools(CommandBus bus, JsonMapper json, McpResultLimits limits) {
+        return new HistoryTools(bus, json, limits);
+    }
+
     @Bean(destroyMethod = "closeGracefully")
     McpStatelessSyncServer mcpServer(
-            HttpServletStatelessServerTransport transport, SearchEntitiesTool search, BrowseTools browse) {
+            HttpServletStatelessServerTransport transport,
+            SearchEntitiesTool search,
+            BrowseTools browse,
+            HistoryTools history) {
         // Tool handlers map IllegalArgumentException to VALIDATION_FAILED; disable SDK schema
         // rejection so missing/invalid arguments share that error envelope.
         var builder = McpServer.sync(transport)
@@ -58,6 +66,9 @@ public class McpServerConfiguration {
                 .validateToolInputs(false);
         builder.toolCall(search.definition(), search::call);
         for (BrowseTools.ToolBinding binding : browse.bindings()) {
+            builder.toolCall(binding.definition(), binding.handler());
+        }
+        for (HistoryTools.ToolBinding binding : history.bindings()) {
             builder.toolCall(binding.definition(), binding.handler());
         }
         return builder.build();

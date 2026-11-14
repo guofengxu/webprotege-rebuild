@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-15]
 ---
 
@@ -64,13 +64,21 @@ AI Agent 可以通过 MCP 按类分页列出个体，查看项目的修订历史
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 回滚等写操作工具（需要“人工确认”机制，另开卡）
 - 只读或按范围划分的 API Key
 - 下载导出工具（结果可能很大，另行评估）
 - MCP 的 `resources`、`prompts`、OAuth 授权
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-16-mcp-history-tools
+- 测试：2026-11-14T20:39:17+08:00 通过（3 项）
+- 实际改动：注册 list_individuals / list_revisions / get_revision_diff / list_entity_revisions 四个只读 MCP 工具；新增 docs/api/mcp.md 使用说明并在 README 中链接；测试对照 REST 与文档工具名集合。
+- 偏差：无
+- 审查：java-reviewer, code-reviewer
