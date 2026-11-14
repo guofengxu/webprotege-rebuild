@@ -1,11 +1,16 @@
 package wprebuild.app.projection;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
@@ -28,6 +33,8 @@ import wprebuild.kernel.id.ProjectId;
 @Component
 public class ProjectionWriter {
 
+    private static final Logger log = LoggerFactory.getLogger(ProjectionWriter.class);
+
     /** Batch size for JDBC inserts; kept under PostgreSQL's 65535-parameter limit. */
     static final int BATCH_SIZE = 1000;
 
@@ -37,6 +44,17 @@ public class ProjectionWriter {
      * ({@code JdbcRevisionCommitOutbox.OUTBOX_COMMIT_ORDER_LOCK}).
      */
     static final long PROJECTION_LOCK_SALT = 0x5052_4F4A_5F4C_4F43L; // PROJ_LOC
+
+    /**
+     * Projection data tables analyzed after a full rebuild (V5). Constant list only — never built
+     * from external input.
+     */
+    static final List<String> PROJECTION_DATA_TABLES = List.of(
+            "projection.entities",
+            "projection.labels",
+            "projection.hierarchy_edges",
+            "projection.property_domains",
+            "projection.property_ranges");
 
     /** Transaction-bound set of project ids locked via {@link #lockProject} in the current TX. */
     private static final Object LOCKED_PROJECTS_RESOURCE = new Object();
@@ -94,6 +112,70 @@ public class ProjectionWriter {
         insertRanges(id, snapshot.ranges());
         upsertProjectState(id, revNo);
         return true;
+    }
+
+    /**
+     * Runs {@code ANALYZE} on the projection data tables so the planner sees fresh row estimates
+     * after a full rebuild.
+     *
+     * <p>Call only after the rebuild transaction has committed (see {@link ProjectionRebuilder}).
+     * The database role must own these tables, or hold {@code MAINTAIN} (PostgreSQL 17+). When the
+     * role lacks {@code MAINTAIN} on some tables, those tables are skipped with a warning; when it
+     * lacks it on all five, no {@code ANALYZE} is issued.
+     */
+    public void refreshStatistics() {
+        List<String> missing = tablesMissingMaintain();
+        List<String> analyzable = new ArrayList<>(PROJECTION_DATA_TABLES);
+        analyzable.removeAll(missing);
+        if (!missing.isEmpty()) {
+            log.warn("projection ANALYZE skipped for tables lacking MAINTAIN privilege: {}", missing);
+        }
+        if (analyzable.isEmpty()) {
+            return;
+        }
+        jdbcTemplate.execute("analyze " + String.join(", ", analyzable));
+    }
+
+    /**
+     * Returns qualified projection table names for which the current role lacks {@code MAINTAIN}.
+     * Package-visible so tests can assert privilege detection without relying on ignored SQLWarnings.
+     */
+    List<String> tablesMissingMaintain() {
+        List<String> missing = new ArrayList<>();
+        for (String table : PROJECTION_DATA_TABLES) {
+            if (!hasMaintainPrivilege(table)) {
+                missing.add(table);
+            }
+        }
+        return List.copyOf(missing);
+    }
+
+    /**
+     * {@code has_table_privilege(text, ...)} resolves the table name and needs schema {@code USAGE};
+     * a role with no privileges fails that lookup. Treat privilege lookup failures as missing
+     * {@code MAINTAIN}; rethrow other data-access errors so after-commit refresh can log them.
+     */
+    private boolean hasMaintainPrivilege(String table) {
+        try {
+            return Boolean.TRUE.equals(jdbc.sql("select has_table_privilege(?, 'MAINTAIN')")
+                    .param(table)
+                    .query(Boolean.class)
+                    .single());
+        } catch (DataAccessException ex) {
+            if (isPrivilegeLookupFailure(ex)) {
+                return false;
+            }
+            throw ex;
+        }
+    }
+
+    private static boolean isPrivilegeLookupFailure(DataAccessException ex) {
+        String message = ex.getMostSpecificCause().getMessage();
+        if (message == null) {
+            return false;
+        }
+        String lower = message.toLowerCase(Locale.ROOT);
+        return lower.contains("permission denied") || lower.contains("insufficient privilege");
     }
 
     private void deleteProjectRows(ProjectId projectId) {

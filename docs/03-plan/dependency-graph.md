@@ -136,7 +136,7 @@ flowchart LR
         P6_14["P6-14"]:::done
         P6_15["P6-15"]:::done
         P6_16["P6-16"]:::done
-        P6_17["P6-17"]:::todo
+        P6_17["P6-17"]:::done
         P6_18["P6-18"]:::todo
     end
     P0_01 --> P0_02

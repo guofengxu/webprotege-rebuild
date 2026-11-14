@@ -5,6 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import wprebuild.app.ontology.ProjectHandle;
 import wprebuild.app.ontology.ProjectRuntimeRegistry;
@@ -14,12 +17,16 @@ import wprebuild.kernel.runtime.ProjectRuntime;
 /**
  * Rebuilds one project's projection tables from the loaded runtime. Takes the projection advisory
  * lock first, computes under the project read lock, then writes without holding the kernel lock
- * (P6-10). Joins an existing transaction when present (P6-12).
+ * (P6-10). Joins an existing transaction when present (P6-12). After a successful replace commits,
+ * refreshes planner statistics once per transaction (P6-17).
  */
 @Component
 public final class ProjectionRebuilder {
 
     private static final Logger log = LoggerFactory.getLogger(ProjectionRebuilder.class);
+
+    /** Marks that an after-commit statistics refresh is already registered for the current TX. */
+    private static final Object STATS_REFRESH_REGISTERED = new Object();
 
     private final ProjectionWriter writer;
 
@@ -27,11 +34,16 @@ public final class ProjectionRebuilder {
 
     private final TransactionTemplate transactions;
 
+    private final TransactionTemplate requiresNew;
+
     public ProjectionRebuilder(
             ProjectionWriter writer, ProjectRuntimeRegistry registry, PlatformTransactionManager transactionManager) {
         this.writer = Objects.requireNonNull(writer, "writer");
         this.registry = Objects.requireNonNull(registry, "registry");
-        this.transactions = new TransactionTemplate(Objects.requireNonNull(transactionManager, "transaction manager"));
+        PlatformTransactionManager tm = Objects.requireNonNull(transactionManager, "transaction manager");
+        this.transactions = new TransactionTemplate(tm);
+        this.requiresNew = new TransactionTemplate(tm);
+        this.requiresNew.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     public void rebuild(ProjectId projectId) {
@@ -51,6 +63,30 @@ public final class ProjectionRebuilder {
             // this head (forward-only); leave rows unchanged and surface it in the log.
             if (!writer.replaceProject(id, computed.snapshot(), computed.head())) {
                 log.warn("projection replace skipped for {} at head {} (stored rev_no is newer)", id, computed.head());
+                return;
+            }
+            registerStatisticsRefreshAfterCommit(id);
+        });
+    }
+
+    private void registerStatisticsRefreshAfterCommit(ProjectId projectId) {
+        if (TransactionSynchronizationManager.getResource(STATS_REFRESH_REGISTERED) != null) {
+            return;
+        }
+        TransactionSynchronizationManager.bindResource(STATS_REFRESH_REGISTERED, Boolean.TRUE);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try {
+                    requiresNew.executeWithoutResult(status -> writer.refreshStatistics());
+                } catch (RuntimeException ex) {
+                    log.warn("projection statistics refresh failed after rebuild of {}", projectId, ex);
+                }
+            }
+
+            @Override
+            public void afterCompletion(int status) {
+                TransactionSynchronizationManager.unbindResourceIfPossible(STATS_REFRESH_REGISTERED);
             }
         });
     }

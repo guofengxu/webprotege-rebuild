@@ -2,11 +2,11 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 117 张卡：完成 111，进行中 0，阻塞 1，待办 5。
+共 117 张卡：完成 112，进行中 0，阻塞 1，待办 4。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-17](P6/P6-17-projection-analyze-after-rebuild.md) 投影表全量重建后刷新统计信息：提交后对 5 张投影表执行 ANALYZE
+- [P6-18](P6/P6-18-projection-benchmark-method.md) 投影表基准测法修订：刷新统计信息与预热后采样，并记录执行计划、行数与后台活动
 
 ## 阻塞中
 
@@ -161,7 +161,7 @@
 | [P6-14](P6/P6-14-mcp-poc.md) | MCP PoC：选定 MCP Java SDK，在 /mcp 提供 API Key 认证的只读工具 search_entities | wp-app | app-security | M | 完成 | P4-17 |
 | [P6-15](P6/P6-15-mcp-browse-tools.md) | MCP 只读工具（一）：项目列表、层级浏览、实体 Frame，以及结果大小限制 | wp-app | app-service | M | 完成 | P6-14 |
 | [P6-16](P6/P6-16-mcp-history-tools.md) | MCP 只读工具（二）：个体列表、修订历史、修订差异、实体历史，以及 MCP 使用说明 | wp-app | app-service | M | 完成 | P6-15 |
-| [P6-17](P6/P6-17-projection-analyze-after-rebuild.md) | 投影表全量重建后刷新统计信息：提交后对 5 张投影表执行 ANALYZE | wp-app | db | S | 待办（可开工） | P6-10 |
-| [P6-18](P6/P6-18-projection-benchmark-method.md) | 投影表基准测法修订：刷新统计信息与预热后采样，并记录执行计划、行数与后台活动 | wp-app | benchmark | S | 待办 | P6-17 |
+| [P6-17](P6/P6-17-projection-analyze-after-rebuild.md) | 投影表全量重建后刷新统计信息：提交后对 5 张投影表执行 ANALYZE | wp-app | db | S | 完成 | P6-10 |
+| [P6-18](P6/P6-18-projection-benchmark-method.md) | 投影表基准测法修订：刷新统计信息与预热后采样，并记录执行计划、行数与后台活动 | wp-app | benchmark | S | 待办（可开工） | P6-17 |
 
 各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`。
