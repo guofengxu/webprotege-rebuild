@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-02, P6-04]
 ---
 
@@ -52,12 +52,20 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/settings/members/M
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 按邮箱邀请、邀请链接
 - 管理页（`/admin/users`）的用户搜索
 - 后端接口（P6-02）
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-07-web-member-search
+- 测试：2026-11-14T10:29:35+08:00 通过（3 项）
+- 实际改动：MembersTab uses el-autocomplete with useMemberCandidates (300ms debounce, limit 10); queryKeys.memberCandidates under members(id); already-members marked disabled; removed no-name-search hint.
+- 偏差：UserSummaryResponse via components.schemas (not re-exported from api-types index), same as MyProjectPermissionsResponse. Frontend allows 1-char q per card test; backend P6-02 still requires min 2.
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
