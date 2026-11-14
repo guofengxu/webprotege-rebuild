@@ -18,6 +18,8 @@
     <properties>
         <!-- P3-23: latest springdoc line built for Spring Boot 4.1. -->
         <springdoc.version>3.2.0</springdoc.version>
+        <!-- P6-14: latest stable MCP Java SDK with Jackson 3 binding (no Spring AI). -->
+        <mcp-sdk.version>2.2.0</mcp-sdk.version>
         <wp.openapi.update>false</wp.openapi.update>
     </properties>
 
@@ -34,6 +36,13 @@
                 <groupId>org.springframework.modulith</groupId>
                 <artifactId>spring-modulith-bom</artifactId>
                 <version>${spring-modulith.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.modelcontextprotocol.sdk</groupId>
+                <artifactId>mcp-bom</artifactId>
+                <version>${mcp-sdk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -90,6 +99,15 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- P6-14: MCP Streamable HTTP server (stateless servlet transport). -->
+        <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>mcp-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>mcp-json-jackson3</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.modulith</groupId>

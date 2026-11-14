@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P4-17]
 ---
 
@@ -65,14 +65,29 @@ depends_on: [P4-17]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 通过标准 1 ~ 6 的结果已写入执行记录
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 通过标准 1 ~ 6 的结果已写入执行记录
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 除 `search_entities` 之外的工具（P6-15、P6-16）
 - 写操作工具以及“人工确认”机制
 - MCP 的 SSE 旧式传输、stdio 传输、OAuth 授权
 - MCP 客户端配置文档（P6-16）
+
+## 执行记录
+
+- SDK：`io.modelcontextprotocol.sdk:mcp-core` + `mcp-json-jackson3`，版本属性 `mcp-sdk.version=2.2.0`（当时最新稳定版）。选 Jackson 3 绑定以对齐 Spring Boot 4.1；**未**引入 Spring AI。传输选用 `HttpServletStatelessServerTransport`（无状态），因此不绑定 `Mcp-Session-Id`；每个请求按当前 API Key 的用户执行权限（标准 6）。
+- 依赖收敛：`dependencyConvergence` / `bannedDependencies` 通过；为收敛添加的 `exclusion`：**0** 处。新增传递依赖（相对加依赖前）：`mcp-core`、`mcp-json-jackson3`、`reactor-core` 3.8.7（Boot BOM）、`reactive-streams`、`jspecify`、`json-schema-validator`、`itu`、`jackson-dataformat-yaml` 3.1.5、`snakeyaml-engine`（jackson-annotations / jackson-databind 版本仍由 Boot 统一）。
+- 可执行 jar `BOOT-INF/lib/` 新增 8 个 jar，合计 **3.969 MB**（≤ 5 MB）：`mcp-core-2.2.0.jar`、`mcp-json-jackson3-2.2.0.jar`、`reactor-core-3.8.7.jar`、`reactive-streams-1.0.4.jar`、`json-schema-validator-3.0.8.jar`、`itu-1.14.0.jar`、`jackson-dataformat-yaml-3.1.5.jar`、`snakeyaml-engine-3.0.1.jar`。
+- 功能：`initialize` → `tools/list`（仅 `search_entities` + input schema）→ `tools/call`；导入 `warehouse-sample.ttl` 后查询「托盘」命中。无 `X-API-Key` / 仅会话 Cookie → 401；不允许的 `Origin` → 403；无 `VIEW_PROJECT` → `isError` + `PERMISSION_DENIED`。
+- 延迟（`-Dbench=true`）：100 次 `search_entities`，**p95 = 31.05 ms**（门禁 ≤ 100 ms）。
+- 偏差：顺带 Spotless 格式化了 `ProjectionBenchmark.java` / `ProjectionCorpus.java`（`origin/main` 上 `spotless:check` 已失败，无行为改动）。
+- 日期：2026-11-14
+- 分支：feature/p6-14-mcp-poc
+- 测试：2026-11-14T18:46:42+08:00 通过（4 项）
+- 实际改动：Added MCP Java SDK 2.2.0 (mcp-core + mcp-json-jackson3) and a stateless Streamable HTTP endpoint at /mcp with API-key-only security, Origin allow-list, and search_entities via CommandBus. Pass criteria: Enforcer OK with 0 exclusions; new BOOT-INF/lib jars 3.97 MB; search finds 托盘; 401 without key / with session cookie; 403 on disallowed Origin; PERMISSION_DENIED for stranger; p95 31.05 ms under -Dbench=true; chose HttpServletStatelessServerTransport so each request uses the caller key.
+- 偏差：Also applied Spotless formatting to ProjectionBenchmark.java and ProjectionCorpus.java so module verify passes; those files already failed spotless:check on origin/main with no functional change.
+- 审查：security-reviewer, java-reviewer
