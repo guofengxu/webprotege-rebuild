@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-01]
 ---
 
@@ -54,13 +54,21 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/permissions/usePro
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - Frame 编辑器的只读模式（P6-05）、设置表单的只读模式（P6-06）
 - 项目列表上“移入回收站”按钮的权限判断（项目列表没有逐个项目的权限信息）
 - 下载菜单（所有能查看的角色都有 `DOWNLOAD_PROJECT`）
 - 后端接口（P6-01）
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-04-web-permission-aware-actions
+- 测试：2026-11-14T08:20:25+08:00 通过（3 项）
+- 实际改动：Added queryKeys.myPermissions and useProjectPermissions; EntityToolbar, EntityContextMenu, and RevertRevisionButton hide denied actions and disable pending ones; non-403 errors stay allowed so the backend remains the authority.
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect, (fixed, empty-menu, open, disabled-item, keyboard, focus, and, handler, permission, guards)

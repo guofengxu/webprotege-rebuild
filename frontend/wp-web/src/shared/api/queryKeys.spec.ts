@@ -39,10 +39,20 @@ test("project data keys start with project(id)", () => {
     queryKeys.entityHistory(id, iri, 0, 20),
     queryKeys.settings(id, "prefixes"),
     queryKeys.members(id),
+    queryKeys.myPermissions(id),
   ];
   for (const key of keys) {
     expectPrefix(key, prefix);
   }
+});
+
+test("myPermissions starts with project(id)", () => {
+  expectPrefix(queryKeys.myPermissions(id), queryKeys.project(id));
+  expect(queryKeys.myPermissions(id)).toEqual([
+    ...queryKeys.project(id),
+    "permissions",
+    "me",
+  ]);
 });
 
 test("hierarchy keys start with hierarchy(id, kind)", () => {

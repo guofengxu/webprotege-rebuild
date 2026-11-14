@@ -3,6 +3,7 @@ import { ElMessage } from "element-plus";
 import type { RevisionSummary } from "@wp/api-types";
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useProjectPermissions } from "@/features/permissions/useProjectPermissions";
 import { ApiError, problemMessage } from "@/shared/api/problem";
 import { useRevertRevision } from "./api";
 
@@ -13,6 +14,8 @@ const props = defineProps<{
 
 const { t } = useI18n();
 const revert = useRevertRevision(() => props.projectId);
+const { permission } = useProjectPermissions(() => props.projectId);
+const revertPermission = permission("REVERT_CHANGES");
 
 const dialogOpen = ref(false);
 const typedRev = ref("");
@@ -32,6 +35,9 @@ watch(dialogOpen, (open) => {
 });
 
 function openDialog(): void {
+  if (revertPermission.value !== "allowed") {
+    return;
+  }
   dialogOpen.value = true;
 }
 
@@ -71,9 +77,13 @@ async function confirmRevert(): Promise<void> {
 </script>
 
 <template>
-  <span class="revert-revision">
+  <span
+    v-if="revertPermission !== 'denied'"
+    class="revert-revision"
+  >
     <el-button
       size="small"
+      :disabled="revertPermission === 'pending'"
       :aria-label="t('history.revertNamed', { rev: revision.revNo })"
       @click.stop="openDialog"
     >

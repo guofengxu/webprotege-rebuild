@@ -10,6 +10,8 @@ import {
   watch,
 } from "vue";
 import { useI18n } from "vue-i18n";
+import { createActionForKind, deleteActionForKind } from "@/features/permissions/entityActions";
+import { useProjectPermissions } from "@/features/permissions/useProjectPermissions";
 import {
   kindToEntityType,
   type WorkspaceKind,
@@ -40,6 +42,13 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const { entityIri, selectEntity } = useWorkspaceRoute();
 const deleteEntities = useDeleteEntities(() => props.projectId);
+const { permission } = useProjectPermissions(() => props.projectId);
+const createClassPermission = permission("CREATE_CLASS");
+const createPropertyPermission = permission("CREATE_PROPERTY");
+const createIndividualPermission = permission("CREATE_INDIVIDUAL");
+const deleteClassPermission = permission("DELETE_CLASS");
+const deletePropertyPermission = permission("DELETE_PROPERTY");
+const deleteIndividualPermission = permission("DELETE_INDIVIDUAL");
 
 const dropdownRef = ref<{
   handleOpen: () => void;
@@ -56,34 +65,91 @@ const createParent = ref<{ iri: string; label: string } | undefined>(
 );
 const createEntityType = ref(kindToEntityType(props.kind));
 
-const menuItems = computed(() => {
+type MenuCommand = "create" | "delete";
+
+type MenuItem = {
+  readonly command: MenuCommand;
+  readonly label: string;
+  readonly disabled: boolean;
+};
+
+const menuItems = computed((): MenuItem[] => {
   const target = props.target;
   if (target === null) {
-    return [] as const;
+    return [];
   }
+  const createState = permissionStateForCreate(props.kind);
+  const deleteState = permissionStateForDelete(props.kind);
+  const items: MenuItem[] = [];
   if (props.kind === "individual" && target.source === "tree") {
-    return [{ command: "create", label: t("entities.createIndividual") }] as const;
+    pushMenuItem(items, "create", t("entities.createIndividual"), createState);
+    return items;
   }
   if (props.kind === "individual" && target.source === "individual-row") {
-    return [{ command: "delete", label: t("entities.delete") }] as const;
+    pushMenuItem(items, "delete", t("entities.delete"), deleteState);
+    return items;
   }
   if (props.kind === "class") {
-    return [
-      { command: "create", label: t("entities.createChildClass") },
-      { command: "delete", label: t("entities.delete") },
-    ] as const;
+    pushMenuItem(items, "create", t("entities.createChildClass"), createState);
+    pushMenuItem(items, "delete", t("entities.delete"), deleteState);
+    return items;
   }
-  return [
-    { command: "create", label: t("entities.createChildProperty") },
-    { command: "delete", label: t("entities.delete") },
-  ] as const;
+  pushMenuItem(items, "create", t("entities.createChildProperty"), createState);
+  pushMenuItem(items, "delete", t("entities.delete"), deleteState);
+  return items;
 });
+
+function permissionStateForCreate(
+  kind: WorkspaceKind,
+): "allowed" | "denied" | "pending" {
+  const action = createActionForKind(kind);
+  if (action === "CREATE_CLASS") {
+    return createClassPermission.value;
+  }
+  if (action === "CREATE_INDIVIDUAL") {
+    return createIndividualPermission.value;
+  }
+  return createPropertyPermission.value;
+}
+
+function permissionStateForDelete(
+  kind: WorkspaceKind,
+): "allowed" | "denied" | "pending" {
+  const action = deleteActionForKind(kind);
+  if (action === "DELETE_CLASS") {
+    return deleteClassPermission.value;
+  }
+  if (action === "DELETE_INDIVIDUAL") {
+    return deleteIndividualPermission.value;
+  }
+  return deletePropertyPermission.value;
+}
+
+function pushMenuItem(
+  items: MenuItem[],
+  command: MenuCommand,
+  label: string,
+  state: "allowed" | "denied" | "pending",
+): void {
+  if (state === "denied") {
+    return;
+  }
+  items.push({
+    command,
+    label,
+    disabled: state === "pending",
+  });
+}
 
 watch(
   () => props.target,
   async (target) => {
     if (target === null) {
       dropdownRef.value?.handleClose();
+      return;
+    }
+    if (menuItems.value.length === 0) {
+      emit("close");
       return;
     }
     const { clientX, clientY } = target;
@@ -109,7 +175,7 @@ onBeforeUnmount(() => {
 function menuItemElements(): HTMLElement[] {
   return Array.from(
     document.body.querySelectorAll<HTMLElement>(".el-dropdown-menu__item"),
-  );
+  ).filter((item) => item.getAttribute("aria-disabled") !== "true");
 }
 
 function focusMenuItem(index: number): void {
@@ -187,6 +253,9 @@ async function onCommand(command: string | number | object): Promise<void> {
 }
 
 function openCreate(target: ContextMenuTarget): void {
+  if (permissionStateForCreate(props.kind) !== "allowed") {
+    return;
+  }
   if (props.kind === "individual" && target.source === "tree") {
     createEntityType.value = "NAMED_INDIVIDUAL";
   } else {
@@ -200,6 +269,9 @@ function openCreate(target: ContextMenuTarget): void {
 }
 
 async function runDelete(node: EntityNode): Promise<void> {
+  if (permissionStateForDelete(props.kind) !== "allowed") {
+    return;
+  }
   const items = [{ iri: node.iri, label: node.displayName }];
   const confirmed = await confirmDelete(items, t);
   if (!confirmed) {
@@ -241,6 +313,7 @@ async function runDelete(node: EntityNode): Promise<void> {
           v-for="item in menuItems"
           :key="item.command"
           :command="item.command"
+          :disabled="item.disabled"
         >
           {{ item.label }}
         </el-dropdown-item>

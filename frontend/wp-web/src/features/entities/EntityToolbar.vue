@@ -2,6 +2,8 @@
 import { ElMessage } from "element-plus";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { createActionForKind, deleteActionForKind } from "@/features/permissions/entityActions";
+import { useProjectPermissions } from "@/features/permissions/useProjectPermissions";
 import {
   kindToEntityType,
   type WorkspaceKind,
@@ -21,10 +23,41 @@ const props = defineProps<{
 const { t } = useI18n();
 const { entityIri, typeIri, selectEntity } = useWorkspaceRoute();
 const deleteEntities = useDeleteEntities(() => props.projectId);
+const { permission } = useProjectPermissions(() => props.projectId);
+const createClassPermission = permission("CREATE_CLASS");
+const createPropertyPermission = permission("CREATE_PROPERTY");
+const createIndividualPermission = permission("CREATE_INDIVIDUAL");
+const deleteClassPermission = permission("DELETE_CLASS");
+const deletePropertyPermission = permission("DELETE_PROPERTY");
+const deleteIndividualPermission = permission("DELETE_INDIVIDUAL");
 
 const createOpen = ref(false);
 
+const createPermission = computed(() => {
+  const action = createActionForKind(props.kind);
+  if (action === "CREATE_CLASS") {
+    return createClassPermission.value;
+  }
+  if (action === "CREATE_INDIVIDUAL") {
+    return createIndividualPermission.value;
+  }
+  return createPropertyPermission.value;
+});
+const deletePermission = computed(() => {
+  const action = deleteActionForKind(props.kind);
+  if (action === "DELETE_CLASS") {
+    return deleteClassPermission.value;
+  }
+  if (action === "DELETE_INDIVIDUAL") {
+    return deleteIndividualPermission.value;
+  }
+  return deletePropertyPermission.value;
+});
+
 const createDisabled = computed(() => {
+  if (createPermission.value === "pending") {
+    return true;
+  }
   if (props.kind !== "individual") {
     return false;
   }
@@ -32,6 +65,9 @@ const createDisabled = computed(() => {
 });
 
 const deleteDisabled = computed(() => {
+  if (deletePermission.value === "pending") {
+    return true;
+  }
   return entityIri.value === null || entityIri.value.length === 0;
 });
 
@@ -53,13 +89,16 @@ const createParent = computed(() => {
 });
 
 function onCreate(): void {
-  if (createDisabled.value) {
+  if (createDisabled.value || createPermission.value !== "allowed") {
     return;
   }
   createOpen.value = true;
 }
 
 async function onDelete(): Promise<void> {
+  if (deleteDisabled.value || deletePermission.value !== "allowed") {
+    return;
+  }
   const iri = entityIri.value;
   if (iri === null || iri.length === 0) {
     return;
@@ -89,6 +128,7 @@ async function onDelete(): Promise<void> {
     :aria-label="t('entities.menuLabel')"
   >
     <el-button
+      v-if="createPermission !== 'denied'"
       type="primary"
       :disabled="createDisabled"
       @click="onCreate"
@@ -96,6 +136,7 @@ async function onDelete(): Promise<void> {
       {{ t("entities.create") }}
     </el-button>
     <el-button
+      v-if="deletePermission !== 'denied'"
       type="danger"
       plain
       :disabled="deleteDisabled"
