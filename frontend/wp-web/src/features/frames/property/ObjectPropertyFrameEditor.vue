@@ -46,6 +46,7 @@ const frameKey = computed(() =>
 );
 
 const editor = useFrameEditor<ObjectPropertyFrame>({
+  projectId: () => props.projectId,
   queryKey: frameKey,
   load: () => loadObjectPropertyFrame(client, props.projectId, props.iri),
   save: async ({ from, to }) => {
@@ -71,7 +72,7 @@ const editor = useFrameEditor<ObjectPropertyFrame>({
   },
 });
 
-useUnsavedGuard(editor.isDirty);
+useUnsavedGuard(editor.isDirty, editor.readOnly);
 
 const {
   draft,
@@ -80,6 +81,7 @@ const {
   conflict,
   serverChanged,
   readOnly,
+  editPermission,
   save,
   reset,
   reloadFromServer,
@@ -269,6 +271,7 @@ function setInverses(value: EntityNode[]): void {
         :conflict="conflict"
         :server-changed="serverChanged"
         :read-only="readOnly"
+        :edit-permission="editPermission"
         @save="save"
         @reset="reset"
         @reload="reloadFromServer"

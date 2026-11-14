@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-04]
 ---
 
@@ -56,12 +56,20 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/frames/FrameSaveBa
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 实体新建、删除与回滚按钮（P6-04）
 - 项目设置表单（P6-06）、成员标签页（P4-24、P6-07）
 - “只能改注解”这类细分的编辑权限：现有角色中没有只拥有 `EDIT_ONTOLOGY_ANNOTATIONS` 的角色（BS-10）
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-05-web-read-only-editors
+- 测试：2026-11-14T08:42:14+08:00 通过（3 项）
+- 实际改动：useFrameEditor 根据 EDIT_ONTOLOGY 计算 readOnly；FrameSaveBar 只读时隐藏保存/放弃并在 denied 时提示；五个 Frame 编辑器禁用输入；useUnsavedGuard 只读不拦截。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect

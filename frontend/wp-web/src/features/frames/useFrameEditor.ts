@@ -15,6 +15,10 @@ import {
   type MaybeRefOrGetter,
   type Ref,
 } from "vue";
+import {
+  useProjectPermissions,
+  type PermissionState,
+} from "@/features/permissions/useProjectPermissions";
 import { ApiError } from "@/shared/api/problem";
 import { cloneFrame, framesEqual } from "./frameModel";
 
@@ -24,6 +28,7 @@ export type FrameSaveResult<F> = {
 };
 
 export type UseFrameEditorOptions<F> = {
+  projectId: MaybeRefOrGetter<string>;
   queryKey: MaybeRefOrGetter<QueryKey>;
   load: () => Promise<F>;
   save: (body: { from: F; to: F }) => Promise<FrameSaveResult<F>>;
@@ -39,7 +44,8 @@ export type UseFrameEditorResult<F> = {
   isSaving: Ref<boolean>;
   conflict: Ref<boolean>;
   serverChanged: Ref<boolean>;
-  readOnly: Ref<boolean>;
+  readOnly: ComputedRef<boolean>;
+  editPermission: ComputedRef<PermissionState>;
   save: () => Promise<void>;
   reset: () => void;
   reloadFromServer: () => Promise<void>;
@@ -51,6 +57,30 @@ export function useFrameEditor<F>(
   const queryClient = useQueryClient();
   const resolvedKey = computed(() => toValue(options.queryKey));
   const normalize = options.normalize ?? ((frame: F) => frame);
+  const { permission } = useProjectPermissions(() => toValue(options.projectId));
+  const ontologyPermission = permission("EDIT_ONTOLOGY");
+  const forbiddenByServer = ref(false);
+
+  watch(
+    ontologyPermission,
+    (state) => {
+      if (state === "allowed") {
+        forbiddenByServer.value = false;
+      }
+    },
+  );
+
+  const editPermission = computed((): PermissionState => {
+    if (forbiddenByServer.value) {
+      return "denied";
+    }
+    return ontologyPermission.value;
+  });
+
+  const readOnly = computed(
+    () =>
+      editPermission.value === "denied" || editPermission.value === "pending",
+  );
 
   const query = useQuery({
     queryKey: resolvedKey,
@@ -63,7 +93,6 @@ export function useFrameEditor<F>(
   const isSaving = ref(false);
   const conflict = ref(false);
   const serverChanged = ref(false);
-  const readOnly = ref(false);
   const applyingLocal = ref(false);
 
   const server = computed(() => query.data.value);
@@ -148,7 +177,7 @@ export function useFrameEditor<F>(
         return;
       }
       if (error instanceof ApiError && error.status === 403) {
-        readOnly.value = true;
+        forbiddenByServer.value = true;
         return;
       }
       throw error;
@@ -166,6 +195,7 @@ export function useFrameEditor<F>(
     conflict,
     serverChanged,
     readOnly,
+    editPermission,
     save,
     reset,
     reloadFromServer,

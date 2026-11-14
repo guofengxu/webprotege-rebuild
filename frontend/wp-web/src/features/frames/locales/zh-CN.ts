@@ -31,6 +31,7 @@ const zhCN = {
     unsavedMessage: "切换实体或离开页面将丢失未保存的修改，是否继续？",
     unsavedConfirm: "放弃修改",
     unsavedCancel: "取消",
+    readOnlyDenied: "只读：你在本项目中没有编辑权限",
   },
 };
 

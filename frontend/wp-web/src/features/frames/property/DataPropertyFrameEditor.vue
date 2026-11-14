@@ -35,6 +35,7 @@ const frameKey = computed(() =>
 );
 
 const editor = useFrameEditor<DataPropertyFrame>({
+  projectId: () => props.projectId,
   queryKey: frameKey,
   load: () => loadDataPropertyFrame(client, props.projectId, props.iri),
   save: async ({ from, to }) => {
@@ -60,7 +61,7 @@ const editor = useFrameEditor<DataPropertyFrame>({
   },
 });
 
-useUnsavedGuard(editor.isDirty);
+useUnsavedGuard(editor.isDirty, editor.readOnly);
 
 const {
   draft,
@@ -69,6 +70,7 @@ const {
   conflict,
   serverChanged,
   readOnly,
+  editPermission,
   save,
   reset,
   reloadFromServer,
@@ -232,6 +234,7 @@ function setFunctional(value: boolean | string | number): void {
         :conflict="conflict"
         :server-changed="serverChanged"
         :read-only="readOnly"
+        :edit-permission="editPermission"
         @save="save"
         @reset="reset"
         @reload="reloadFromServer"

@@ -2,6 +2,7 @@
 import { ElMessageBox } from "element-plus";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import type { PermissionState } from "@/features/permissions/useProjectPermissions";
 
 const props = withDefaults(
   defineProps<{
@@ -11,10 +12,12 @@ const props = withDefaults(
     serverChanged: boolean;
     invalid?: boolean;
     readOnly?: boolean;
+    editPermission?: PermissionState;
   }>(),
   {
     invalid: false,
     readOnly: false,
+    editPermission: "allowed",
   },
 );
 
@@ -27,6 +30,12 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const incompleteHintId = "frame-save-incomplete";
+
+const showActions = computed(() => !props.readOnly);
+
+const showReadOnlyHint = computed(
+  () => props.readOnly && props.editPermission === "denied",
+);
 
 const saveDisabled = computed(
   () =>
@@ -62,12 +71,12 @@ async function onReload(): Promise<void> {
 <template>
   <div class="frame-save-bar">
     <el-alert
-      v-if="readOnly"
-      type="error"
+      v-if="showReadOnlyHint"
+      type="info"
       :closable="false"
       show-icon
-      role="alert"
-      :title="t('errors.PERMISSION_DENIED')"
+      role="status"
+      :title="t('framesCommon.readOnlyDenied')"
     />
     <el-alert
       v-if="conflict"
@@ -96,7 +105,10 @@ async function onReload(): Promise<void> {
         {{ t("framesCommon.conflictReload") }}
       </el-button>
     </el-alert>
-    <div class="frame-save-bar__actions">
+    <div
+      v-if="showActions"
+      class="frame-save-bar__actions"
+    >
       <el-button
         type="primary"
         :disabled="saveDisabled"

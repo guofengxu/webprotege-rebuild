@@ -33,6 +33,8 @@ const enUS = {
       "Switching entities or leaving this page discards unsaved changes. Continue?",
     unsavedConfirm: "Discard",
     unsavedCancel: "Cancel",
+    readOnlyDenied:
+      "Read-only: you do not have edit permission in this project",
   },
 };
 

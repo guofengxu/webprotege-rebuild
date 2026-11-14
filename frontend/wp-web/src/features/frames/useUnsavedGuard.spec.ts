@@ -45,11 +45,27 @@ test("clean draft navigates without prompting", async () => {
   wrapper.unmount();
 });
 
-async function mountGuard(dirty: boolean) {
+test("read-only dirty draft navigates without prompting", async () => {
+  vi.spyOn(ElMessageBox, "confirm").mockResolvedValue("confirm" as never);
+  const { router, wrapper } = await mountGuard(true, true);
+  await flushPromises();
+
+  await router.push({
+    path: "/projects/p1/class",
+    query: { entity: ENTITY_B },
+  });
+  await flushPromises();
+
+  expect(ElMessageBox.confirm).not.toHaveBeenCalled();
+  expect(router.currentRoute.value.query.entity).toBe(ENTITY_B);
+  wrapper.unmount();
+});
+
+async function mountGuard(dirty: boolean, readOnly = false) {
   const GuardHost = defineComponent({
     name: "UnsavedGuardHost",
     setup() {
-      useUnsavedGuard(ref(dirty));
+      useUnsavedGuard(ref(dirty), ref(readOnly));
       return () => h("div", "host");
     },
   });
