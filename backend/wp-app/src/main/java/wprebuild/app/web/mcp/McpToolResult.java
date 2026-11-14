@@ -1,8 +1,8 @@
 package wprebuild.app.web.mcp;
 
 /**
- * Uniform MCP tool payload. {@code result} mirrors the matching REST body; truncation is filled by later
- * cards (this PoC always leaves {@code truncated} false and {@code hint} null).
+ * Uniform MCP tool payload. {@code result} mirrors the matching REST body; {@link McpResultLimits} may set
+ * {@code truncated} and {@code hint} when the serialized payload exceeds {@code wp.mcp.max-result-bytes}.
  */
 public record McpToolResult(Object result, boolean truncated, String hint) {
 

@@ -16,7 +16,7 @@ public record ProjectResponse(
         Instant modifiedAt,
         String modifiedBy) {
 
-    static ProjectResponse from(ProjectDetails details) {
+    public static ProjectResponse from(ProjectDetails details) {
         return new ProjectResponse(
                 details.projectId().value(),
                 details.displayName(),
