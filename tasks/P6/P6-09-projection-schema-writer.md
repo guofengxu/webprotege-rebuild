@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: db
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-08, P6-03]
 ---
 
@@ -64,13 +64,21 @@ depends_on: [P6-08, P6-03]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 从内存模型计算投影行、全量重建（P6-10）
 - 规模测量与通过标准（P6-11）
 - 增量更新与 outbox 消费（P6-12）；重建接口、只读数据库角色与查询说明（P6-13）
 - 回收站中项目的过滤（投影保留其行，查询方自行决定）
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-09-projection-schema-writer
+- 测试：2026-11-14T12:20:21+08:00 通过（3 项）
+- 实际改动：新增 projection 模块、V5 schema（六张表）与 ProjectionWriter（咨询锁、整表替换、修订号只进不退）；更新 Modulith/overview；Testcontainers 覆盖写入、回退拒绝与并发串行。
+- 偏差：无
+- 审查：database-reviewer, java-reviewer

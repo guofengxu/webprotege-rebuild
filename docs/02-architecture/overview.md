@@ -48,6 +48,7 @@ webprotege-rebuild/
 | `search` | Lucene 实体索引；订阅修订提交事件做增量更新 | bus, ontology, ontology :: dto, access, shared |
 | `events` | 把修订翻译为高层事件（BS-11），通过 SSE 和长轮询推送 | bus, ontology, access, shared, project |
 | `migration` | 导入迁移包，生成带完整历史的项目 | bus, ontology, project, access, shared |
+| `projection` | 由本体派生的只读投影表，供外部 SQL 查询（ADR-013） | ontology, shared |
 | `web` | REST 控制器、OpenAPI、异常映射、安全配置（含 CORS） | 以上全部 |
 
 - 依赖关系由 `ApplicationModules.of(WpApplication.class).verify()` 测试强制执行（P0-07）。
