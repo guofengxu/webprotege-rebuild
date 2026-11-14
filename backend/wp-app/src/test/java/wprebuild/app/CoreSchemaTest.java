@@ -25,7 +25,8 @@ class CoreSchemaTest {
             "revisions", List.of("project_id", "rev_no"),
             "revision_subjects", List.of("project_id", "subject_iri", "rev_no"),
             "snapshots", List.of("project_id", "rev_no"),
-            "outbox", List.of("id"));
+            "outbox", List.of("id"),
+            "outbox_consumers", List.of("consumer"));
 
     private final JdbcClient jdbcClient;
 

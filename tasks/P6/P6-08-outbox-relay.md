@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: db
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P4-17]
 ---
 
@@ -82,12 +82,20 @@ P3-02 以来，每个修订都在同一事务中写入一行 `outbox`（`REVISIO
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 任何具体的消费者（投影表见 P6-12；webhook、Kafka、图数据库、实例库另开卡）
 - outbox 行的清理与归档
 - 修改 `REVISION_COMMITTED` 的 payload 格式
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-08-outbox-relay
+- 测试：2026-11-14T11:39:32+08:00 通过（3 项）
+- 实际改动：Added V4 outbox_consumers, OutboxRelay/OutboxConsumer SPI, and global advisory lock on outbox insert so id order equals commit order. Wake-after-commit + backoff; registration survives accept failures. Normal edit path holds the lock only for insert→commit; migrator outer txn still holds it for the whole import (pre-existing txn boundary). BackendAcceptanceTest still green; wake delivers far under the 1h test poll interval.
+- 偏差：Migrator import keeps one outer transaction, so the global outbox lock spans the whole project import rather than only insert→commit; ChangePipeline path matches the card.
+- 审查：database-reviewer, java-reviewer, silent-failure-hunter
