@@ -93,12 +93,39 @@ public class SecurityConfig {
     }
 
     /**
-     * Pages outside {@code /api/**} are static GET. They stay anonymous, but they still need the default
-     * clickjacking and content-type headers. Cache-Control is left to the resource handler so {@code index.html}
-     * can be revalidated and hashed {@code assets/*} can be cached.
+     * MCP Streamable HTTP ({@code /mcp}). API keys only: session cookies and bearer tokens are ignored on this
+     * chain so a browser session cannot call tools. {@code Origin}, when present, must be in
+     * {@link CorsProperties}.
      */
     @Bean
     @Order(1)
+    SecurityFilterChain mcpSecurity(
+            HttpSecurity http, CorsProperties cors, JsonMapper json, ApiKeyService apiKeys, UserService users)
+            throws Exception {
+        http.securityMatcher("/mcp", "/mcp/**")
+                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
+                .addFilterAfter(new McpOriginFilter(cors), SessionManagementFilter.class)
+                .addFilterAfter(new ApiKeyAuthenticationFilter(apiKeys, users), McpOriginFilter.class)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(new ProblemDetailEntryPoint(json))
+                        .accessDeniedHandler(new ProblemDetailAccessDenied(json)))
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .requestCache(cache -> cache.disable());
+        return http.build();
+    }
+
+    /**
+     * Pages outside {@code /api/**} are static GET. They stay anonymous, but they still need the default
+     * clickjacking and content-type headers. Cache-Control is left to the resource handler so {@code index.html}
+     * can be revalidated and hashed {@code assets/*} can be cached. Ordered after {@link #mcpSecurity} so
+     * {@code /mcp} is not treated as anonymous static content.
+     */
+    @Bean
+    @Order(2)
     SecurityFilterChain staticContent(HttpSecurity http) throws Exception {
         http.securityMatcher("/**")
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())

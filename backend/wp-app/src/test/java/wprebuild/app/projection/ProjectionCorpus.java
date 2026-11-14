@@ -96,8 +96,7 @@ final class ProjectionCorpus {
         store.save(projectId, RevisionNumber.ZERO, codec.id(), payload);
         payload = null;
 
-        ProjectRuntime runtime =
-                new ProjectRuntimeLoader(revisionLog, store, codec, viewSuppliers()).load(projectId);
+        ProjectRuntime runtime = new ProjectRuntimeLoader(revisionLog, store, codec, viewSuppliers()).load(projectId);
         requireViews(runtime);
 
         String depth3ClassIri = findDepth3ClassIri(runtime);
@@ -110,7 +109,14 @@ final class ProjectionCorpus {
                 depth3ClassIri,
                 sampleObjectPropertyIri);
         return new Loaded(
-                target, projectId, runtime, axiomCount, classCount, depth3ClassIri, sampleObjectPropertyIri, labelPrefix);
+                target,
+                projectId,
+                runtime,
+                axiomCount,
+                classCount,
+                depth3ClassIri,
+                sampleObjectPropertyIri,
+                labelPrefix);
     }
 
     private static MutableProjectOntologies importGenerated(OWLOntology ontology) {

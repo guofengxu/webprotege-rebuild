@@ -48,8 +48,8 @@ class ProjectionBenchmark {
 
     private static final long QUERY_P95_LIMIT_NANOS = 200L * 1_000_000L;
 
-    private static final List<String> TABLE_DIGESTS = List.of(
-            "entities", "labels", "hierarchy_edges", "property_domains", "property_ranges");
+    private static final List<String> TABLE_DIGESTS =
+            List.of("entities", "labels", "hierarchy_edges", "property_domains", "property_ranges");
 
     private final ProjectionWriter writer;
 
@@ -176,10 +176,7 @@ class ProjectionBenchmark {
                             chr(10) order by iri, entity_type), ''))
                         from projection.entities
                         where project_id = ?
-                        """)
-                .param(projectId)
-                .query(String.class)
-                .single();
+                        """).param(projectId).query(String.class).single();
     }
 
     private String digestLabels(UUID projectId) {
@@ -189,10 +186,7 @@ class ProjectionBenchmark {
                             chr(10) order by iri, property_iri, lang, value), ''))
                         from projection.labels
                         where project_id = ?
-                        """)
-                .param(projectId)
-                .query(String.class)
-                .single();
+                        """).param(projectId).query(String.class).single();
     }
 
     private String digestHierarchy(UUID projectId) {
@@ -202,10 +196,7 @@ class ProjectionBenchmark {
                             chr(10) order by hierarchy, child_iri, parent_iri), ''))
                         from projection.hierarchy_edges
                         where project_id = ?
-                        """)
-                .param(projectId)
-                .query(String.class)
-                .single();
+                        """).param(projectId).query(String.class).single();
     }
 
     private String digestDomains(UUID projectId) {
@@ -215,10 +206,7 @@ class ProjectionBenchmark {
                             chr(10) order by property_iri, class_iri), ''))
                         from projection.property_domains
                         where project_id = ?
-                        """)
-                .param(projectId)
-                .query(String.class)
-                .single();
+                        """).param(projectId).query(String.class).single();
     }
 
     private String digestRanges(UUID projectId) {
@@ -228,10 +216,7 @@ class ProjectionBenchmark {
                             chr(10) order by property_iri, range_iri, range_kind), ''))
                         from projection.property_ranges
                         where project_id = ?
-                        """)
-                .param(projectId)
-                .query(String.class)
-                .single();
+                        """).param(projectId).query(String.class).single();
     }
 
     private void runQ1(ProjectionCorpus.Loaded corpus) {
@@ -369,9 +354,7 @@ class ProjectionBenchmark {
                 .append(") |\n");
         text.append("| -Xmx | ").append(xmxArgument()).append(" |\n");
         text.append("| 堆上限 Runtime.maxMemory | ").append(bytes(heap.getMax())).append(" |\n");
-        text.append("| PostgreSQL | ")
-                .append(postgresVersion)
-                .append(" (Testcontainers postgres:18) |\n\n");
+        text.append("| PostgreSQL | ").append(postgresVersion).append(" (Testcontainers postgres:18) |\n\n");
         return text.toString();
     }
 
@@ -454,10 +437,8 @@ class ProjectionBenchmark {
     }
 
     private static String gateSection(List<ScaleReport> scales) {
-        ScaleReport large = scales.stream()
-                .filter(ProjectionBenchmark::isLarge)
-                .findFirst()
-                .orElseThrow();
+        ScaleReport large =
+                scales.stream().filter(ProjectionBenchmark::isLarge).findFirst().orElseThrow();
         List<String> failures = gateFailures(large);
         StringBuilder text = new StringBuilder();
         text.append("## 门禁结论\n\n");
@@ -517,7 +498,8 @@ class ProjectionBenchmark {
                 .append(ProjectionCorpus.DATA_PROPERTY_COUNT)
                 .append(" 个数据属性，各带定义域与值域。");
         text.append("经内存 `RevisionLog` / `SnapshotStore` 与 `ProjectRuntimeLoader` 加载，不经上传导入。\n");
-        text.append("- (a) `ProjectionRows.compute(runtime)`；(b) 同一事务内 `lockProject` + `replaceProject` 写入 Testcontainers PostgreSQL 18。\n");
+        text.append(
+                "- (a) `ProjectionRows.compute(runtime)`；(b) 同一事务内 `lockProject` + `replaceProject` 写入 Testcontainers PostgreSQL 18。\n");
         text.append("- (c) 各投影表 `count(*)`。\n");
         text.append("- (d) Q1 递归 CTE 查深度为 3 的类的全部后代；Q2 `lower(value) like 'class-12%'` `limit 20`；");
         text.append("Q3 查样本对象属性的定义域与值域。各 100 次，p50 / p95 用最近秩：排序后第 `ceil(p × n)` 个样本。\n");
