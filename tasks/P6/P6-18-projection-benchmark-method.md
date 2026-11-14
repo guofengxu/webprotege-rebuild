@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: benchmark
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-17]
 ---
 
@@ -65,14 +65,22 @@ depends_on: [P6-17]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 冒烟报告里能看到三段 Q1 执行计划、`pg_stats` 记录、`generic_plans` / `custom_plans` 次数、冷样本、Q1 样本序列和“采样期间后台活动”表；执行记录中贴出其中的 Q1 行数和计划节点类型
-- [ ] `docs/perf/` 下没有新增报告（本卡不运行正式基准）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 冒烟报告里能看到三段 Q1 执行计划、`pg_stats` 记录、`generic_plans` / `custom_plans` 次数、冷样本、Q1 样本序列和“采样期间后台活动”表；执行记录中贴出其中的 Q1 行数和计划节点类型
+- [x] `docs/perf/` 下没有新增报告（本卡不运行正式基准）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 运行正式基准、判定门禁（P6-11 重跑）
 - 任何性能优化，任何 `src/main` 改动，调整 PostgreSQL 配置
 - 修改门禁阈值、语料形状或规模
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-18-projection-benchmark-method
+- 测试：2026-11-14T23:22:02+08:00 通过（3 项）
+- 实际改动：修订 ProjectionBenchmark 测法：replace 后 refreshStatistics(b2)、刷新前 pg_stats/EXPLAIN/Q1×100、刷新后预热10+采样100（Q1 固定连接，prepared 增量 5/105），两份 PREPARE EXPLAIN，后台活动含 relpages/reltuples/relallvisible；新增 smoke()/~2000 类、nextReportPath 与 ProjectionReportPathTest。冒烟 Q1 返回 84 行；刷新前多为 Index Scan+Nested Loop/Recursive Union，预热后递归内层见 Seq Scan on hierarchy_edges。docs/perf 无新正式报告。performance-optimizer 初审 HIGH（计划不同连接、prepared 计数污染）已修为 sampleAfterRefresh 同连接+DEALLOCATE ALL 增量，复审 PASS。
+- 偏差：无
+- 审查：performance-optimizer

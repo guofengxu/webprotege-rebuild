@@ -64,6 +64,9 @@ final class ProjectionCorpus {
 
     static final int LARGE_CLASS_COUNT = 166_667;
 
+    /** Smoke-mode corpus (~2,000 classes); depth-3 classes still have descendants. */
+    static final int SMOKE_CLASS_COUNT = 2_000;
+
     static final String NAMESPACE = "http://example.org/wp-test/synthetic#";
 
     private ProjectionCorpus() {}
@@ -74,6 +77,11 @@ final class ProjectionCorpus {
 
     static Loaded large() {
         return load("约 50 万", LARGE_CLASS_COUNT);
+    }
+
+    /** About 2,000 classes; same branching, labels, and property shape as the formal corpora. */
+    static Loaded smoke() {
+        return load("冒烟", SMOKE_CLASS_COUNT);
     }
 
     private static Loaded load(String target, int classCount) {
