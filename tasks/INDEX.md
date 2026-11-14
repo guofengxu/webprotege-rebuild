@@ -2,16 +2,16 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 115 张卡：完成 108，进行中 0，阻塞 1，待办 6。
+共 115 张卡：完成 108，进行中 0，阻塞 2，待办 5。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-11](P6/P6-11-projection-benchmark.md) 本体投影表 PoC（三）：50 万公理规模的重建与查询基准，按通过标准决定是否继续
 - [P6-14](P6/P6-14-mcp-poc.md) MCP PoC：选定 MCP Java SDK，在 /mcp 提供 API Key 认证的只读工具 search_entities
 
 ## 阻塞中
 
 - [P5-00](P5/P5-00-mobile-planning.md) 规划卡：细化移动端（uni-app）MVP 任务卡
+- [P6-11](P6/P6-11-projection-benchmark.md) 本体投影表 PoC（三）：50 万公理规模的重建与查询基准，按通过标准决定是否继续
 
 ## P0
 
@@ -156,7 +156,7 @@
 | [P6-08](P6/P6-08-outbox-relay.md) | outbox 中继：按消费者记录进度，按提交顺序投递修订事件 | wp-app | db | M | 完成 | P4-17 |
 | [P6-09](P6/P6-09-projection-schema-writer.md) | 本体投影表 PoC（一）：projection 模块、表结构与写入器 | wp-app | db | M | 完成 | P6-08、P6-03 |
 | [P6-10](P6/P6-10-projection-rebuild.md) | 本体投影表 PoC（二）：从内存模型计算投影行，并全量重建一个项目 | wp-app | app-service | M | 完成 | P6-09 |
-| [P6-11](P6/P6-11-projection-benchmark.md) | 本体投影表 PoC（三）：50 万公理规模的重建与查询基准，按通过标准决定是否继续 | wp-app | benchmark | S | 待办（可开工） | P6-10 |
+| [P6-11](P6/P6-11-projection-benchmark.md) | 本体投影表 PoC（三）：50 万公理规模的重建与查询基准，按通过标准决定是否继续 | wp-app | benchmark | S | 阻塞 | P6-10 |
 | [P6-12](P6/P6-12-projection-incremental.md) | 投影表增量更新：消费 outbox，只重算受影响的实体 | wp-app | db | M | 待办 | P6-11、P6-08 |
 | [P6-13](P6/P6-13-projection-admin-docs.md) | 投影表的状态与重建接口（管理员），以及外部 SQL 访问说明 | wp-app, packages/api-types | app-security | M | 待办 | P6-12、P6-02 |
 | [P6-14](P6/P6-14-mcp-poc.md) | MCP PoC：选定 MCP Java SDK，在 /mcp 提供 API Key 认证的只读工具 search_entities | wp-app | app-security | M | 待办（可开工） | P4-17 |

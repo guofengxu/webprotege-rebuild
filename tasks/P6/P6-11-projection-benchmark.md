@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: benchmark
 ecc_extra: []
-status: todo
+status: blocked
 depends_on: [P6-10]
 ---
 
@@ -57,3 +57,7 @@ depends_on: [P6-10]
 ## 不在本卡范围
 - 任何性能优化
 - 增量更新的延迟测量（P6-12 以功能测试覆盖）
+
+## 阻塞
+- 日期：2026-11-14
+- 原因：投影表 PoC 基准已写入 docs/perf/projection-poc-2026-11-14.md（JDK 25.0.5.0.3，-Xmx6g，Intel Xeon E5-2673 v3 × 8，内存 32814464 kB，PostgreSQL 18.6 Testcontainers）。约 50 万公理（506,000，含 1000 对象属性 + 1000 数据属性）门禁：全量重建 (a+b) 28.363 秒（≤ 60 秒）达标；Q2 p95 2.21 毫秒达标；Q3 p95 0.81 毫秒达标；两次重建 md5 一致达标。未达标：Q1（深度为 3 的类的递归 CTE 全部后代）p95 1550.33 毫秒（门禁 ≤ 200 毫秒）；同规模 Q1 p50 约 135 毫秒，p50→p95 约 11 倍长尾。约 10 万规模对照 Q1 p95 约 47 毫秒（无门禁）。未改 src/main、未做优化。performance-optimizer 仅分析报告：重建/Q2/Q3/摘要验证了 PoC，Q1 层次闭包在该语料下结构性偏慢。请人决定：上调 Q1 门禁、带 Q1 保留项继续 P6-12、另开卡做层次查询/schema 改造，或放弃投影表。
