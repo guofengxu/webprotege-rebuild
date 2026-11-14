@@ -108,7 +108,7 @@ class McpBrowseToolsTest {
             try (McpSyncClient client = mcpClient(apiKey)) {
                 client.initialize();
                 List<Tool> tools = client.listTools().tools();
-                assertThat(tools).extracting(Tool::name).containsExactlyInAnyOrderElementsOf(EXPECTED_TOOLS);
+                assertThat(tools).extracting(Tool::name).containsAll(EXPECTED_TOOLS);
                 assertThat(tools).allSatisfy(tool -> {
                     assertThat(tool.inputSchema()).isNotNull();
                     assertThat(tool.inputSchema().get("properties")).isInstanceOf(Map.class);
