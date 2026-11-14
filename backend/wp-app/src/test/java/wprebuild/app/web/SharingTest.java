@@ -27,6 +27,7 @@ import wprebuild.app.events.PermissionsChanged;
 import wprebuild.app.events.ProjectEventHub;
 import wprebuild.app.support.DatabaseTest;
 import wprebuild.kernel.id.ProjectId;
+import wprebuild.kernel.id.UserId;
 
 /** Project members and the last-manager rule (BS-10, P3-22). */
 @DatabaseTest
@@ -89,7 +90,8 @@ class SharingTest {
         ProjectId projectId = projectId(create(owner));
         CountDownLatch changed = new CountDownLatch(1);
         AtomicReference<String> type = new AtomicReference<>();
-        ProjectEventHub.Subscription subscription = hub.subscribe(projectId, OptionalLong.empty(), sink(changed, type));
+        ProjectEventHub.Subscription subscription =
+                hub.subscribe(projectId, new UserId(owner.userId()), OptionalLong.empty(), sink(changed, type));
         try {
             MvcResult granted = putRole(owner, projectId, colleague, ProjectRole.CAN_EDIT);
             assertThat(granted.getResponse().getStatus())

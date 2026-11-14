@@ -66,9 +66,12 @@ public final class EventTranslator {
 
     private final ProjectEventHub hub;
 
-    public EventTranslator(ProjectRuntimeRegistry registry, ProjectEventHub hub) {
+    private final SubscriptionRevoker revoker;
+
+    public EventTranslator(ProjectRuntimeRegistry registry, ProjectEventHub hub, SubscriptionRevoker revoker) {
         this.registry = Objects.requireNonNull(registry, "registry");
         this.hub = Objects.requireNonNull(hub, "hub");
+        this.revoker = Objects.requireNonNull(revoker, "revoker");
     }
 
     @EventListener
@@ -103,6 +106,19 @@ public final class EventTranslator {
             });
         } catch (RuntimeException ex) {
             log.error("failed to translate role assignments for {}", event.projectId(), ex);
+        }
+        // Outside every lock so AccessService can query, after PermissionsChanged is queued.
+        // If ACL checks fail, disconnect everyone for this project (fail closed); clients with
+        // VIEW_PROJECT can reconnect.
+        try {
+            revoker.revoke(event.projectId());
+        } catch (RuntimeException ex) {
+            log.error("failed to revoke event subscriptions for {}", event.projectId(), ex);
+            try {
+                hub.disconnectAll(event.projectId());
+            } catch (RuntimeException nested) {
+                log.error("failed to force-disconnect subscribers for {}", event.projectId(), nested);
+            }
         }
     }
 

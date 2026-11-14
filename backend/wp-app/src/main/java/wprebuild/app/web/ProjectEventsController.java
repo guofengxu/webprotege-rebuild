@@ -66,6 +66,12 @@ public class ProjectEventsController {
 
     private final JsonMapper json;
 
+    /**
+     * Optional test hook run after the first {@code VIEW_PROJECT} check and before subscribe/park.
+     * Production leaves this null.
+     */
+    volatile Runnable afterInitialAccessCheck;
+
     public ProjectEventsController(CommandBus bus, ProjectEventHub hub, JsonMapper json) {
         this.bus = Objects.requireNonNull(bus, "bus");
         this.hub = Objects.requireNonNull(hub, "hub");
@@ -125,10 +131,18 @@ public class ProjectEventsController {
 
     private SseEmitter open(UserId user, ProjectId projectId, OptionalLong after) {
         bus.execute(user, new GetProjectEvents(projectId));
+        runAfterInitialAccessCheck();
         SseEmitter emitter = new SseEmitter(0L);
         SseSession session = new SseSession(emitter);
-        ProjectEventHub.Subscription subscription = hub.subscribe(projectId, after, session);
+        ProjectEventHub.Subscription subscription = hub.subscribe(projectId, user, after, session);
         session.attach(subscription);
+        try {
+            bus.execute(user, new GetProjectEvents(projectId));
+        } catch (RuntimeException ex) {
+            // Leave the emitter unfinished so the exception maps to 403/409 ProblemDetail.
+            subscription.close();
+            throw ex;
+        }
         emitter.onCompletion(session::close);
         emitter.onTimeout(session::close);
         emitter.onError(error -> session.close());
@@ -147,16 +161,35 @@ public class ProjectEventsController {
         }
         int seconds = timeoutSeconds(timeout);
         bus.execute(user, new GetProjectEvents(projectId));
+        runAfterInitialAccessCheck();
         if (seconds == 0) {
-            return ResponseEntity.ok(body(hub.catchup(projectId, after)));
+            ProjectEventHub.Delivery catchup = hub.catchup(projectId, after);
+            bus.execute(user, new GetProjectEvents(projectId));
+            return ResponseEntity.ok(body(catchup));
         }
         DeferredResult<List<Object>> result = new DeferredResult<>(seconds * 1000L, List.of());
-        ProjectEventHub.PollTicket ticket = hub.park(projectId, after, delivery -> result.setResult(body(delivery)));
+        ProjectEventHub.PollTicket ticket =
+                hub.park(projectId, user, after, delivery -> result.setResult(body(delivery)));
+        try {
+            bus.execute(user, new GetProjectEvents(projectId));
+        } catch (RuntimeException ex) {
+            if (ticket != null) {
+                hub.cancel(ticket);
+            }
+            throw ex;
+        }
         if (ticket != null) {
             result.onTimeout(() -> hub.cancel(ticket));
             result.onCompletion(() -> hub.cancel(ticket));
         }
         return result;
+    }
+
+    private void runAfterInitialAccessCheck() {
+        Runnable hook = afterInitialAccessCheck;
+        if (hook != null) {
+            hook.run();
+        }
     }
 
     private List<Object> body(ProjectEventHub.Delivery delivery) {

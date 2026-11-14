@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 import wprebuild.app.ontology.ProjectHandle;
 import wprebuild.app.ontology.ProjectRuntimeRegistry;
 import wprebuild.kernel.id.ProjectId;
+import wprebuild.kernel.id.UserId;
 
 /**
  * Per-project subscribers and a ring of the last N revisions (BS-11, default N = 200).
@@ -90,8 +93,9 @@ public final class ProjectEventHub implements DisposableBean {
      * Registers {@code sink} and returns the backlog for {@code after}. An empty cursor subscribes
      * to later events only.
      */
-    public Subscription subscribe(ProjectId projectId, OptionalLong after, LiveSink sink) {
+    public Subscription subscribe(ProjectId projectId, UserId userId, OptionalLong after, LiveSink sink) {
         Objects.requireNonNull(projectId, "project id");
+        Objects.requireNonNull(userId, "user id");
         Objects.requireNonNull(after, "after");
         Objects.requireNonNull(sink, "sink");
         ProjectHandle handle = registry.get(projectId);
@@ -100,7 +104,7 @@ public final class ProjectEventHub implements DisposableBean {
                 long head = handle.runtime().head().value();
                 Delivery backlog =
                         after.isPresent() ? catchupLocked(projectId, after.getAsLong(), head) : Delivery.empty();
-                lives.add(new Live(projectId, sink));
+                lives.add(new Live(projectId, userId, sink));
                 return new Subscription(backlog, () -> remove(sink));
             }
         });
@@ -111,8 +115,9 @@ public final class ProjectEventHub implements DisposableBean {
      *
      * @return a ticket while the poll is parked; {@code null} when {@code consumer} was already called
      */
-    public PollTicket park(ProjectId projectId, long after, Consumer<Delivery> consumer) {
+    public PollTicket park(ProjectId projectId, UserId userId, long after, Consumer<Delivery> consumer) {
         Objects.requireNonNull(projectId, "project id");
+        Objects.requireNonNull(userId, "user id");
         Objects.requireNonNull(consumer, "consumer");
         ProjectHandle handle = registry.get(projectId);
         Parked parked = handle.gate().generate(() -> {
@@ -122,7 +127,7 @@ public final class ProjectEventHub implements DisposableBean {
                 if (catchup.immediate()) {
                     return new Parked(catchup, null);
                 }
-                Waiter waiter = new Waiter(projectId, after, consumer);
+                Waiter waiter = new Waiter(projectId, userId, after, consumer);
                 waiters.add(waiter);
                 return new Parked(null, waiter);
             }
@@ -132,6 +137,86 @@ public final class ProjectEventHub implements DisposableBean {
             return null;
         }
         return new PollTicket(parked.waiter);
+    }
+
+    /** Snapshot of users with an SSE subscription or a parked long poll on {@code projectId}. */
+    public Set<UserId> subscribers(ProjectId projectId) {
+        Objects.requireNonNull(projectId, "project id");
+        synchronized (lock) {
+            Set<UserId> users = new LinkedHashSet<>();
+            for (Live live : lives) {
+                if (live.projectId.equals(projectId)) {
+                    users.add(live.userId);
+                }
+            }
+            for (Waiter waiter : waiters) {
+                if (waiter.projectId.equals(projectId)) {
+                    users.add(waiter.userId);
+                }
+            }
+            return Set.copyOf(users);
+        }
+    }
+
+    /**
+     * Removes matching SSE subscriptions and parked polls, then schedules shutdown/empty completion
+     * on the delivery thread so prior deliveries (including {@code PermissionsChanged} and
+     * {@code resync}) run first.
+     */
+    public void disconnect(ProjectId projectId, Set<UserId> users) {
+        Objects.requireNonNull(projectId, "project id");
+        Objects.requireNonNull(users, "users");
+        if (users.isEmpty()) {
+            return;
+        }
+        Set<UserId> revoked = Set.copyOf(users);
+        List<LiveSink> sinks = new ArrayList<>();
+        List<Waiter> ready = new ArrayList<>();
+        synchronized (lock) {
+            Iterator<Live> liveIterator = lives.iterator();
+            while (liveIterator.hasNext()) {
+                Live live = liveIterator.next();
+                if (live.projectId.equals(projectId) && revoked.contains(live.userId)) {
+                    sinks.add(live.sink);
+                    liveIterator.remove();
+                }
+            }
+            Iterator<Waiter> waiterIterator = waiters.iterator();
+            while (waiterIterator.hasNext()) {
+                Waiter waiter = waiterIterator.next();
+                if (waiter.projectId.equals(projectId) && revoked.contains(waiter.userId)) {
+                    ready.add(waiter);
+                    waiterIterator.remove();
+                }
+            }
+        }
+        closeSubscribers(projectId, sinks, ready);
+    }
+
+    /** Disconnects every SSE subscriber and parked long poll for {@code projectId}. */
+    public void disconnectAll(ProjectId projectId) {
+        Objects.requireNonNull(projectId, "project id");
+        List<LiveSink> sinks = new ArrayList<>();
+        List<Waiter> ready = new ArrayList<>();
+        synchronized (lock) {
+            Iterator<Live> liveIterator = lives.iterator();
+            while (liveIterator.hasNext()) {
+                Live live = liveIterator.next();
+                if (live.projectId.equals(projectId)) {
+                    sinks.add(live.sink);
+                    liveIterator.remove();
+                }
+            }
+            Iterator<Waiter> waiterIterator = waiters.iterator();
+            while (waiterIterator.hasNext()) {
+                Waiter waiter = waiterIterator.next();
+                if (waiter.projectId.equals(projectId)) {
+                    ready.add(waiter);
+                    waiterIterator.remove();
+                }
+            }
+        }
+        closeSubscribers(projectId, sinks, ready);
     }
 
     /** Events strictly after {@code after}, or a resync when the ring no longer covers that range. */
@@ -297,6 +382,31 @@ public final class ProjectEventHub implements DisposableBean {
         }
     }
 
+    private void closeSubscribers(ProjectId projectId, List<LiveSink> sinks, List<Waiter> ready) {
+        if (sinks.isEmpty() && ready.isEmpty()) {
+            return;
+        }
+        try {
+            delivery.execute(() -> {
+                for (Waiter waiter : ready) {
+                    safely(() -> waiter.consumer.accept(Delivery.empty()));
+                }
+                for (LiveSink sink : sinks) {
+                    safely(sink::onShutdown);
+                }
+            });
+        } catch (RuntimeException ex) {
+            // Hub entries are already removed; close synchronously so clients are not abandoned.
+            log.warn("could not queue disconnect for {}; closing on caller thread", projectId, ex);
+            for (Waiter waiter : ready) {
+                safely(() -> waiter.consumer.accept(Delivery.empty()));
+            }
+            for (LiveSink sink : sinks) {
+                safely(sink::onShutdown);
+            }
+        }
+    }
+
     private void beat() {
         List<LiveSink> sinks;
         synchronized (lock) {
@@ -391,11 +501,13 @@ public final class ProjectEventHub implements DisposableBean {
         }
     }
 
-    private record Live(ProjectId projectId, LiveSink sink) {}
+    private record Live(ProjectId projectId, UserId userId, LiveSink sink) {}
 
     private static final class Waiter {
 
         private final ProjectId projectId;
+
+        private final UserId userId;
 
         private final long after;
 
@@ -403,8 +515,9 @@ public final class ProjectEventHub implements DisposableBean {
 
         private boolean gap;
 
-        private Waiter(ProjectId projectId, long after, Consumer<Delivery> consumer) {
+        private Waiter(ProjectId projectId, UserId userId, long after, Consumer<Delivery> consumer) {
             this.projectId = projectId;
+            this.userId = userId;
             this.after = after;
             this.consumer = consumer;
         }

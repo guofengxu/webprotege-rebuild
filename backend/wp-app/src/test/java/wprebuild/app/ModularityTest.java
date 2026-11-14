@@ -23,7 +23,7 @@ class ModularityTest {
             Map.entry("revision", new ModuleDeclaration(false, "shared")),
             Map.entry("ontology", new ModuleDeclaration(false, "bus", "project", "access", "revision", "shared")),
             Map.entry("search", new ModuleDeclaration(false, "bus", "ontology", "ontology :: dto", "access", "shared")),
-            Map.entry("events", new ModuleDeclaration(false, "bus", "ontology", "access", "shared")),
+            Map.entry("events", new ModuleDeclaration(false, "bus", "ontology", "access", "shared", "project")),
             Map.entry("migration", new ModuleDeclaration(false, "bus", "ontology", "project", "access", "shared")),
             Map.entry(
                     "web",
