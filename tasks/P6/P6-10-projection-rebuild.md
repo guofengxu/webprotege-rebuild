@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P6-09]
 ---
 
@@ -56,12 +56,20 @@ depends_on: [P6-09]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 规模测量与通过标准（P6-11）
 - 增量更新（P6-12）；重建接口（P6-13）
 - 推理得到的层级（只取层级视图给出的父子关系）
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-10-projection-rebuild
+- 测试：2026-11-14T16:20:57+08:00 通过（3 项）
+- 实际改动：Added ProjectionRows.compute and ProjectionRebuilder. ProjectionRebuildTest covers warehouse rebuild, idempotency, anonymous parents, deprecated and label cases. Review fix: warn when replaceProject returns false.
+- 偏差：无
+- 审查：java-reviewer, code-reviewer, silent-failure-hunter
