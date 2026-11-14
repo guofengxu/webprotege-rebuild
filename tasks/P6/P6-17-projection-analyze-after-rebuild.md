@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: db
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P6-10]
 ---
 
@@ -64,11 +64,12 @@ depends_on: [P6-10]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] `refreshStatistics` 的 Javadoc 写明了调用时机与数据库账号权限要求
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] `refreshStatistics` 的 Javadoc 写明了调用时机与数据库账号权限要求
+- [x] 执行记录已填写
+
 
 ## 不在本卡范围
 - VACUUM、新增索引、修改表结构（见根因分析最后一节，由人决定）
@@ -76,3 +77,11 @@ depends_on: [P6-10]
 - 增量更新路径的统计信息（P6-12 交给 autoanalyze）
 - 配置开关（`wp.projection.*` 属性在 P6-12 引入）
 - 运行基准、新增 `docs/perf/` 下的报告（P6-11 重跑）
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-17-projection-analyze-after-rebuild
+- 测试：2026-11-14T22:23:43+08:00 通过（3 项）
+- 实际改动：ProjectionWriter.refreshStatistics 对 5 张投影表执行 ANALYZE（缺 MAINTAIN 时告警并跳过）；ProjectionRebuilder 在 replaceProject 成功后注册 afterCommit，用 REQUIRES_NEW 刷新且同事务去重；刷新失败只 warn 不抛。新增 ProjectionStatisticsRefreshTest。
+- 偏差：docs/INDEX 与 dependency-graph 由 finish 自动更新；hasMaintainPrivilege 仅将 permission denied / insufficient privilege 视为缺 MAINTAIN，其它 DAE 重新抛出。
+- 审查：database-reviewer, java-reviewer, silent-failure-hunter
