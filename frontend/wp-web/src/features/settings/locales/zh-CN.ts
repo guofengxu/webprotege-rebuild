@@ -10,6 +10,7 @@ const zhCN = {
     saving: "保存中…",
     saveSuccess: "已保存",
     forbidden: "无权限修改此项设置，表单已变为只读",
+    readOnlyDenied: "只读：需要管理权限才能修改",
     unsavedTitle: "有未保存的修改",
     unsavedMessage: "离开当前标签页将丢失未保存的修改，是否继续？",
     unsavedConfirm: "离开",

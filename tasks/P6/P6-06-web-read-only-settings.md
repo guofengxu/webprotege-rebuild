@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-04]
 ---
 
@@ -46,12 +46,20 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/settings/general/G
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - Frame 编辑器（P6-05）
 - 成员标签页（P4-24、P6-07）
 - 后端接口（P6-01）
+
+## 执行记录
+- 日期：2026-11-14
+- 分支：feature/p6-06-web-read-only-settings
+- 测试：2026-11-14T09:16:26+08:00 通过（3 项）
+- 实际改动：四个设置表单按 EDIT_* 权限在 denied/pending 时禁用并隐藏保存；denied 显示 settings.readOnlyDenied；沿用 useProjectPermissions 与 403 forbiddenByServer。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
