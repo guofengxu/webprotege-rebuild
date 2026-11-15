@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
@@ -35,7 +36,7 @@ import wprebuild.kernel.runtime.ProjectRuntime;
 
 /**
  * Pure projection of one {@link ProjectRuntime} into {@link ProjectionSnapshot} rows. Does not touch
- * the database (P6-10 / P6-11).
+ * the database (P6-10 / P6-11 / P6-12).
  */
 public final class ProjectionRows {
 
@@ -46,14 +47,29 @@ public final class ProjectionRows {
 
     public static ProjectionSnapshot compute(ProjectRuntime runtime) {
         Objects.requireNonNull(runtime, "runtime");
+        return computeFor(runtime, allSignatureIris(runtime));
+    }
+
+    /**
+     * Rows for {@code subjects} only: as entities, label subjects, hierarchy children, and property
+     * domain / range subjects. {@code computeFor(runtime, all signature IRIs)} equals {@link
+     * #compute(ProjectRuntime)}.
+     */
+    public static ProjectionSnapshot computeFor(ProjectRuntime runtime, Set<IRI> subjects) {
+        Objects.requireNonNull(runtime, "runtime");
+        Objects.requireNonNull(subjects, "subjects");
         ProjectOntologies ontologies = runtime.ontologies();
         OWLDataFactory data = ontologies.dataFactory();
 
         List<EntityRow> entities = new ArrayList<>();
         List<LabelRow> labels = new ArrayList<>();
         for (OWLEntity entity : ontologies.signature().toList()) {
-            entities.add(new EntityRow(entity.getIRI().toString(), entityType(entity), deprecated(ontologies, entity)));
-            collectLabels(ontologies, entity.getIRI(), labels);
+            IRI iri = entity.getIRI();
+            if (!subjects.contains(iri)) {
+                continue;
+            }
+            entities.add(new EntityRow(iri.toString(), entityType(entity), deprecated(ontologies, entity)));
+            collectLabels(ontologies, iri, labels);
         }
         entities.sort(Comparator.comparing(EntityRow::iri).thenComparing(EntityRow::entityType));
         labels.sort(Comparator.comparing(LabelRow::iri)
@@ -61,20 +77,26 @@ public final class ProjectionRows {
                 .thenComparing(LabelRow::lang)
                 .thenComparing(LabelRow::value));
 
-        List<HierarchyEdgeRow> edges = hierarchyEdges(runtime, data);
+        List<HierarchyEdgeRow> edges = hierarchyEdges(runtime, data, subjects);
         edges.sort(Comparator.comparing(HierarchyEdgeRow::hierarchy)
                 .thenComparing(HierarchyEdgeRow::childIri)
                 .thenComparing(HierarchyEdgeRow::parentIri));
 
         List<DomainRow> domains = new ArrayList<>();
         List<RangeRow> ranges = new ArrayList<>();
-        collectDomainsAndRanges(ontologies, domains, ranges);
+        collectDomainsAndRanges(ontologies, subjects, domains, ranges);
         domains.sort(Comparator.comparing(DomainRow::propertyIri).thenComparing(DomainRow::classIri));
         ranges.sort(Comparator.comparing(RangeRow::propertyIri)
                 .thenComparing(RangeRow::rangeIri)
                 .thenComparing(RangeRow::rangeKind));
 
         return new ProjectionSnapshot(entities, labels, edges, domains, ranges);
+    }
+
+    private static Set<IRI> allSignatureIris(ProjectRuntime runtime) {
+        return runtime.ontologies().signature().toList().stream()
+                .map(OWLEntity::getIRI)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     private static void collectLabels(ProjectOntologies ontologies, IRI subject, List<LabelRow> labels) {
@@ -90,7 +112,8 @@ public final class ProjectionRows {
         });
     }
 
-    private static List<HierarchyEdgeRow> hierarchyEdges(ProjectRuntime runtime, OWLDataFactory data) {
+    private static List<HierarchyEdgeRow> hierarchyEdges(
+            ProjectRuntime runtime, OWLDataFactory data, Set<IRI> subjects) {
         Set<HierarchyEdgeRow> unique = new LinkedHashSet<>();
         ClassHierarchyView classes = runtime.view(ClassHierarchyView.class);
         OWLClass thing = data.getOWLThing();
@@ -101,6 +124,9 @@ public final class ProjectionRows {
         AnnotationPropertyHierarchyView annotationProperties = runtime.view(AnnotationPropertyHierarchyView.class);
 
         for (OWLEntity entity : runtime.ontologies().signature().toList()) {
+            if (!subjects.contains(entity.getIRI())) {
+                continue;
+            }
             switch (entity) {
                 case OWLClass cls -> addParents("CLASS", classes, cls, thing, unique);
                 case OWLObjectProperty property ->
@@ -128,7 +154,7 @@ public final class ProjectionRows {
     }
 
     private static void collectDomainsAndRanges(
-            ProjectOntologies ontologies, List<DomainRow> domains, List<RangeRow> ranges) {
+            ProjectOntologies ontologies, Set<IRI> subjects, List<DomainRow> domains, List<RangeRow> ranges) {
         Set<DomainRow> domainSet = new LinkedHashSet<>();
         Set<RangeRow> rangeSet = new LinkedHashSet<>();
 
@@ -136,36 +162,44 @@ public final class ProjectionRows {
             if (axiom.getProperty().isAnonymous()) {
                 return;
             }
+            IRI propertyIri = axiom.getProperty().asOWLObjectProperty().getIRI();
+            if (!subjects.contains(propertyIri)) {
+                return;
+            }
             if (axiom.getDomain() instanceof OWLClass domain) {
-                domainSet.add(new DomainRow(
-                        axiom.getProperty().asOWLObjectProperty().getIRI().toString(),
-                        domain.getIRI().toString()));
+                domainSet.add(
+                        new DomainRow(propertyIri.toString(), domain.getIRI().toString()));
             }
         });
         ontologies.axiomsOfType(AxiomType.OBJECT_PROPERTY_RANGE).forEach(axiom -> {
             if (axiom.getProperty().isAnonymous()) {
                 return;
             }
+            IRI propertyIri = axiom.getProperty().asOWLObjectProperty().getIRI();
+            if (!subjects.contains(propertyIri)) {
+                return;
+            }
             if (axiom.getRange() instanceof OWLClass range) {
-                rangeSet.add(new RangeRow(
-                        axiom.getProperty().asOWLObjectProperty().getIRI().toString(),
-                        range.getIRI().toString(),
-                        "CLASS"));
+                rangeSet.add(new RangeRow(propertyIri.toString(), range.getIRI().toString(), "CLASS"));
             }
         });
         ontologies.axiomsOfType(AxiomType.DATA_PROPERTY_DOMAIN).forEach(axiom -> {
+            IRI propertyIri = axiom.getProperty().asOWLDataProperty().getIRI();
+            if (!subjects.contains(propertyIri)) {
+                return;
+            }
             if (axiom.getDomain() instanceof OWLClass domain) {
-                domainSet.add(new DomainRow(
-                        axiom.getProperty().asOWLDataProperty().getIRI().toString(),
-                        domain.getIRI().toString()));
+                domainSet.add(
+                        new DomainRow(propertyIri.toString(), domain.getIRI().toString()));
             }
         });
         ontologies.axiomsOfType(AxiomType.DATA_PROPERTY_RANGE).forEach(axiom -> {
+            IRI propertyIri = axiom.getProperty().asOWLDataProperty().getIRI();
+            if (!subjects.contains(propertyIri)) {
+                return;
+            }
             if (axiom.getRange() instanceof OWLDatatype range) {
-                rangeSet.add(new RangeRow(
-                        axiom.getProperty().asOWLDataProperty().getIRI().toString(),
-                        range.getIRI().toString(),
-                        "DATATYPE"));
+                rangeSet.add(new RangeRow(propertyIri.toString(), range.getIRI().toString(), "DATATYPE"));
             }
         });
 
