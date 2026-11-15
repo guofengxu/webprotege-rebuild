@@ -1,6 +1,7 @@
 package wprebuild.app.projection;
 
 import java.sql.PreparedStatement;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -149,11 +150,34 @@ public class ProjectionWriter {
 
     /** Stored projection revision for a project, if any. */
     public Optional<Long> projectRevNo(ProjectId projectId) {
+        return projectState(projectId).map(ProjectState::revNo);
+    }
+
+    /** Stored {@code project_state} row for a project, if any. */
+    public Optional<ProjectState> projectState(ProjectId projectId) {
         ProjectId id = requireProject(projectId);
-        return jdbc.sql("select rev_no from projection.project_state where project_id = ?")
+        return jdbc.sql("""
+                        select rev_no, rebuilt_at, updated_at
+                        from projection.project_state
+                        where project_id = ?
+                        """)
                 .param(id.value())
-                .query(Long.class)
+                .query((rs, rowNum) -> new ProjectState(
+                        rs.getLong("rev_no"),
+                        rs.getObject("rebuilt_at", java.time.OffsetDateTime.class)
+                                .toInstant(),
+                        rs.getObject("updated_at", java.time.OffsetDateTime.class)
+                                .toInstant()))
                 .optional();
+    }
+
+    /** Values from {@code projection.project_state}. */
+    public record ProjectState(long revNo, Instant rebuiltAt, Instant updatedAt) {
+
+        public ProjectState {
+            Objects.requireNonNull(rebuiltAt, "rebuilt at");
+            Objects.requireNonNull(updatedAt, "updated at");
+        }
     }
 
     /**
