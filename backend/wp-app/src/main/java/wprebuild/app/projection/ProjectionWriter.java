@@ -1,5 +1,6 @@
 package wprebuild.app.projection;
 
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.semanticweb.owlapi.model.IRI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -115,6 +117,46 @@ public class ProjectionWriter {
     }
 
     /**
+     * Replaces projection rows for {@code subjects} only. Requires {@link #lockProject} in the same
+     * transaction; revision numbers only move forward. Updates {@code project_state.rev_no} and
+     * {@code updated_at} (not {@code rebuilt_at}).
+     */
+    public boolean replaceSubjects(ProjectId projectId, Set<IRI> subjects, ProjectionSnapshot rows, long revNo) {
+        ProjectId id = requireProject(projectId);
+        Objects.requireNonNull(subjects, "subjects");
+        Objects.requireNonNull(rows, "rows");
+        if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+            throw new IllegalStateException("replaceSubjects requires an active transaction");
+        }
+        if (!lockedProjects().contains(id.value())) {
+            throw new IllegalStateException("replaceSubjects requires lockProject in the same transaction");
+        }
+        Optional<Long> current = projectRevNo(id);
+        if (current.isPresent() && revNo < current.get()) {
+            return false;
+        }
+        if (!subjects.isEmpty()) {
+            deleteSubjectRows(id, subjects);
+            insertEntities(id, rows.entities());
+            insertLabels(id, rows.labels());
+            insertHierarchyEdges(id, rows.hierarchyEdges());
+            insertDomains(id, rows.domains());
+            insertRanges(id, rows.ranges());
+        }
+        advanceProjectState(id, revNo);
+        return true;
+    }
+
+    /** Stored projection revision for a project, if any. */
+    public Optional<Long> projectRevNo(ProjectId projectId) {
+        ProjectId id = requireProject(projectId);
+        return jdbc.sql("select rev_no from projection.project_state where project_id = ?")
+                .param(id.value())
+                .query(Long.class)
+                .optional();
+    }
+
+    /**
      * Runs {@code ANALYZE} on the projection data tables so the planner sees fresh row estimates
      * after a full rebuild.
      *
@@ -193,6 +235,28 @@ public class ProjectionWriter {
         jdbc.sql("delete from projection.property_ranges where project_id = ?")
                 .param(id)
                 .update();
+    }
+
+    private void deleteSubjectRows(ProjectId projectId, Set<IRI> subjects) {
+        String[] iris = subjects.stream().map(IRI::toString).toArray(String[]::new);
+        UUID id = projectId.value();
+        deleteWhereIriIn("delete from projection.entities where project_id = ? and iri = any (?)", id, iris);
+        deleteWhereIriIn("delete from projection.labels where project_id = ? and iri = any (?)", id, iris);
+        deleteWhereIriIn(
+                "delete from projection.hierarchy_edges where project_id = ? and child_iri = any (?)", id, iris);
+        deleteWhereIriIn(
+                "delete from projection.property_domains where project_id = ? and property_iri = any (?)", id, iris);
+        deleteWhereIriIn(
+                "delete from projection.property_ranges where project_id = ? and property_iri = any (?)", id, iris);
+    }
+
+    private void deleteWhereIriIn(String sql, UUID projectId, String[] iris) {
+        jdbcTemplate.update(connection -> {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setObject(1, projectId);
+            statement.setArray(2, connection.createArrayOf("text", iris));
+            return statement;
+        });
     }
 
     private void insertEntities(ProjectId projectId, List<EntityRow> rows) {
@@ -277,6 +341,17 @@ public class ProjectionWriter {
                         on conflict (project_id) do update set
                             rev_no = excluded.rev_no,
                             rebuilt_at = excluded.rebuilt_at,
+                            updated_at = excluded.updated_at
+                        """).param(projectId.value()).param(revNo).update();
+    }
+
+    /** Advances {@code rev_no} / {@code updated_at} without touching {@code rebuilt_at}. */
+    private void advanceProjectState(ProjectId projectId, long revNo) {
+        jdbc.sql("""
+                        insert into projection.project_state (project_id, rev_no, rebuilt_at, updated_at)
+                        values (?, ?, now(), now())
+                        on conflict (project_id) do update set
+                            rev_no = excluded.rev_no,
                             updated_at = excluded.updated_at
                         """).param(projectId.value()).param(revNo).update();
     }

@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: db
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P6-11, P6-08]
 ---
 
@@ -65,12 +65,21 @@ depends_on: [P6-11, P6-08]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
+
 
 ## 不在本卡范围
 - 重建接口、只读数据库角色与查询说明（P6-13）
 - 推理得到的层级（投影只含层级视图给出的父子关系）
 - 投影到图数据库、Kafka；实例库
+
+## 执行记录
+- 日期：2026-11-15
+- 分支：feature/p6-12-projection-incremental
+- 测试：2026-11-15T00:48:49+08:00 通过（3 项）
+- 实际改动：Added ProjectionOutboxConsumer (EARLIEST) that incrementally replaces affected subjects via AffectedSubjects/computeFor/replaceSubjects, with full rebuild when state is missing or the subject set exceeds the threshold (at most once per batch). Enabled by wp.projection.enabled (default false). Updated projection module deps to revision+bus.
+- 偏差：Trash/missing skip acks outbox without advancing project_state per card; catch-up relies on the next revision after restore (RevisionLog read), as the card and trash test specify. Partial ack after a full rebuild continues through same-project/non-REVISION rows before stopping at the next project (safer for interleaved ids).
+- 审查：database-reviewer, java-reviewer, silent-failure-hunter
