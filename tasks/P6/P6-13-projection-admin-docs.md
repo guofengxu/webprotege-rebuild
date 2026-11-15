@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-12, P6-02]
 ---
 
@@ -70,12 +70,20 @@ pnpm -C frontend --filter wp-web run typecheck
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - Web 端的投影管理页面
 - 异步重建任务、定时全量校验
 - 在 Flyway 中创建数据库角色、修改 `compose.yaml`
+
+## 执行记录
+- 日期：2026-11-15
+- 分支：feature/p6-13-projection-admin-docs
+- 测试：2026-11-15T19:47:52+08:00 通过（6 项）
+- 实际改动：Added SYSTEM_ADMIN GetProjectionStatus/RebuildProjection commands and /api/admin/projections endpoints; documented SQL access in docs/api/projection.md; refreshed OpenAPI and api-types. Rebuild stays synchronous (large corpora may exceed ~30s HTTP timeouts per P6-11).
+- 偏差：web/package-info already listed projection (no change). After review: clamp lag to >=0 and log rebuild actor.
+- 审查：security-reviewer, java-reviewer

@@ -4,6 +4,8 @@
 
 MCP (Model Context Protocol) read-only tools are documented in [`mcp.md`](mcp.md).
 
+Ontology projection tables for external SQL (BI / agents) are documented in [`projection.md`](projection.md).
+
 ## Generate TypeScript types
 
 Frontend packages must not hand-write request or response types (ADR-008). Point `openapi-typescript` 7.x at this snapshot:
