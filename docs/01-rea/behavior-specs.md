@@ -147,6 +147,7 @@ OBO 方式的细节（用户区间、零填充位数）以旧测试为准，移�
 | SYSTEM_ADMIN | 全部应用动作（CREATE_ACCOUNT、DELETE_ANY_ACCOUNT、RESET_ANY_USER_PASSWORD、EDIT_APPLICATION_SETTINGS 等），并对所有项目拥有 CAN_MANAGE |
 
 - 项目创建者自动获得该项目的 CAN_MANAGE。
+- **P6 第二轮新增**（P6-19 规划，旧出处同上 `BuiltInRole.java`）：CAN_EDIT 增加 `MERGE_ENTITIES`（BS-13，由 P6-24 加入）；CAN_MANAGE 增加 `UPLOAD_AND_MERGE`、`UPLOAD_AND_MERGE_ADDITIONS`（BS-14，由 P6-27 加入）。归属与旧系统一致（旧系统中前者属于 PROJECT_EDITOR，后两者属于 PROJECT_MANAGER）。
 - 权限校验在命令总线入口统一执行（旧出处：`LEG/dispatch/impl/DispatchServiceExecutorImpl.java`，`RequestValidator` 链），不在各 Handler 里零散判断。
 
 ## BS-11 高层事件
@@ -171,3 +172,45 @@ MVP 需要的事件（其余见 P6）：
 - 导入：RDF/XML、Turtle、OWL/XML、OWL 函数式语法、Manchester 语法；也支持包含多个本体文档（含导入闭包）的 zip。
 - 导出（旧出处：`LEG_SHARED/download/DownloadFormatExtension.java`）：`owl`（RDF/XML）、`ttl`、`owx`、`omn`、`ofn`。项目包含多个本体时打包成 zip。
 - 可以导出任意历史修订（重放到该修订）。
+
+## BS-13 合并实体
+
+旧出处：`LEG/entity/MergeEntitiesChangeListGenerator.java`、`LEG_SHARED/entity/MergeEntitiesAction.java`、`LEG_SHARED/entity/MergedEntityTreatment.java`，测试 `LEG_TEST/entity/MergeEntitiesChangeListGenerator_TestCase.java`。权限 `MERGE_ENTITIES`（BS-10）。
+
+把一组源实体合并到一个目标实体，按以下顺序生成变更（顺序有意义，后一步依赖前一步的结果）：
+
+1. **替换引用**：在项目**所有本体**中，把每个源实体的 IRI 改写为目标实体的 IRI（与重命名相同：删除含源 IRI 的公理，加入改写后的公理）。源实体的注解断言因此都移到了目标实体上。
+2. **标签降级**：对每个本体中源实体原有的 `rdfs:label` 与 `skos:prefLabel` 注解断言，删除它们在目标实体上的改写结果，改为目标实体上的 `skos:altLabel`；值（含语言标签）、注解上的注解、公理上的注解都保留。目的是不让目标实体出现重复的首选标签。**新系统修正**：目标在该本体中原本就有完全相同的断言时保留该断言（旧系统会把它删掉）。
+3. 按处理方式二选一：
+   - `DEPRECATE_MERGED_ENTITY`：在默认本体中为源 IRI 加入 `owl:deprecated true` 的注解断言，并把源实体**原有的**全部注解断言按原本体加回源 IRI。旧系统的第 1 步把源的类型声明也改写到了目标上，源 IRI 因此只剩注解断言、不再出现在签名中；**新系统新增**：同时在默认本体中加回源实体的类型声明，使被弃用的源实体仍能在层级、搜索与 Frame 中找到；
+   - `DELETE_MERGED_ENTITY`：不加弃用断言，源实体从此不再出现在任何公理中。
+- 生成器的结果是目标实体；修订描述为用户填写的说明。
+- **新系统新增**：用户没有填写说明时，描述为 `Merged <n> entities into <目标显示名>`；按以下顺序检查，命中即拒绝合并、不产生修订：源集合为空 → 目标在源集合中 → 源或目标是内置实体（例如 `owl:Thing`）→ 源或目标未声明 → 实体类型不一致（实体类型从本体声明中解析，请求不携带类型）。
+- 旧系统在 `DELETE_MERGED_ENTITY` 时把讨论线程移到目标实体；新系统目前没有讨论功能，这一步不移植（讨论功能见 P6-44 的逆向分析）。
+- 与旧测试对应的断言：源 IRI 被替换为目标 IRI；源的 `rdfs:label` / `skos:prefLabel` 变成目标的 `skos:altLabel`；`DELETE_MERGED_ENTITY` 时没有弃用断言；`DEPRECATE_MERGED_ENTITY` 时有弃用断言。
+
+## BS-14 上传并合并到已有项目
+
+旧系统有两种方式，都是先上传本体文件，再把差异作为**一个修订**写入项目。权限见 BS-10（两者都还需要 `EDIT_ONTOLOGY`）。
+
+**方式一：上传新版本，按差异合并**（旧出处：`LEG/merge/ComputeProjectMergeActionHandler.java`、`MergeUploadedProjectActionHandler.java`、`ModifiedProjectOntologiesCalculator.java`、`OntologyDiffCalculator.java`、`OntologyPatcher.java`；权限 `UPLOAD_AND_MERGE`）
+
+- 配对：项目中的本体与上传的本体只有在**本体 IRI 相同**（且都不是匿名本体）时才配对；没有配对的本体不参与合并。
+- 差异：对每一对本体计算完整的差异——上传版本有而项目没有的公理为“新增”，项目有而上传版本没有的公理为“删除”；本体注解同样计算新增与删除。导入声明不参与差异。
+- 预览：列出公理的新增 / 删除，按公理排序；确认后按用户填写的说明一次性应用。
+- **新系统新增**：项目与上传文件**各自恰好只有一个本体**时，即使本体 IRI 不同或为匿名也直接配对（旧系统此时什么都不合并）；预览同时给出本体注解的新增 / 删除条数与未配对的上传本体清单；应用时必须带上预览时的项目修订号，期间项目有了新修订则拒绝（409），需要重新预览；修订号在生成锁内比较（与生成变更在同一把锁下），不能在提交之前单独检查。
+
+**方式二：只追加**（旧出处：`LEG/merge_add/ExistingOntologyMergeAddActionHandler.java`、`NewOntologyMergeAddActionHandler.java`、`MergeOntologyCalculator.java`、`OntologyMergeAddPatcher.java`；权限 `UPLOAD_AND_MERGE_ADDITIONS`）
+
+- 旧系统允许勾选部分上传本体；**新系统简化**为把全部上传本体的公理与本体注解**追加**到项目中的一个目标本体，不删除任何内容；已存在的公理照常由 BS-02 过滤。
+- 旧系统还允许追加到“新本体”，但会忽略用户填写的 IRI、创建匿名本体，修订描述也固定为 `Merge ontologies into new ontology`。**新系统不移植**“追加到新本体”，只允许选择项目中已有的本体；修订描述为用户填写的说明，未填写时为 `Merged uploaded ontologies into <目标本体 IRI 或 o<n>>`。
+
+## BS-15 项目 webhook
+
+旧出处：`LEG/webhook/ProjectChangedWebhookInvoker.java`、`ProjectChangedWebhookPayload.java`、`JsonPayloadWebhookExecutor.java`、`LEG_SHARED/webhook/ProjectWebhook.java`、`ProjectWebhookEventType.java`；触发点 `LEG/project/chg/ChangeManager.java#generateAndDispatchHighLevelEvents`。
+
+- 每个项目可以配置多个 webhook，每个包含回调地址与订阅的事件类型；修改需要 `EDIT_PROJECT_SETTINGS`。
+- 事件 `PROJECT_CHANGED`：每产生一个新修订触发一次，向订阅了它的 webhook 发送 `POST`，`Content-Type: application/json`，载荷字段为 `projectId`、`userId`（字符串）、`revisionNumber`、`timestamp`（毫秒时间戳）。
+- 旧系统用全局单线程发送，同一项目的通知按修订顺序发出；没有重试、没有超时设置、没有签名，响应状态只记日志。
+- 旧系统的 `COMMENT_POSTED` 可以在界面上勾选，但服务端从不发送；Slack 通知只在发表评论时发送。**两者都不移植**。
+- **新系统新增**（P6-20、P6-21）：由 outbox 中继驱动，对每个 webhook 至少投递一次，同一 webhook 按修订顺序投递；请求带事件类型、投递 ID（供接收方去重）与可选的 HMAC-SHA256 签名头；连接与读取有超时；失败按指数退避重试，超过次数后放弃并记录；只允许 `http` / `https` 地址，默认拒绝回环、私有与链路本地地址（可配置放开）。旧系统对静默修订不发通知，新系统的 outbox 不区分静默修订，**每个修订都通知**。
