@@ -2,15 +2,25 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 117 张卡：完成 116，进行中 0，阻塞 1，待办 0。
+共 151 张卡：完成 117，进行中 0，阻塞 3，待办 31。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- 无
+- [P6-20](P6/P6-20-webhook-registry.md) 后端：项目 webhook 的存储、回调地址校验与仓储（新增 integration 模块，BS-15）
+- [P6-23](P6/P6-23-merge-entities-generator.md) 内核：合并实体生成器（BS-13），替换引用、标签降级为 skos:altLabel、弃用或删除源实体
+- [P6-26](P6/P6-26-upload-merge-diff.md) 内核：上传本体与项目的合并计划（新版本差异 / 只追加两种方式，BS-14）及合并生成器
+- [P6-31](P6/P6-31-instance-store-schema.md) 实例库 PoC（一）：新建 wp-instances 模块，instances / links 表结构、带有效期的写入与追溯查询
+- [P6-42](P6/P6-42-web-typescript-7-evaluation.md) Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点
+- [P6-43](P6/P6-43-forms-rea-planning.md) 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡
+- [P6-44](P6/P6-44-discussions-rea-planning.md) 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡
+- [P6-46](P6/P6-46-tags-rea-planning.md) 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡
+- [P6-47](P6/P6-47-manchester-rea-planning.md) 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡
 
 ## 阻塞中
 
 - [P5-00](P5/P5-00-mobile-planning.md) 规划卡：细化移动端（uni-app）MVP 任务卡
+- [P6-39](P6/P6-39-wecom-login.md) 后端：企业微信扫码登录（复用 P6-37 的外部身份绑定与会话建立）
+- [P6-41](P6/P6-41-web-vue-3-6-upgrade.md) Web 端：升级到 Vue 3.6 正式版（不启用 Vapor 模式），验证生态库兼容
 
 ## P0
 
@@ -163,5 +173,39 @@
 | [P6-16](P6/P6-16-mcp-history-tools.md) | MCP 只读工具（二）：个体列表、修订历史、修订差异、实体历史，以及 MCP 使用说明 | wp-app | app-service | M | 完成 | P6-15 |
 | [P6-17](P6/P6-17-projection-analyze-after-rebuild.md) | 投影表全量重建后刷新统计信息：提交后对 5 张投影表执行 ANALYZE | wp-app | db | S | 完成 | P6-10 |
 | [P6-18](P6/P6-18-projection-benchmark-method.md) | 投影表基准测法修订：刷新统计信息与预热后采样，并记录执行计划、行数与后台活动 | wp-app | benchmark | S | 完成 | P6-17 |
+| [P6-19](P6/P6-19-extensions-round2-planning.md) | 规划卡（第二轮）：结合 P6 已完成的卡，细化候选清单中尚未规划的扩展功能 | tasks/P6 | planning | S | 完成 | P6-05、P6-06、P6-07、P6-13、P6-16 |
+| [P6-20](P6/P6-20-webhook-registry.md) | 后端：项目 webhook 的存储、回调地址校验与仓储（新增 integration 模块，BS-15） | wp-app | app-security | M | 待办（可开工） | P6-13 |
+| [P6-21](P6/P6-21-webhook-delivery.md) | webhook 投递：outbox 消费者登记投递任务，独立的投递线程按 webhook 顺序发送，带签名、超时与指数退避重试 | wp-app | app-service | M | 待办 | P6-49 |
+| [P6-22](P6/P6-22-web-webhook-settings.md) | Web 端：项目设置的 webhook 标签页（列表、新建与编辑、密钥只写、最近投递记录） | wp-web | web | M | 待办 | P6-49 |
+| [P6-23](P6/P6-23-merge-entities-generator.md) | 内核：合并实体生成器（BS-13），替换引用、标签降级为 skos:altLabel、弃用或删除源实体 | wp-kernel | kernel | M | 待办（可开工） | P1-16 |
+| [P6-24](P6/P6-24-merge-entities-api.md) | 后端：合并实体的命令与接口（新增动作 MERGE_ENTITIES，归入 CAN_EDIT） | wp-app | app-service | M | 待办 | P6-23、P6-49 |
+| [P6-25](P6/P6-25-web-merge-entities.md) | Web 端：合并实体对话框（层级工具栏入口，选择目标与处理方式，按权限显示） | wp-web | web | M | 待办 | P6-24 |
+| [P6-26](P6/P6-26-upload-merge-diff.md) | 内核：上传本体与项目的合并计划（新版本差异 / 只追加两种方式，BS-14）及合并生成器 | wp-kernel | kernel | M | 待办（可开工） | P1-21 |
+| [P6-27](P6/P6-27-upload-merge-api.md) | 后端：上传合并的准备——新增两个动作、带归属与过期时间的上传暂存、列出项目本体的接口 | wp-app | app-service | M | 待办 | P6-24 |
+| [P6-28](P6/P6-28-web-upload-merge.md) | Web 端：上传并合并到已有项目（工作台工具栏入口，选择方式、预览差异、确认应用） | wp-web | web | M | 待办 | P6-50、P6-22 |
+| [P6-29](P6/P6-29-admin-delete-user.md) | 后端：系统管理员删除用户（停用并清除个人信息，账户 ID 保留在历史中） | wp-app | app-security | M | 待办 | P6-50 |
+| [P6-30](P6/P6-30-web-delete-user.md) | Web 端：用户管理页删除用户，并标出已删除的用户 | wp-web | web | S | 待办 | P6-29 |
+| [P6-31](P6/P6-31-instance-store-schema.md) | 实例库 PoC（一）：新建 wp-instances 模块，instances / links 表结构、带有效期的写入与追溯查询 | wp-instances | db | M | 待办（可开工） | P6-11 |
+| [P6-32](P6/P6-32-instance-store-benchmark.md) | 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续 | wp-instances | benchmark | S | 待办 | P6-31 |
+| [P6-33](P6/P6-33-instance-store-validation.md) | 实例库 PoC（三）：从本体投影表生成定义域 / 值域校验规则，写入实例时校验 | wp-instances | db | M | 待办 | P6-32、P6-13 |
+| [P6-34](P6/P6-34-instance-service-planning.md) | 规划卡：依据实例库 PoC 结论，规划实例库服务化 | tasks/P6 | planning | S | 待办 | P6-33 |
+| [P6-35](P6/P6-35-outbox-kafka-publisher.md) | outbox 发布器 → Kafka：把每个修订事件按项目分区、按提交顺序发布到 Kafka 主题（默认关闭） | wp-app | app-service | M | 待办 | P6-21、P6-51 |
+| [P6-36](P6/P6-36-graph-publisher-evaluation.md) | 规划卡：评估 outbox → 图数据库 / RDF 三元组库发布器（按 ADR-013 第 5 节的条件，产出 ADR 草案或“暂不做”的结论） | tasks/P6 | planning | S | 待办 | P6-32 |
+| [P6-37](P6/P6-37-external-identities.md) | 后端：外部身份绑定（user_identities 表，按 issuer + subject 解析本地账户的规则），供 OIDC 与企业微信登录使用 | wp-app | app-security | M | 待办 | P6-29 |
+| [P6-38](P6/P6-38-web-oidc-login.md) | Web 端：登录页显示“企业账号登录”入口，并提示外部账号未绑定等错误 | wp-web | web | S | 待办 | P6-51、P6-28 |
+| [P6-39](P6/P6-39-wecom-login.md) | 后端：企业微信扫码登录（复用 P6-37 的外部身份绑定与会话建立） | wp-app | app-security | M | 阻塞 | P6-51 |
+| [P6-40](P6/P6-40-multi-instance-planning.md) | 规划卡：多实例部署（按项目路由），产出 ADR 草案与拆卡 | tasks/P6 | planning | S | 待办 | P6-52、P6-27、P6-21 |
+| [P6-41](P6/P6-41-web-vue-3-6-upgrade.md) | Web 端：升级到 Vue 3.6 正式版（不启用 Vapor 模式），验证生态库兼容 | wp-web | web | S | 阻塞 | P6-42 |
+| [P6-42](P6/P6-42-web-typescript-7-evaluation.md) | Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点 | wp-web | web | S | 待办（可开工） | P6-07 |
+| [P6-43](P6/P6-43-forms-rea-planning.md) | 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P4-22 |
+| [P6-44](P6/P6-44-discussions-rea-planning.md) | 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P6-03 |
+| [P6-45](P6/P6-45-watches-rea-planning.md) | 规划卡：关注（Watches）与邮件通知逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办 | P6-21 |
+| [P6-46](P6/P6-46-tags-rea-planning.md) | 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P3-19 |
+| [P6-47](P6/P6-47-manchester-rea-planning.md) | 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P4-09 |
+| [P6-48](P6/P6-48-mcp-write-tools-planning.md) | 规划卡：MCP 写工具与人工确认机制（设计、ADR 草案与拆卡） | tasks/P6 | planning | S | 待办 | P6-16、P6-24 |
+| [P6-49](P6/P6-49-webhook-management-api.md) | 后端：项目 webhook 的管理接口（增删改查、停用时取消待投递记录、最近投递记录） | wp-app | app-security | M | 待办 | P6-20 |
+| [P6-50](P6/P6-50-upload-merge-apply-api.md) | 后端：上传并合并到已有项目的预览、应用与放弃接口（在生成锁内校验预览时的修订号） | wp-app | app-service | M | 待办 | P6-27、P6-26 |
+| [P6-51](P6/P6-51-oidc-login-flow.md) | 后端：通用 OpenID Connect 登录（授权码流程、与账号密码登录相同的会话、登录方式列表接口） | wp-app | app-security | M | 待办 | P6-37、P6-52 |
+| [P6-52](P6/P6-52-deleted-user-session-revocation.md) | 后端：已删除用户的已登录会话立即失效（会话注册表 + 按请求检查） | wp-app | app-security | M | 待办 | P6-29 |
 
 各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`。
