@@ -103,14 +103,46 @@ public class JdbcWebhookRepository {
     }
 
     public Optional<Webhook> update(
-            UUID webhookId, URI payloadUrl, Set<WebhookEventType> eventTypes, String secret, boolean enabled) {
+            UUID webhookId,
+            URI payloadUrl,
+            Set<WebhookEventType> eventTypes,
+            SecretChange secretChange,
+            boolean enabled) {
         Objects.requireNonNull(webhookId, "webhook id");
         Objects.requireNonNull(payloadUrl, "payload url");
         Objects.requireNonNull(eventTypes, "event types");
+        Objects.requireNonNull(secretChange, "secret change");
         if (eventTypes.isEmpty()) {
             throw new IllegalArgumentException("event types must not be empty");
         }
-        int updated = jdbcTemplate.update("""
+        int updated = switch (secretChange) {
+            case SecretChange.Keep() ->
+                jdbcTemplate.update("""
+                            update project_webhooks
+                            set payload_url = ?,
+                                event_types = ?,
+                                enabled = ?,
+                                updated_at = now()
+                            where webhook_id = ?
+                            """, (PreparedStatement ps) -> {
+                    ps.setString(1, payloadUrl.toString());
+                    ps.setArray(2, textArray(ps, eventTypes));
+                    ps.setBoolean(3, enabled);
+                    ps.setObject(4, webhookId);
+                });
+            case SecretChange.Clear() -> updateSecret(webhookId, payloadUrl, eventTypes, null, enabled);
+            case SecretChange.Replace(String secret) ->
+                updateSecret(webhookId, payloadUrl, eventTypes, secret, enabled);
+        };
+        if (updated == 0) {
+            return Optional.empty();
+        }
+        return findById(webhookId);
+    }
+
+    private int updateSecret(
+            UUID webhookId, URI payloadUrl, Set<WebhookEventType> eventTypes, String secret, boolean enabled) {
+        return jdbcTemplate.update("""
                 update project_webhooks
                 set payload_url = ?,
                     event_types = ?,
@@ -125,10 +157,6 @@ public class JdbcWebhookRepository {
             ps.setBoolean(4, enabled);
             ps.setObject(5, webhookId);
         });
-        if (updated == 0) {
-            return Optional.empty();
-        }
-        return findById(webhookId);
     }
 
     public boolean delete(UUID webhookId) {

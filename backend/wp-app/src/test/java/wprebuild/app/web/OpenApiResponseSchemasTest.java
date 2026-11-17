@@ -68,7 +68,12 @@ class OpenApiResponseSchemasTest {
             new Success("getMyProjectPermissions", "200", JSON),
             new Success("searchMemberCandidates", "200", JSON),
             new Success("getProjectionStatus", "200", JSON),
-            new Success("rebuildProjection", "200", JSON));
+            new Success("rebuildProjection", "200", JSON),
+            // P6-49 webhook management (called by this test's SUCCESSES loop; no data files)
+            new Success("listWebhooks", "200", JSON),
+            new Success("createWebhook", "201", JSON),
+            new Success("updateWebhook", "200", JSON),
+            new Success("listWebhookDeliveries", "200", JSON));
 
     private final MockMvc mockMvc;
 

@@ -69,12 +69,23 @@ class JdbcWebhookRepositoryTest {
                 .extracting(Webhook::webhookId)
                 .containsExactly(id);
 
+        Webhook kept = repository
+                .update(
+                        id,
+                        URI.create("https://203.0.113.11/hooks/b"),
+                        Set.of(WebhookEventType.PROJECT_CHANGED),
+                        SecretChange.keep(),
+                        true)
+                .orElseThrow();
+        assertThat(kept.payloadUrl()).isEqualTo(URI.create("https://203.0.113.11/hooks/b"));
+        assertThat(kept.hasSecret()).isTrue();
+
         Webhook updated = repository
                 .update(
                         id,
                         URI.create("https://203.0.113.11/hooks/b"),
                         Set.of(WebhookEventType.PROJECT_CHANGED),
-                        null,
+                        SecretChange.clear(),
                         false)
                 .orElseThrow();
         assertThat(updated.payloadUrl()).isEqualTo(URI.create("https://203.0.113.11/hooks/b"));
