@@ -41,10 +41,34 @@ test("project data keys start with project(id)", () => {
     queryKeys.members(id),
     queryKeys.memberCandidates(id, "ada"),
     queryKeys.myPermissions(id),
+    queryKeys.webhooks.list(id),
+    queryKeys.webhooks.deliveries(id, "wh-1"),
   ];
   for (const key of keys) {
     expectPrefix(key, prefix);
   }
+});
+
+test("webhooks keys nest list under project and deliveries under list", () => {
+  expect(queryKeys.webhooks.list(id)).toEqual([
+    ...queryKeys.project(id),
+    "webhooks",
+  ]);
+  expectPrefix(
+    queryKeys.webhooks.deliveries(id, "wh-1"),
+    queryKeys.webhooks.list(id),
+  );
+  expect(queryKeys.webhooks.deliveries(id, "wh-1")).toEqual([
+    ...queryKeys.webhooks.list(id),
+    "wh-1",
+    "deliveries",
+  ]);
+  expect(queryKeys.webhooks.deliveries(id, "wh-1")).not.toEqual(
+    queryKeys.webhooks.deliveries(id, "wh-2"),
+  );
+  expect(queryKeys.webhooks.list(id)).not.toEqual(
+    queryKeys.webhooks.list("other"),
+  );
 });
 
 test("memberCandidates starts with members(id) and includes the query", () => {

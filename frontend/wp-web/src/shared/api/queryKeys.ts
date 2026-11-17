@@ -74,6 +74,18 @@ export const queryKeys = {
   myPermissions(id: string) {
     return [...queryKeys.project(id), "permissions", "me"] as const;
   },
+  webhooks: {
+    list(projectId: string) {
+      return [...queryKeys.project(projectId), "webhooks"] as const;
+    },
+    deliveries(projectId: string, webhookId: string) {
+      return [
+        ...queryKeys.webhooks.list(projectId),
+        webhookId,
+        "deliveries",
+      ] as const;
+    },
+  },
   apiKeys() {
     return ["account", "apiKeys"] as const;
   },
