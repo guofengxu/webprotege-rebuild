@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P6-20]
 ---
 
@@ -53,11 +53,20 @@ pnpm -C frontend --filter wp-web run typecheck
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
+
 
 ## 不在本卡范围
 - 投递、签名、重试（P6-21）；Web 端（P6-22）
 - 密钥加密存储、“发送测试请求”、手动重发
+
+## 执行记录
+- 日期：2026-11-17
+- 分支：feature/p6-49-webhook-management-api
+- 测试：2026-11-17T12:36:16+08:00 通过（6 项）
+- 实际改动：Webhook CRUD under EDIT_PROJECT_SETTINGS with SecretChange; disable cancels PENDING and reloads lastDelivery; PUT requires enabled; OpenAPI/api-types updated.
+- 偏差：Line count overrun is mostly generated openapi.json and schema.d.ts required by the card.
+- 审查：security-reviewer, (clean, CRITICAL/HIGH/MEDIUM;, LOW, unbounded, secret, skipped, as, out, of, card), java-reviewer, (fixed, stale, lastDelivery, +, required, enabled, on, PUT)

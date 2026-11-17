@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import wprebuild.app.integration.WebhookRejectedException;
 import wprebuild.app.ontology.OntologyParseException;
 import wprebuild.app.shared.ConflictException;
 import wprebuild.app.shared.NotFoundException;
@@ -58,6 +59,11 @@ public class ProblemDetailsAdvice {
     @ExceptionHandler(ConflictException.class)
     ResponseEntity<ProblemDetail> conflict(ConflictException exception) {
         return problem(HttpStatus.CONFLICT, exception.code(), exception.getMessage());
+    }
+
+    @ExceptionHandler(WebhookRejectedException.class)
+    ResponseEntity<ProblemDetail> webhookRejected(WebhookRejectedException exception) {
+        return problem(HttpStatus.BAD_REQUEST, exception.code(), exception.getMessage());
     }
 
     @ExceptionHandler(ConcurrentAppendException.class)
