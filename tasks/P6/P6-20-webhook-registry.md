@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P6-13]
 ---
 
@@ -60,10 +60,10 @@ depends_on: [P6-13]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 管理接口、错误码与 OpenAPI（P6-49）
@@ -71,3 +71,11 @@ depends_on: [P6-13]
 - Web 端的设置标签页（P6-22）
 - Slack 集成、`COMMENT_POSTED` 事件（BS-15：不移植）
 - 密钥加密存储、“发送测试请求”按钮
+
+## 执行记录
+- 日期：2026-11-16
+- 分支：feature/p6-20-webhook-registry
+- 测试：2026-11-16T21:52:51+08:00 通过（3 项）
+- 实际改动：新增 integration 模块、V6 webhook 表、JdbcWebhookRepository、WebhookUrlPolicy（拒绝私网/回环等，可配置放开），以及 Modularity/CoreSchema/overview 同步；列表查询用 has_secret 布尔表达式不读出密钥。
+- 偏差：生产代码约 594 行（卡片预期 400）；overview.md 为卡片产出要求的模块表更新。审查意见：URL 策略由 P6-49 在写路径调用；update 的 secret 语义由 P6-49 处理不变/清空。
+- 审查：security-reviewer, java-reviewer
