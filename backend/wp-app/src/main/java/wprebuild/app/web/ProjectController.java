@@ -60,6 +60,7 @@ import wprebuild.app.ontology.IndividualPage;
 import wprebuild.app.ontology.ListEntityRevisions;
 import wprebuild.app.ontology.ListIndividualsByType;
 import wprebuild.app.ontology.ListRevisions;
+import wprebuild.app.ontology.MergeEntities;
 import wprebuild.app.ontology.ProjectDownload;
 import wprebuild.app.ontology.RevertRevision;
 import wprebuild.app.ontology.RevisionDiff;
@@ -81,6 +82,7 @@ import wprebuild.app.project.UpdateProjectDetails;
 import wprebuild.app.revision.RevisionPage;
 import wprebuild.app.search.SearchEntities;
 import wprebuild.app.search.SearchTypes;
+import wprebuild.kernel.generator.MergedEntityTreatment;
 import wprebuild.kernel.id.ProjectId;
 import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
@@ -560,6 +562,32 @@ public class ProjectController {
         });
     }
 
+    @Operation(summary = "Merge entities into a target", operationId = "mergeEntities")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Entities merged",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = MergeEntities.Body.class)))
+    @PostMapping(path = "/{id}/entities/merge", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> mergeEntities(@PathVariable String id, @RequestBody MergeEntitiesRequest body) {
+        if (body == null) {
+            return invalid("request body is required");
+        }
+        return withProject(id, (user, projectId) -> {
+            MergeEntities.Result merged = bus.execute(
+                    user,
+                    new MergeEntities(
+                            projectId,
+                            iris(body.sources()),
+                            entityIri(body.target()),
+                            treatment(body.treatment()),
+                            body.description()));
+            return ResponseEntity.ok(merged.body());
+        });
+    }
+
     @Operation(summary = "Get my permissions on a project", operationId = "getMyProjectPermissions")
     @ApiResponse(
             responseCode = "200",
@@ -742,6 +770,19 @@ public class ProjectController {
 
     public record DeleteEntitiesRequest(List<String> iris) {}
 
+    public record MergeEntitiesRequest(List<String> sources, String target, String treatment, String description) {}
+
     @Schema(name = "RevisionResponse")
     public record RevisionResponse(long revision) {}
+
+    private static MergedEntityTreatment treatment(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return MergedEntityTreatment.DEPRECATE_MERGED_ENTITY;
+        }
+        try {
+            return MergedEntityTreatment.valueOf(raw.strip());
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("treatment must be DEPRECATE_MERGED_ENTITY or DELETE_MERGED_ENTITY");
+        }
+    }
 }

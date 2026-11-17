@@ -70,6 +70,8 @@ public final class ResponseSchemasCustomizer implements OpenApiCustomizer {
         required.put("RevisionChange", List.of("op", "subject", "text"));
         required.put("IndividualPage", List.of("individuals", "page", "size", "total"));
         required.put("CreatedEntities", List.of("entities", "revision"));
+        required.put("MergeEntitiesResult", List.of("target"));
+        required.put("EntityRef", List.of("iri", "entityType"));
         required.put("RevisionResponse", List.of("revision"));
         required.put("ProjectChanged", List.of("type", "revNo", "user", "timestamp", "description", "changeCount"));
         required.put("EntityHierarchyChanged", List.of("type", "revNo", "hierarchy", "added", "removed"));
@@ -108,6 +110,7 @@ public final class ResponseSchemasCustomizer implements OpenApiCustomizer {
         setSchema(api, "revertRevision", "200", JSON, ref("RevisionResponse"));
         setSchema(api, "deleteEntities", "200", JSON, ref("RevisionResponse"));
         setSchema(api, "createEntities", "201", JSON, ref("CreatedEntities"));
+        setSchema(api, "mergeEntities", "200", JSON, ref("MergeEntitiesResult"));
         setSchema(api, "listIndividualsByType", "200", JSON, ref("IndividualPage"));
         setSchema(api, "getPrefixSettings", "200", JSON, ref("PrefixSettings"));
         setSchema(api, "putPrefixSettings", "200", JSON, ref("PrefixSettings"));

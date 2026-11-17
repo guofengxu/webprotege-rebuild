@@ -16,6 +16,7 @@ public enum Action {
     DELETE_PROPERTY(true),
     CREATE_INDIVIDUAL(true),
     DELETE_INDIVIDUAL(true),
+    MERGE_ENTITIES(true),
     REVERT_CHANGES(true),
     EDIT_PROJECT_SETTINGS(true),
     EDIT_SHARING_SETTINGS(true),
