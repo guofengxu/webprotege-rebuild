@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 151 张卡：完成 119，进行中 0，阻塞 3，待办 29。
+共 151 张卡：完成 120，进行中 0，阻塞 3，待办 28。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-21](P6/P6-21-webhook-delivery.md) webhook 投递：outbox 消费者登记投递任务，独立的投递线程按 webhook 顺序发送，带签名、超时与指数退避重试
 - [P6-22](P6/P6-22-web-webhook-settings.md) Web 端：项目设置的 webhook 标签页（列表、新建与编辑、密钥只写、最近投递记录）
 - [P6-23](P6/P6-23-merge-entities-generator.md) 内核：合并实体生成器（BS-13），替换引用、标签降级为 skos:altLabel、弃用或删除源实体
 - [P6-26](P6/P6-26-upload-merge-diff.md) 内核：上传本体与项目的合并计划（新版本差异 / 只追加两种方式，BS-14）及合并生成器
@@ -14,6 +13,7 @@
 - [P6-42](P6/P6-42-web-typescript-7-evaluation.md) Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点
 - [P6-43](P6/P6-43-forms-rea-planning.md) 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡
 - [P6-44](P6/P6-44-discussions-rea-planning.md) 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡
+- [P6-45](P6/P6-45-watches-rea-planning.md) 规划卡：关注（Watches）与邮件通知逆向分析，确定首期范围并拆卡
 - [P6-46](P6/P6-46-tags-rea-planning.md) 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡
 - [P6-47](P6/P6-47-manchester-rea-planning.md) 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡
 
@@ -176,7 +176,7 @@
 | [P6-18](P6/P6-18-projection-benchmark-method.md) | 投影表基准测法修订：刷新统计信息与预热后采样，并记录执行计划、行数与后台活动 | wp-app | benchmark | S | 完成 | P6-17 |
 | [P6-19](P6/P6-19-extensions-round2-planning.md) | 规划卡（第二轮）：结合 P6 已完成的卡，细化候选清单中尚未规划的扩展功能 | tasks/P6 | planning | S | 完成 | P6-05、P6-06、P6-07、P6-13、P6-16 |
 | [P6-20](P6/P6-20-webhook-registry.md) | 后端：项目 webhook 的存储、回调地址校验与仓储（新增 integration 模块，BS-15） | wp-app | app-security | M | 完成 | P6-13 |
-| [P6-21](P6/P6-21-webhook-delivery.md) | webhook 投递：outbox 消费者登记投递任务，独立的投递线程按 webhook 顺序发送，带签名、超时与指数退避重试 | wp-app | app-service | M | 待办（可开工） | P6-49 |
+| [P6-21](P6/P6-21-webhook-delivery.md) | webhook 投递：outbox 消费者登记投递任务，独立的投递线程按 webhook 顺序发送，带签名、超时与指数退避重试 | wp-app | app-service | M | 完成 | P6-49 |
 | [P6-22](P6/P6-22-web-webhook-settings.md) | Web 端：项目设置的 webhook 标签页（列表、新建与编辑、密钥只写、最近投递记录） | wp-web | web | M | 待办（可开工） | P6-49 |
 | [P6-23](P6/P6-23-merge-entities-generator.md) | 内核：合并实体生成器（BS-13），替换引用、标签降级为 skos:altLabel、弃用或删除源实体 | wp-kernel | kernel | M | 待办（可开工） | P1-16 |
 | [P6-24](P6/P6-24-merge-entities-api.md) | 后端：合并实体的命令与接口（新增动作 MERGE_ENTITIES，归入 CAN_EDIT） | wp-app | app-service | M | 待办 | P6-23、P6-49 |
@@ -200,7 +200,7 @@
 | [P6-42](P6/P6-42-web-typescript-7-evaluation.md) | Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点 | wp-web | web | S | 待办（可开工） | P6-07 |
 | [P6-43](P6/P6-43-forms-rea-planning.md) | 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P4-22 |
 | [P6-44](P6/P6-44-discussions-rea-planning.md) | 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P6-03 |
-| [P6-45](P6/P6-45-watches-rea-planning.md) | 规划卡：关注（Watches）与邮件通知逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办 | P6-21 |
+| [P6-45](P6/P6-45-watches-rea-planning.md) | 规划卡：关注（Watches）与邮件通知逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P6-21 |
 | [P6-46](P6/P6-46-tags-rea-planning.md) | 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P3-19 |
 | [P6-47](P6/P6-47-manchester-rea-planning.md) | 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P4-09 |
 | [P6-48](P6/P6-48-mcp-write-tools-planning.md) | 规划卡：MCP 写工具与人工确认机制（设计、ADR 草案与拆卡） | tasks/P6 | planning | S | 待办 | P6-16、P6-24 |
