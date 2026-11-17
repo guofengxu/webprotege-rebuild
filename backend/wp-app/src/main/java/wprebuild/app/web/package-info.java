@@ -10,6 +10,7 @@
             "search",
             "events",
             "migration",
-            "projection"
+            "projection",
+            "integration"
         })
 package wprebuild.app.web;

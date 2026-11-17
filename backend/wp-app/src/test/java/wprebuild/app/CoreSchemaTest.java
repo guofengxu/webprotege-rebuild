@@ -16,17 +16,19 @@ import wprebuild.app.support.DatabaseTest;
 @Transactional
 class CoreSchemaTest {
 
-    private static final Map<String, List<String>> PRIMARY_KEYS = Map.of(
-            "users", List.of("user_id"),
-            "api_keys", List.of("key_id"),
-            "projects", List.of("project_id"),
-            "role_assignments", List.of("project_id", "user_id"),
-            "project_settings", List.of("project_id", "key"),
-            "revisions", List.of("project_id", "rev_no"),
-            "revision_subjects", List.of("project_id", "subject_iri", "rev_no"),
-            "snapshots", List.of("project_id", "rev_no"),
-            "outbox", List.of("id"),
-            "outbox_consumers", List.of("consumer"));
+    private static final Map<String, List<String>> PRIMARY_KEYS = Map.ofEntries(
+            Map.entry("users", List.of("user_id")),
+            Map.entry("api_keys", List.of("key_id")),
+            Map.entry("projects", List.of("project_id")),
+            Map.entry("role_assignments", List.of("project_id", "user_id")),
+            Map.entry("project_settings", List.of("project_id", "key")),
+            Map.entry("revisions", List.of("project_id", "rev_no")),
+            Map.entry("revision_subjects", List.of("project_id", "subject_iri", "rev_no")),
+            Map.entry("snapshots", List.of("project_id", "rev_no")),
+            Map.entry("outbox", List.of("id")),
+            Map.entry("outbox_consumers", List.of("consumer")),
+            Map.entry("project_webhooks", List.of("webhook_id")),
+            Map.entry("webhook_deliveries", List.of("delivery_id")));
 
     private final JdbcClient jdbcClient;
 
