@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P1-16]
 ---
 
@@ -57,12 +57,21 @@ depends_on: [P1-16]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
+
 
 ## 不在本卡范围
 - 命令、权限与 REST 接口（P6-24）；Web 端（P6-25）
 - 讨论线程随合并转移（新系统暂无讨论功能，见 P6-44）
 - 旧 IRI 到新 IRI 的重定向表（旧系统也没有）
+
+## 执行记录
+- 日期：2026-11-17
+- 分支：feature/p6-23-merge-entities-generator
+- 测试：2026-11-17T16:50:16+08:00 通过（3 项）
+- 实际改动：新增 MergeEntitiesGenerator（BS-13）及 MergedEntityTreatment / MergeEntitiesException；IriReplacer 增加 replaceObject/replaceObjects；引用扫描对齐删除路径（含 domain/range 与公理注解中的 IRI）。约 50 万公理规模下合并一个实体的 generate 约 1.3s（不设门禁）。
+- 偏差：无
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter

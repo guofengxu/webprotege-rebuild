@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.util.OWLObjectDuplicator;
 import org.semanticweb.owlapi.util.RemappingIndividualProvider;
@@ -31,16 +32,47 @@ public final class IriReplacer {
         if (map.isEmpty()) {
             return List.copyOf(changes);
         }
-        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        OWLDataFactory dataFactory = manager.getOWLDataFactory();
-        // The default duplicator remints blank-node ids, so a removal would miss the original axiom.
-        RemappingIndividualProvider individuals = new RemappingIndividualProvider(false, dataFactory);
-        OWLObjectDuplicator duplicator = new OWLObjectDuplicator(manager, map, individuals);
+        OWLObjectDuplicator duplicator = duplicator(map);
         List<OntologyChange> replaced = new ArrayList<>(changes.size());
         for (OntologyChange change : changes) {
             replaced.add(replaceOne(Objects.requireNonNull(change, "change"), duplicator, map));
         }
         return List.copyOf(replaced);
+    }
+
+    /**
+     * Rewrites IRIs inside one OWL object with the same duplicator used for change lists (BS-05,
+     * BS-13). An empty map returns {@code object} unchanged.
+     */
+    public static <T extends OWLObject> T replaceObject(T object, Map<IRI, IRI> replacements) {
+        Objects.requireNonNull(object, "object");
+        return replaceObjects(List.of(object), replacements).getFirst();
+    }
+
+    /**
+     * Rewrites IRIs inside many OWL objects with a single duplicator (BS-13 merge usage rewrite).
+     * An empty map returns copies of the input list unchanged.
+     */
+    public static <T extends OWLObject> List<T> replaceObjects(List<T> objects, Map<IRI, IRI> replacements) {
+        Objects.requireNonNull(objects, "objects");
+        Map<IRI, IRI> map = Map.copyOf(Objects.requireNonNull(replacements, "replacements"));
+        if (map.isEmpty() || objects.isEmpty()) {
+            return List.copyOf(objects);
+        }
+        OWLObjectDuplicator duplicator = duplicator(map);
+        List<T> replaced = new ArrayList<>(objects.size());
+        for (T object : objects) {
+            replaced.add(duplicator.duplicateObject(Objects.requireNonNull(object, "object")));
+        }
+        return List.copyOf(replaced);
+    }
+
+    private static OWLObjectDuplicator duplicator(Map<IRI, IRI> map) {
+        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+        OWLDataFactory dataFactory = manager.getOWLDataFactory();
+        // The default duplicator remints blank-node ids, so a removal would miss the original axiom.
+        RemappingIndividualProvider individuals = new RemappingIndividualProvider(false, dataFactory);
+        return new OWLObjectDuplicator(manager, map, individuals);
     }
 
     private static OntologyChange replaceOne(OntologyChange change, OWLObjectDuplicator duplicator, Map<IRI, IRI> map) {
