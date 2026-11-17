@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.JsonNode;
@@ -41,6 +42,7 @@ import wprebuild.kernel.id.UserId;
 @DatabaseTest
 @AutoConfigureMockMvc
 @Import(WebhookManagementTest.StubDns.class)
+@TestPropertySource(properties = "wp.webhooks.enabled=false")
 class WebhookManagementTest {
 
     private static final String PASSWORD = "correct-password";

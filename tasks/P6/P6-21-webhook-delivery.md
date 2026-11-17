@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [concurrency, security]
-status: todo
+status: done
 depends_on: [P6-49]
 ---
 
@@ -67,12 +67,20 @@ depends_on: [P6-49]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 管理接口与表结构（P6-20）；Web 端（P6-22）
 - 连续失败后自动停用 webhook、手动重发、“发送测试请求”
 - 其它事件类型、Slack 格式
+
+## 执行记录
+- 日期：2026-11-17
+- 分支：feature/p6-21-webhook-delivery
+- 测试：2026-11-17T15:11:13+08:00 通过（3 项）
+- 实际改动：Added WebhookOutboxConsumer (LATEST, enqueue PENDING only), WebhookDispatcher (claim/lease/HMAC/backoff/HTTP/1.1), WebhookSigner, delivery knobs on WebhookProperties, docs/api/webhook.md, and WebhookDeliveryTest/WebhookSignerTest.
+- 偏差：无
+- 审查：java-reviewer, code-reviewer, silent-failure-hunter, security-reviewer

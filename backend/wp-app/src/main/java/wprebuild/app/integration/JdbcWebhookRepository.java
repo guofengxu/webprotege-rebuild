@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -204,6 +206,159 @@ public class JdbcWebhookRepository {
                         where webhook_id = ?
                           and status = 'PENDING'
                         """).param(webhookId).update();
+    }
+
+    /**
+     * Inserts one {@code PENDING} delivery per enabled webhook subscribed to {@code eventType}.
+     * Idempotent on {@code (webhook_id, outbox_id)}.
+     */
+    public int enqueueDeliveries(ProjectId projectId, long outboxId, WebhookEventType eventType, String payloadJson) {
+        Objects.requireNonNull(projectId, "project id");
+        Objects.requireNonNull(eventType, "event type");
+        Objects.requireNonNull(payloadJson, "payload json");
+        if (outboxId < 1) {
+            throw new IllegalArgumentException("outbox id must be positive");
+        }
+        return jdbcTemplate.update("""
+                insert into webhook_deliveries (webhook_id, outbox_id, event_type, payload, status)
+                select w.webhook_id, ?, ?, cast(? as jsonb), 'PENDING'
+                from project_webhooks w
+                where w.project_id = ?
+                  and w.enabled = true
+                  and ? = any (w.event_types)
+                on conflict (webhook_id, outbox_id) do nothing
+                """, outboxId, eventType.name(), payloadJson, projectId.value(), eventType.name());
+    }
+
+    /**
+     * Claims due {@code PENDING} deliveries for send. Same webhook keeps revision order via {@code
+     * not exists} earlier pending; {@code for update skip locked} avoids dual-dispatcher races.
+     */
+    public List<ClaimedWebhookDelivery> claimDue(int limit, Collection<UUID> busyWebhooks, Instant leaseUntil) {
+        if (limit < 1) {
+            return List.of();
+        }
+        Objects.requireNonNull(busyWebhooks, "busy webhooks");
+        Objects.requireNonNull(leaseUntil, "lease until");
+        UUID[] busy = busyWebhooks.toArray(UUID[]::new);
+        return List.copyOf(jdbcTemplate.query(
+                """
+                with candidates as (
+                    select d.delivery_id
+                    from webhook_deliveries d
+                    inner join project_webhooks w on w.webhook_id = d.webhook_id
+                    where d.status = 'PENDING'
+                      and d.next_attempt_at <= now()
+                      and w.enabled = true
+                      and not exists (
+                          select 1
+                          from webhook_deliveries earlier
+                          where earlier.webhook_id = d.webhook_id
+                            and earlier.status = 'PENDING'
+                            and earlier.delivery_id < d.delivery_id
+                      )
+                      and (cardinality(?::uuid[]) = 0 or d.webhook_id <> all (?::uuid[]))
+                    order by d.delivery_id
+                    limit ?
+                    for update of d skip locked
+                )
+                update webhook_deliveries d
+                set claim_token = gen_random_uuid(),
+                    next_attempt_at = ?
+                from candidates c, project_webhooks w
+                where d.delivery_id = c.delivery_id
+                  and w.webhook_id = d.webhook_id
+                returning d.delivery_id, d.webhook_id, d.claim_token, d.payload::text, d.attempts,
+                          w.payload_url, w.secret
+                """,
+                (rs, row) -> new ClaimedWebhookDelivery(
+                        rs.getLong("delivery_id"),
+                        rs.getObject("webhook_id", UUID.class),
+                        rs.getObject("claim_token", UUID.class),
+                        rs.getString("payload"),
+                        rs.getInt("attempts"),
+                        rs.getString("payload_url"),
+                        rs.getString("secret")),
+                busy,
+                busy,
+                limit,
+                OffsetDateTime.ofInstant(leaseUntil, ZoneOffset.UTC)));
+    }
+
+    /** Records success when {@code claim_token} still matches (lease CAS). */
+    public boolean completeSuccess(long deliveryId, UUID claimToken, int statusCode) {
+        Objects.requireNonNull(claimToken, "claim token");
+        return jdbc.sql("""
+                        update webhook_deliveries
+                        set status = 'SUCCEEDED',
+                            attempts = attempts + 1,
+                            last_status_code = ?,
+                            last_error = null,
+                            finished_at = now(),
+                            claim_token = null
+                        where delivery_id = ?
+                          and claim_token = ?
+                          and status = 'PENDING'
+                        """)
+                        .param(statusCode)
+                        .param(deliveryId)
+                        .param(claimToken)
+                        .update()
+                > 0;
+    }
+
+    /**
+     * Records a failed attempt. When {@code giveUp} is true the row becomes {@code FAILED};
+     * otherwise it stays {@code PENDING} with {@code nextAttemptAt}.
+     */
+    public boolean completeFailure(
+            long deliveryId,
+            UUID claimToken,
+            Integer statusCode,
+            String lastError,
+            boolean giveUp,
+            Instant nextAttemptAt) {
+        Objects.requireNonNull(claimToken, "claim token");
+        Objects.requireNonNull(nextAttemptAt, "next attempt at");
+        String error = lastError == null ? null : truncate(lastError, 500);
+        return jdbc.sql("""
+                        update webhook_deliveries
+                        set attempts = attempts + 1,
+                            last_status_code = ?,
+                            last_error = ?,
+                            status = case when ? then 'FAILED' else 'PENDING' end,
+                            finished_at = case when ? then now() else null end,
+                            next_attempt_at = ?,
+                            claim_token = null
+                        where delivery_id = ?
+                          and claim_token = ?
+                          and status = 'PENDING'
+                        """)
+                        .param(statusCode)
+                        .param(error)
+                        .param(giveUp)
+                        .param(giveUp)
+                        .param(OffsetDateTime.ofInstant(nextAttemptAt, ZoneOffset.UTC))
+                        .param(deliveryId)
+                        .param(claimToken)
+                        .update()
+                > 0;
+    }
+
+    /** Deletes finished deliveries older than {@code cutoff}. */
+    public int deleteFinishedBefore(Instant cutoff) {
+        Objects.requireNonNull(cutoff, "cutoff");
+        return jdbc.sql("""
+                        delete from webhook_deliveries
+                        where finished_at is not null
+                          and finished_at < ?
+                        """)
+                .param(OffsetDateTime.ofInstant(cutoff, ZoneOffset.UTC))
+                .update();
+    }
+
+    private static String truncate(String value, int max) {
+        return value.length() <= max ? value : value.substring(0, max);
     }
 
     private Webhook mapWebhook(ResultSet rs, int row) throws SQLException {
