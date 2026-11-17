@@ -366,6 +366,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects/{id}/entities/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Merge entities into a target */
+        post: operations["mergeEntities"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/projects/{id}/events": {
         parameters: {
             query?: never;
@@ -1004,6 +1021,10 @@ export interface components {
             hasChildren: boolean;
             iri: string;
         };
+        EntityRef: {
+            entityType: string;
+            iri: string;
+        };
         EventEntity: {
             entityType?: string;
             iri?: string;
@@ -1074,8 +1095,19 @@ export interface components {
             role?: string;
             userId?: string;
         };
+        MergeEntitiesRequest: {
+            description?: string;
+            sources?: string[];
+            target?: string;
+            treatment?: string;
+        };
+        MergeEntitiesResult: {
+            /** Format: int64 */
+            revision?: number;
+            target: components["schemas"]["EntityRef"];
+        };
         MyProjectPermissionsResponse: {
-            actions?: ("VIEW_PROJECT" | "VIEW_CHANGES" | "DOWNLOAD_PROJECT" | "EDIT_ONTOLOGY" | "EDIT_ONTOLOGY_ANNOTATIONS" | "CREATE_CLASS" | "DELETE_CLASS" | "CREATE_PROPERTY" | "DELETE_PROPERTY" | "CREATE_INDIVIDUAL" | "DELETE_INDIVIDUAL" | "REVERT_CHANGES" | "EDIT_PROJECT_SETTINGS" | "EDIT_SHARING_SETTINGS" | "EDIT_NEW_ENTITY_SETTINGS" | "EDIT_PROJECT_PREFIXES" | "MOVE_ANY_PROJECT_TO_TRASH")[];
+            actions?: ("VIEW_PROJECT" | "VIEW_CHANGES" | "DOWNLOAD_PROJECT" | "EDIT_ONTOLOGY" | "EDIT_ONTOLOGY_ANNOTATIONS" | "CREATE_CLASS" | "DELETE_CLASS" | "CREATE_PROPERTY" | "DELETE_PROPERTY" | "CREATE_INDIVIDUAL" | "DELETE_INDIVIDUAL" | "MERGE_ENTITIES" | "REVERT_CHANGES" | "EDIT_PROJECT_SETTINGS" | "EDIT_SHARING_SETTINGS" | "EDIT_NEW_ENTITY_SETTINGS" | "EDIT_PROJECT_PREFIXES" | "MOVE_ANY_PROJECT_TO_TRASH")[];
             projectId?: string;
             /**
              * @description Assigned project role, or null when the caller has none
@@ -3083,6 +3115,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RevisionPage"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    mergeEntities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MergeEntitiesRequest"];
+            };
+        };
+        responses: {
+            /** @description Entities merged */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MergeEntitiesResult"];
                 };
             };
             /** @description Bad request */

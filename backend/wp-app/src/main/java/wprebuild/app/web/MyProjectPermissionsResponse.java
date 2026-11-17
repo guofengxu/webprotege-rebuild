@@ -39,6 +39,7 @@ public record MyProjectPermissionsResponse(
                                     "DELETE_PROPERTY",
                                     "CREATE_INDIVIDUAL",
                                     "DELETE_INDIVIDUAL",
+                                    "MERGE_ENTITIES",
                                     "REVERT_CHANGES",
                                     "EDIT_PROJECT_SETTINGS",
                                     "EDIT_SHARING_SETTINGS",

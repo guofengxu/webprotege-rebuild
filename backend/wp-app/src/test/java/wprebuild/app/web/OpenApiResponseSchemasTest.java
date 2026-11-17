@@ -56,6 +56,7 @@ class OpenApiResponseSchemasTest {
             new Success("revertRevision", "200", JSON),
             new Success("deleteEntities", "200", JSON),
             new Success("createEntities", "201", JSON),
+            new Success("mergeEntities", "200", JSON),
             new Success("listIndividualsByType", "200", JSON),
             new Success("getPrefixSettings", "200", JSON),
             new Success("putPrefixSettings", "200", JSON),
@@ -172,6 +173,8 @@ class OpenApiResponseSchemasTest {
         assertThat(texts(schema(spec, "IndividualPage").path("required")))
                 .contains("individuals", "page", "size", "total");
         assertThat(texts(schema(spec, "CreatedEntities").path("required"))).contains("entities", "revision");
+        assertThat(texts(schema(spec, "MergeEntitiesResult").path("required"))).contains("target");
+        assertThat(texts(schema(spec, "EntityRef").path("required"))).contains("iri", "entityType");
         assertThat(texts(schema(spec, "RevisionResponse").path("required"))).contains("revision");
         assertThat(texts(schema(spec, "ProjectChanged").path("required")))
                 .contains("type", "revNo", "user", "timestamp", "description", "changeCount");

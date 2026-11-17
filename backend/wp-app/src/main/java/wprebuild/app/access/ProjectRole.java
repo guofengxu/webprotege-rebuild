@@ -19,6 +19,7 @@ public enum ProjectRole {
             Action.DELETE_PROPERTY,
             Action.CREATE_INDIVIDUAL,
             Action.DELETE_INDIVIDUAL,
+            Action.MERGE_ENTITIES,
             Action.REVERT_CHANGES),
     CAN_MANAGE(
             CAN_EDIT,

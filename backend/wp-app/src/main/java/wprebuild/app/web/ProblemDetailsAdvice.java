@@ -21,6 +21,7 @@ import wprebuild.app.ontology.OntologyParseException;
 import wprebuild.app.shared.ConflictException;
 import wprebuild.app.shared.NotFoundException;
 import wprebuild.app.shared.PermissionDeniedException;
+import wprebuild.kernel.generator.MergeEntitiesException;
 import wprebuild.kernel.iri.CreatePermissionDeniedException;
 import wprebuild.kernel.revision.ConcurrentAppendException;
 
@@ -31,6 +32,10 @@ public class ProblemDetailsAdvice {
     public static final String VALIDATION_FAILED = "VALIDATION_FAILED";
 
     public static final String ONTOLOGY_PARSE_FAILED = "ONTOLOGY_PARSE_FAILED";
+
+    public static final String ENTITY_NOT_FOUND = "ENTITY_NOT_FOUND";
+
+    public static final String INVALID_MERGE = "INVALID_MERGE";
 
     public static final String CONCURRENT_APPEND = "CONCURRENT_APPEND";
 
@@ -84,6 +89,20 @@ public class ProblemDetailsAdvice {
         if (exception.line() != null) {
             body.setProperty("line", exception.line());
         }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(body);
+    }
+
+    /** BS-13: merge validation failures from {@link MergeEntitiesException}. */
+    @ExceptionHandler(MergeEntitiesException.class)
+    ResponseEntity<ProblemDetail> mergeFailed(MergeEntitiesException exception) {
+        if (exception.reason() == MergeEntitiesException.Reason.UNKNOWN_ENTITY) {
+            return problem(HttpStatus.NOT_FOUND, ENTITY_NOT_FOUND, exception.getMessage());
+        }
+        ProblemDetail body = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+        body.setProperty("code", INVALID_MERGE);
+        body.setProperty("reason", exception.reason().name());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 .body(body);

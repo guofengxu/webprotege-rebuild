@@ -40,6 +40,7 @@ class BS10_AccessServiceTest {
             Action.DELETE_PROPERTY,
             Action.CREATE_INDIVIDUAL,
             Action.DELETE_INDIVIDUAL,
+            Action.MERGE_ENTITIES,
             Action.REVERT_CHANGES);
 
     private static final Set<Action> MANAGE = including(
