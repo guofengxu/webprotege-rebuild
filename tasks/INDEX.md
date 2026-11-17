@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 151 张卡：完成 120，进行中 0，阻塞 3，待办 28。
+共 151 张卡：完成 121，进行中 0，阻塞 3，待办 27。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-22](P6/P6-22-web-webhook-settings.md) Web 端：项目设置的 webhook 标签页（列表、新建与编辑、密钥只写、最近投递记录）
 - [P6-23](P6/P6-23-merge-entities-generator.md) 内核：合并实体生成器（BS-13），替换引用、标签降级为 skos:altLabel、弃用或删除源实体
 - [P6-26](P6/P6-26-upload-merge-diff.md) 内核：上传本体与项目的合并计划（新版本差异 / 只追加两种方式，BS-14）及合并生成器
 - [P6-31](P6/P6-31-instance-store-schema.md) 实例库 PoC（一）：新建 wp-instances 模块，instances / links 表结构、带有效期的写入与追溯查询
@@ -177,7 +176,7 @@
 | [P6-19](P6/P6-19-extensions-round2-planning.md) | 规划卡（第二轮）：结合 P6 已完成的卡，细化候选清单中尚未规划的扩展功能 | tasks/P6 | planning | S | 完成 | P6-05、P6-06、P6-07、P6-13、P6-16 |
 | [P6-20](P6/P6-20-webhook-registry.md) | 后端：项目 webhook 的存储、回调地址校验与仓储（新增 integration 模块，BS-15） | wp-app | app-security | M | 完成 | P6-13 |
 | [P6-21](P6/P6-21-webhook-delivery.md) | webhook 投递：outbox 消费者登记投递任务，独立的投递线程按 webhook 顺序发送，带签名、超时与指数退避重试 | wp-app | app-service | M | 完成 | P6-49 |
-| [P6-22](P6/P6-22-web-webhook-settings.md) | Web 端：项目设置的 webhook 标签页（列表、新建与编辑、密钥只写、最近投递记录） | wp-web | web | M | 待办（可开工） | P6-49 |
+| [P6-22](P6/P6-22-web-webhook-settings.md) | Web 端：项目设置的 webhook 标签页（列表、新建与编辑、密钥只写、最近投递记录） | wp-web | web | M | 完成 | P6-49 |
 | [P6-23](P6/P6-23-merge-entities-generator.md) | 内核：合并实体生成器（BS-13），替换引用、标签降级为 skos:altLabel、弃用或删除源实体 | wp-kernel | kernel | M | 待办（可开工） | P1-16 |
 | [P6-24](P6/P6-24-merge-entities-api.md) | 后端：合并实体的命令与接口（新增动作 MERGE_ENTITIES，归入 CAN_EDIT） | wp-app | app-service | M | 待办 | P6-23、P6-49 |
 | [P6-25](P6/P6-25-web-merge-entities.md) | Web 端：合并实体对话框（层级工具栏入口，选择目标与处理方式，按权限显示） | wp-web | web | M | 待办 | P6-24 |

@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-49]
 ---
 
@@ -52,11 +52,20 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/settings/webhooks 
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
+
 
 ## 不在本卡范围
 - 后端接口与投递（P6-20、P6-21）
 - 手动重发、“发送测试请求”
+
+## 执行记录
+- 日期：2026-11-17
+- 分支：feature/p6-22-web-webhook-settings
+- 测试：2026-11-17T16:01:35+08:00 通过（3 项）
+- 实际改动：项目设置新增 Webhook 标签页：列表（主机名）、新建/编辑（密钥只写 KEEP/REPLACE/CLEAR）、启用停用删除与最近投递抽屉；无 EDIT_PROJECT_SETTINGS 时不请求。
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect
