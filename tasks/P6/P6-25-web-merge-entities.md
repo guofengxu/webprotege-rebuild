@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-24]
 ---
 
@@ -52,11 +52,19 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/merge-entities src
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 一次选中多个源实体（树组件目前是单选）；右键菜单入口
 - 合并预览
+
+## 执行记录
+- 日期：2026-11-17
+- 分支：feature/p6-25-web-merge-entities
+- 测试：2026-11-17T19:40:52+08:00 通过（3 项）
+- 实际改动：Added merge-entities feature (toolbar button, dialog with EntityPicker, treatment radios, api client) and preserved ProblemDetail extension fields so INVALID_MERGE.reason can be shown.
+- 偏差：无
+- 审查：vue-reviewer, typescript-reviewer, a11y-architect

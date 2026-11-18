@@ -48,6 +48,28 @@ test("unwrap throws ApiError with the problem code for FRAME_CHANGED", () => {
   }
 });
 
+test("unwrap preserves RFC 7807 extension members such as reason", () => {
+  const problem = {
+    status: 400,
+    title: "Bad Request",
+    code: "INVALID_MERGE",
+    reason: "TYPE_MISMATCH",
+  };
+  const response = new Response(JSON.stringify(problem), { status: 400 });
+
+  try {
+    unwrap({ error: problem, response });
+    expect.unreachable("expected unwrap to throw");
+  } catch (error) {
+    expect(error).toBeInstanceOf(ApiError);
+    if (!(error instanceof ApiError)) {
+      return;
+    }
+    expect(error.code).toBe("INVALID_MERGE");
+    expect(error.problem?.["reason"]).toBe("TYPE_MISMATCH");
+  }
+});
+
 test("unwrap turns a non-JSON 500 into ApiError without a code", () => {
   const response = new Response("boom", {
     status: 500,
