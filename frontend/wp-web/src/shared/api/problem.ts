@@ -83,7 +83,22 @@ function asProblemDetail(error: unknown): ProblemDetail | undefined {
   ) {
     return undefined;
   }
-  return { code, detail, title, type, instance, status };
+  // Preserve RFC 7807 extension members (e.g. INVALID_MERGE.reason).
+  const known = new Set([
+    "code",
+    "detail",
+    "title",
+    "type",
+    "instance",
+    "status",
+  ]);
+  const extensions: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (!known.has(key)) {
+      extensions[key] = value;
+    }
+  }
+  return { ...extensions, code, detail, title, type, instance, status };
 }
 
 function textValue(value: unknown): string | undefined {
