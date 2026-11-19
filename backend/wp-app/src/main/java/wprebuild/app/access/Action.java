@@ -24,6 +24,10 @@ public enum Action {
     EDIT_PROJECT_PREFIXES(true),
     /** BS-10: allowed only on a project where the user has {@link ProjectRole#CAN_MANAGE}. */
     MOVE_ANY_PROJECT_TO_TRASH(true),
+    /** BS-10 / BS-14: upload a new ontology version and merge by diff. */
+    UPLOAD_AND_MERGE(true),
+    /** BS-10 / BS-14: append uploaded axioms into an existing project ontology. */
+    UPLOAD_AND_MERGE_ADDITIONS(true),
     CREATE_EMPTY_PROJECT(false),
     UPLOAD_PROJECT(false),
     CREATE_ACCOUNT(false),

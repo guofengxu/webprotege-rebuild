@@ -1035,6 +1035,24 @@
         "required" : [ "changeCount", "description", "revNo", "timestamp", "type", "user" ],
         "type" : "object"
       },
+      "ProjectOntologySummary" : {
+        "properties" : {
+          "axiomCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "key" : {
+            "type" : "string"
+          },
+          "ontologyIri" : {
+            "type" : [ "string", "null" ]
+          },
+          "versionIri" : {
+            "type" : [ "string", "null" ]
+          }
+        },
+        "type" : "object"
+      },
       "ProjectResponse" : {
         "properties" : {
           "createdAt" : {
@@ -5422,6 +5440,86 @@
         },
         "summary" : "Set a project member's role",
         "tags" : [ "Project settings" ]
+      }
+    },
+    "/api/projects/{id}/ontologies" : {
+      "get" : {
+        "operationId" : "listProjectOntologies",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ProjectOntologySummary"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          }
+        },
+        "summary" : "List project ontologies",
+        "tags" : [ "Projects" ]
       }
     },
     "/api/projects/{id}/permissions/me" : {
