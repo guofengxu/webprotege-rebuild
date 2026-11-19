@@ -16,6 +16,7 @@ webprotege-rebuild/
                                 依赖：wp-kernel
     wp-legacy-migrator/         独立 CLI：读取旧 BinaryOWL 日志与 mongoexport JSON，输出迁移包
                                 依赖：OWL API 4.5.13 + binaryowl 2.0.1。禁止依赖 wp-kernel / wp-app
+    wp-instances/               实例库 PoC（ADR-013）：纯 Java + JDBC，独立数据库，禁止依赖 wp-kernel / wp-app；是否服务化由 P6-34 决定
   frontend/
     package.json                pnpm 工作区根（只放工作区脚本，不放运行时依赖；P3-27）
     pnpm-workspace.yaml         成员：wp-web、packages/*，wp-mobile 是否加入由 P3-27 的验证决定
