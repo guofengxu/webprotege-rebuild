@@ -49,7 +49,9 @@ class BS10_AccessServiceTest {
             Action.EDIT_SHARING_SETTINGS,
             Action.EDIT_NEW_ENTITY_SETTINGS,
             Action.EDIT_PROJECT_PREFIXES,
-            Action.MOVE_ANY_PROJECT_TO_TRASH);
+            Action.MOVE_ANY_PROJECT_TO_TRASH,
+            Action.UPLOAD_AND_MERGE,
+            Action.UPLOAD_AND_MERGE_ADDITIONS);
 
     private static final Set<Action> CREATOR = EnumSet.of(Action.CREATE_EMPTY_PROJECT, Action.UPLOAD_PROJECT);
 

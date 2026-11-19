@@ -59,9 +59,11 @@ import wprebuild.app.ontology.ImportOntologyFromUpload;
 import wprebuild.app.ontology.IndividualPage;
 import wprebuild.app.ontology.ListEntityRevisions;
 import wprebuild.app.ontology.ListIndividualsByType;
+import wprebuild.app.ontology.ListProjectOntologies;
 import wprebuild.app.ontology.ListRevisions;
 import wprebuild.app.ontology.MergeEntities;
 import wprebuild.app.ontology.ProjectDownload;
+import wprebuild.app.ontology.ProjectOntologySummary;
 import wprebuild.app.ontology.RevertRevision;
 import wprebuild.app.ontology.RevisionDiff;
 import wprebuild.app.ontology.UpdateAnnotationPropertyFrame;
@@ -205,6 +207,19 @@ public class ProjectController {
         }
         List<ProjectDetails> projects = bus.execute(user, new ListTrashedProjects());
         return ResponseEntity.ok(projects.stream().map(ProjectResponse::from).toList());
+    }
+
+    @Operation(summary = "List project ontologies", operationId = "listProjectOntologies")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = ProjectOntologySummary.class))))
+    @GetMapping("/{id}/ontologies")
+    public ResponseEntity<?> ontologies(@PathVariable String id) {
+        return withProject(
+                id, (user, projectId) -> ResponseEntity.ok(bus.execute(user, new ListProjectOntologies(projectId))));
     }
 
     @Operation(summary = "Download a project ontology", operationId = "downloadProject")

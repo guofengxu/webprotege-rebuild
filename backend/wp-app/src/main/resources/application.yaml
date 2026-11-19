@@ -24,6 +24,7 @@ wp:
     ontology-iri-base: http://example.org/wp/
   upload:
     max-size: 200MB
+    staging-ttl: 30m
   tokens:
     access-ttl: 12h
     refresh-ttl: 30d

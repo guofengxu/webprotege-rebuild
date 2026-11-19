@@ -27,7 +27,9 @@ public enum ProjectRole {
             Action.EDIT_SHARING_SETTINGS,
             Action.EDIT_NEW_ENTITY_SETTINGS,
             Action.EDIT_PROJECT_PREFIXES,
-            Action.MOVE_ANY_PROJECT_TO_TRASH);
+            Action.MOVE_ANY_PROJECT_TO_TRASH,
+            Action.UPLOAD_AND_MERGE,
+            Action.UPLOAD_AND_MERGE_ADDITIONS);
 
     private final Set<Action> actions;
 

@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P6-24]
 ---
 
@@ -57,11 +57,19 @@ pnpm -C frontend --filter wp-web run typecheck
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 预览、应用与放弃接口（P6-50）；Web 端（P6-28）
 - 多实例下的暂存共享（P6-40）
+
+## 执行记录
+- 日期：2026-11-19
+- 分支：feature/p6-27-upload-merge-api
+- 测试：2026-11-19T15:03:00+08:00 通过（6 项）
+- 实际改动：Added UPLOAD_AND_MERGE / UPLOAD_AND_MERGE_ADDITIONS under CAN_MANAGE; UploadStaging (UUID filenames, ownership, clock-stamped TTL, per-user limit 3, POSIX owner perms); ListProjectOntologies + GET /api/projects/{id}/ontologies; OpenAPI and api-types regenerated.
+- 偏差：无
+- 审查：java-reviewer, code-reviewer, security-reviewer
