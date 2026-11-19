@@ -52,6 +52,25 @@ public final class ChangePipeline {
         return gate.generate(() -> applyWhileGenerating(user, generator));
     }
 
+    /**
+     * Same as {@link #apply(UserId, ChangeListGenerator)}, but after taking the generation lock
+     * compares {@code expectedHead} to the current head. A mismatch throws {@link StaleHeadException}
+     * without generating or committing (BS-14 preview/apply).
+     */
+    public <R> ChangeApplicationResult<R> apply(
+            UserId user, ChangeListGenerator<R> generator, RevisionNumber expectedHead) {
+        Objects.requireNonNull(user, "user");
+        Objects.requireNonNull(generator, "generator");
+        Objects.requireNonNull(expectedHead, "expected head");
+        return gate.generate(() -> {
+            RevisionNumber actualHead = runtime.head();
+            if (!actualHead.equals(expectedHead)) {
+                throw new StaleHeadException(expectedHead, actualHead);
+            }
+            return applyWhileGenerating(user, generator);
+        });
+    }
+
     private <R> ChangeApplicationResult<R> applyWhileGenerating(UserId user, ChangeListGenerator<R> generator) {
         if (runtime.isCorrupted()) {
             throw new ProjectRuntimeCorruptedException(runtime.projectId());
