@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: db
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-11]
 ---
 
@@ -63,13 +63,21 @@ depends_on: [P6-11]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 规模造数与性能基准（P6-32）
 - 由本体生成校验规则（P6-33）
 - 服务端口、REST 接口、认证、部署、Apache AGE（P6-34 依据 PoC 结论规划）
 - 修改 wp-app 或编辑器的数据库
+
+## 执行记录
+- 日期：2026-11-19
+- 分支：feature/p6-31-instance-store-schema
+- 测试：2026-11-19T17:21:39+08:00 通过（4 项）
+- 实际改动：新增独立 Maven 模块 wp-instances：instances/links 表（有效期半开区间）、Flyway、InstanceStore（upsert/retire/link/unlink）与 TraceQueries（reachable/follow）；审查后收紧关闭版本的时间校验并处理唯一冲突重试。
+- 偏差：无
+- 审查：database-reviewer, java-reviewer

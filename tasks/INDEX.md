@@ -2,11 +2,11 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 151 张卡：完成 126，进行中 0，阻塞 3，待办 22。
+共 151 张卡：完成 127，进行中 0，阻塞 3，待办 21。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-31](P6/P6-31-instance-store-schema.md) 实例库 PoC（一）：新建 wp-instances 模块，instances / links 表结构、带有效期的写入与追溯查询
+- [P6-32](P6/P6-32-instance-store-benchmark.md) 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续
 - [P6-42](P6/P6-42-web-typescript-7-evaluation.md) Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点
 - [P6-43](P6/P6-43-forms-rea-planning.md) 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡
 - [P6-44](P6/P6-44-discussions-rea-planning.md) 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡
@@ -185,8 +185,8 @@
 | [P6-28](P6/P6-28-web-upload-merge.md) | Web 端：上传并合并到已有项目（工作台工具栏入口，选择方式、预览差异、确认应用） | wp-web | web | M | 待办 | P6-50、P6-22 |
 | [P6-29](P6/P6-29-admin-delete-user.md) | 后端：系统管理员删除用户（停用并清除个人信息，账户 ID 保留在历史中） | wp-app | app-security | M | 待办 | P6-50 |
 | [P6-30](P6/P6-30-web-delete-user.md) | Web 端：用户管理页删除用户，并标出已删除的用户 | wp-web | web | S | 待办 | P6-29 |
-| [P6-31](P6/P6-31-instance-store-schema.md) | 实例库 PoC（一）：新建 wp-instances 模块，instances / links 表结构、带有效期的写入与追溯查询 | wp-instances | db | M | 待办（可开工） | P6-11 |
-| [P6-32](P6/P6-32-instance-store-benchmark.md) | 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续 | wp-instances | benchmark | S | 待办 | P6-31 |
+| [P6-31](P6/P6-31-instance-store-schema.md) | 实例库 PoC（一）：新建 wp-instances 模块，instances / links 表结构、带有效期的写入与追溯查询 | wp-instances | db | M | 完成 | P6-11 |
+| [P6-32](P6/P6-32-instance-store-benchmark.md) | 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续 | wp-instances | benchmark | S | 待办（可开工） | P6-31 |
 | [P6-33](P6/P6-33-instance-store-validation.md) | 实例库 PoC（三）：从本体投影表生成定义域 / 值域校验规则，写入实例时校验 | wp-instances | db | M | 待办 | P6-32、P6-13 |
 | [P6-34](P6/P6-34-instance-service-planning.md) | 规划卡：依据实例库 PoC 结论，规划实例库服务化 | tasks/P6 | planning | S | 待办 | P6-33 |
 | [P6-35](P6/P6-35-outbox-kafka-publisher.md) | outbox 发布器 → Kafka：把每个修订事件按项目分区、按提交顺序发布到 Kafka 主题（默认关闭） | wp-app | app-service | M | 待办 | P6-21、P6-51 |
