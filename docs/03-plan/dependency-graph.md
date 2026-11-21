@@ -151,7 +151,7 @@ flowchart LR
         P6_29["P6-29"]:::todo
         P6_30["P6-30"]:::todo
         P6_31["P6-31"]:::done
-        P6_32["P6-32"]:::todo
+        P6_32["P6-32"]:::blocked
         P6_33["P6-33"]:::todo
         P6_34["P6-34"]:::todo
         P6_35["P6-35"]:::todo

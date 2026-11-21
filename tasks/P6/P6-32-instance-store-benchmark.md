@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: benchmark
 ecc_extra: []
-status: todo
+status: blocked
 depends_on: [P6-31]
 ---
 
@@ -69,3 +69,7 @@ depends_on: [P6-31]
 - 任何优化：索引、物化路径、闭包表、AGE
 - 本体校验（P6-33）
 - 服务化之后经网络接口的端到端写入基准（见 P6-34）
+
+## 阻塞
+- 日期：2026-11-21
+- 原因：Q3 p95≈94s ≫ 200ms（TraceQueries.follow N+1）；其余查询达标；见 docs/perf/…
