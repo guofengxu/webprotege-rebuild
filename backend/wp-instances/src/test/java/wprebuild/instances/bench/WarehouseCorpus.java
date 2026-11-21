@@ -95,9 +95,7 @@ public final class WarehouseCorpus {
 
     private static long copyInstances(CopyManager copy, Scale scale) throws SQLException {
         Random random = new Random(SEED);
-        CopyBuffer buffer = new CopyBuffer(
-                copy,
-                """
+        CopyBuffer buffer = new CopyBuffer(copy, """
                 copy instances (iri, class_iri, attributes, valid_from, valid_to, source, ontology_rev)
                 from stdin with (format text, null '\\N')
                 """);
@@ -146,13 +144,7 @@ public final class WarehouseCorpus {
                 at = DAY0.plus(1, ChronoUnit.HOURS).plusSeconds(i * 60L);
                 excursion = true;
             }
-            String attrs = "{\"observedAt\":\""
-                    + at
-                    + "\",\"excursion\":"
-                    + excursion
-                    + ",\"sensor\":"
-                    + sensor
-                    + "}";
+            String attrs = "{\"observedAt\":\"" + at + "\",\"excursion\":" + excursion + ",\"sensor\":" + sensor + "}";
             buffer.instance(eventIri(i), CLASS_ENV_EVENT, attrs, at, null);
         }
         return buffer.finish();
@@ -161,9 +153,7 @@ public final class WarehouseCorpus {
     private static long copyLinks(CopyManager copy, Scale scale, Instant corpusEnd) throws SQLException {
         // Same seed as instances so event sensor / time / excursion draws line up with observedBy.
         Random random = new Random(SEED);
-        CopyBuffer buffer = new CopyBuffer(
-                copy,
-                """
+        CopyBuffer buffer = new CopyBuffer(copy, """
                 copy links (subject_iri, property_iri, object_iri, valid_from, valid_to)
                 from stdin with (format text, null '\\N')
                 """);

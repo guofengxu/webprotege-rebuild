@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: db
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-31]
 ---
 
@@ -69,14 +69,22 @@ depends_on: [P6-31]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] `TraceQueriesFollowTest` 断言了单次 `follow` 调用的 `getConnection` 与 `prepareStatement` 次数
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] `TraceQueriesFollowTest` 断言了单次 `follow` 调用的 `getConnection` 与 `prepareStatement` 次数
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 修改基准代码、运行基准（P6-54 修订测法，P6-32 重跑）
 - `reachable`、`InstanceStore`、表结构、索引的任何改动
 - 把 Q3 或 Q4、Q5 改写成一条连接查询并提升为正式接口（P6-34 决定）
 - 在 `wp-instances` 的 `src/main` 中引入连接池或新的第三方依赖
+
+## 执行记录
+- 日期：2026-11-21
+- 分支：feature/p6-53-trace-follow-batched
+- 测试：2026-11-21T14:50:13+08:00 通过（3 项）
+- 实际改动：TraceQueries.follow 改为每跳一条 SQL（同一连接、tips 去重后 = any(?)，超 10k 分批），删除 neighbors；新增 TraceQueriesFollowTest（扇出/菱形/正反向/asOf/往返次数/chunks）。顺带 spotless 格式化了基准测试源文件（无逻辑改动）。
+- 偏差：为通过全量 spotless:check，对 InstanceBenchmark.java 与 WarehouseCorpus.java 仅做了 Spotless 格式化（无行为改动）；卡片写明不改基准代码，故记入偏差。
+- 审查：database-reviewer, java-reviewer

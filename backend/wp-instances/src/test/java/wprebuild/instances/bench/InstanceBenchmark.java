@@ -77,8 +77,7 @@ class InstanceBenchmark {
      * Deep trace: batch → trays → historical slots → excursion events overlapping the stay →
      * sensors.
      */
-    static final String Q4_DEEP_TRACE_SQL =
-            """
+    static final String Q4_DEEP_TRACE_SQL = """
             with trays as (
                 select l.object_iri as tray_iri
                 from links l
@@ -127,8 +126,7 @@ class InstanceBenchmark {
             """;
 
     /** Reverse trace: excursion event → slot (via sensor) → trays present then → batches. */
-    static final String Q5_REVERSE_TRACE_SQL =
-            """
+    static final String Q5_REVERSE_TRACE_SQL = """
             with event as (
                 select i.iri as event_iri,
                        i.valid_from as event_at,
@@ -276,11 +274,7 @@ class InstanceBenchmark {
     private int runQ1(WarehouseCorpus.Loaded loaded) {
         Instant asOf = loaded.asOf().minusSeconds(1);
         return queries.reachable(
-                        loaded.samples().slotIri(),
-                        Set.of(WarehouseCorpus.PROP_STORED_AT),
-                        Direction.BACKWARD,
-                        1,
-                        asOf)
+                        loaded.samples().slotIri(), Set.of(WarehouseCorpus.PROP_STORED_AT), Direction.BACKWARD, 1, asOf)
                 .size();
     }
 
@@ -381,15 +375,10 @@ class InstanceBenchmark {
                                 String trayIri = WarehouseCorpus.trayIri(tray);
                                 String fromSlot = currentStoredAt(trayIri);
                                 if (fromSlot != null) {
-                                    store.unlink(
-                                            new LinkRecord(
-                                                    trayIri, WarehouseCorpus.PROP_STORED_AT, fromSlot),
-                                            at);
+                                    store.unlink(new LinkRecord(trayIri, WarehouseCorpus.PROP_STORED_AT, fromSlot), at);
                                 }
                                 int toSlot = Math.floorMod(
-                                        (fromSlot == null ? tray : fromSlot.hashCode())
-                                                + 1
-                                                + random.nextInt(50),
+                                        (fromSlot == null ? tray : fromSlot.hashCode()) + 1 + random.nextInt(50),
                                         loaded.scale().slots());
                                 Instant linkAt = clockBase.plusMillis(clock.incrementAndGet() * 10L);
                                 store.link(
@@ -450,8 +439,7 @@ class InstanceBenchmark {
     }
 
     private String currentStoredAt(String trayIri) throws SQLException {
-        String sql =
-                """
+        String sql = """
                 select object_iri
                 from links
                 where subject_iri = ?
@@ -502,8 +490,7 @@ class InstanceBenchmark {
     }
 
     private String explainQ1(WarehouseCorpus.Loaded loaded) throws SQLException {
-        String sql =
-                """
+        String sql = """
                 explain (analyze, buffers)
                 select subject_iri
                 from links
@@ -514,14 +501,11 @@ class InstanceBenchmark {
                 """;
         Instant asOf = loaded.asOf().minusSeconds(1);
         Timestamp ts = Timestamp.from(asOf);
-        return explainSql(
-                sql, new Object[] {loaded.samples().slotIri(), WarehouseCorpus.PROP_STORED_AT, ts, ts});
+        return explainSql(sql, new Object[] {loaded.samples().slotIri(), WarehouseCorpus.PROP_STORED_AT, ts, ts});
     }
 
     private String explainSql(String sql, Object[] params) throws SQLException {
-        String explain = sql.trim().regionMatches(true, 0, "explain", 0, 7)
-                ? sql
-                : "explain (analyze, buffers) " + sql;
+        String explain = sql.trim().regionMatches(true, 0, "explain", 0, 7) ? sql : "explain (analyze, buffers) " + sql;
         try (Connection connection = dataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(explain)) {
             bind(ps, params);
@@ -591,12 +575,7 @@ class InstanceBenchmark {
 
     private Map<String, String> readPgSettings() throws SQLException {
         List<String> names = List.of(
-                "shared_buffers",
-                "work_mem",
-                "effective_cache_size",
-                "random_page_cost",
-                "jit",
-                "autovacuum_naptime");
+                "shared_buffers", "work_mem", "effective_cache_size", "random_page_cost", "jit", "autovacuum_naptime");
         Map<String, String> settings = new LinkedHashMap<>();
         for (String name : names) {
             settings.put(name, queryScalar("show " + name));
@@ -608,8 +587,7 @@ class InstanceBenchmark {
         Map<String, long[]> tables = new LinkedHashMap<>();
         try (Connection connection = dataSource.getConnection();
                 Statement statement = connection.createStatement();
-                ResultSet rs = statement.executeQuery(
-                        """
+                ResultSet rs = statement.executeQuery("""
                         select relname, autovacuum_count, autoanalyze_count
                         from pg_stat_user_tables
                         where schemaname = 'public' and relname in ('instances', 'links')
@@ -645,8 +623,7 @@ class InstanceBenchmark {
         }
         Files.createDirectories(report.getParent());
         Files.writeString(
-                report,
-                reportText(today, loaded, first, second, loadNanos, sizes, postgresVersion, pgSettings, smoke));
+                report, reportText(today, loaded, first, second, loadNanos, sizes, postgresVersion, pgSettings, smoke));
         return report;
     }
 
@@ -683,7 +660,11 @@ class InstanceBenchmark {
         text.append("| -Xmx | ").append(xmxArgument()).append(" |\n");
         text.append("| PostgreSQL | ").append(postgresVersion).append(" (Testcontainers postgres:18) |\n");
         for (Map.Entry<String, String> entry : pgSettings.entrySet()) {
-            text.append("| ").append(entry.getKey()).append(" | ").append(entry.getValue()).append(" |\n");
+            text.append("| ")
+                    .append(entry.getKey())
+                    .append(" | ")
+                    .append(entry.getValue())
+                    .append(" |\n");
         }
 
         text.append("\n## 语料\n\n");
@@ -795,9 +776,7 @@ class InstanceBenchmark {
             if (failures.isEmpty()) {
                 text.append("结论：全部达标，可继续 P6-33。\n");
             } else {
-                text.append("结论：存在未达标项：")
-                        .append(String.join("；", failures))
-                        .append("。\n");
+                text.append("结论：存在未达标项：").append(String.join("；", failures)).append("。\n");
             }
         }
 
@@ -891,8 +870,7 @@ class InstanceBenchmark {
             failures.add("Q5 p95 " + millis(run.q5().p95Nanos()) + " > 1 秒");
         }
         if (run.w1().throughput() < W1_MIN_THROUGHPUT) {
-            failures.add(
-                    "W1 吞吐 " + String.format(Locale.ROOT, "%.1f", run.w1().throughput()) + " < 200 次/秒");
+            failures.add("W1 吞吐 " + String.format(Locale.ROOT, "%.1f", run.w1().throughput()) + " < 200 次/秒");
         }
         if (run.w1().p95Nanos() > W1_P95_LIMIT_NANOS) {
             failures.add("W1 p95 " + millis(run.w1().p95Nanos()) + " > 50 毫秒");
@@ -953,7 +931,8 @@ class InstanceBenchmark {
             }
             dir = dir.getParent();
         }
-        throw new IllegalStateException("repository root not found from " + Path.of("").toAbsolutePath());
+        throw new IllegalStateException(
+                "repository root not found from " + Path.of("").toAbsolutePath());
     }
 
     private static String cpuModel() {

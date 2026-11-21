@@ -2,7 +2,7 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 153 张卡：完成 127，进行中 0，阻塞 3，待办 23。
+共 153 张卡：完成 128，进行中 0，阻塞 3，待办 22。
 
 ## 现在可以开工的卡（按本地文件计算）
 
@@ -14,7 +14,6 @@
 - [P6-47](P6/P6-47-manchester-rea-planning.md) 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡
 - [P6-48](P6/P6-48-mcp-write-tools-planning.md) 规划卡：MCP 写工具与人工确认机制（设计、ADR 草案与拆卡）
 - [P6-50](P6/P6-50-upload-merge-apply-api.md) 后端：上传并合并到已有项目的预览、应用与放弃接口（在生成锁内校验预览时的修订号）
-- [P6-53](P6/P6-53-trace-follow-batched.md) TraceQueries.follow 改为每一跳一条 SQL，消除逐节点查询（N+1）
 - [P6-54](P6/P6-54-instance-benchmark-method.md) 实例库基准测法修订：改用连接池，记录连接开销基线与 W1 失败次数
 
 ## 阻塞中
@@ -208,7 +207,7 @@
 | [P6-50](P6/P6-50-upload-merge-apply-api.md) | 后端：上传并合并到已有项目的预览、应用与放弃接口（在生成锁内校验预览时的修订号） | wp-app | app-service | M | 待办（可开工） | P6-27、P6-26 |
 | [P6-51](P6/P6-51-oidc-login-flow.md) | 后端：通用 OpenID Connect 登录（授权码流程、与账号密码登录相同的会话、登录方式列表接口） | wp-app | app-security | M | 待办 | P6-37、P6-52 |
 | [P6-52](P6/P6-52-deleted-user-session-revocation.md) | 后端：已删除用户的已登录会话立即失效（会话注册表 + 按请求检查） | wp-app | app-security | M | 待办 | P6-29 |
-| [P6-53](P6/P6-53-trace-follow-batched.md) | TraceQueries.follow 改为每一跳一条 SQL，消除逐节点查询（N+1） | wp-instances | db | S | 待办（可开工） | P6-31 |
+| [P6-53](P6/P6-53-trace-follow-batched.md) | TraceQueries.follow 改为每一跳一条 SQL，消除逐节点查询（N+1） | wp-instances | db | S | 完成 | P6-31 |
 | [P6-54](P6/P6-54-instance-benchmark-method.md) | 实例库基准测法修订：改用连接池，记录连接开销基线与 W1 失败次数 | wp-instances | benchmark | S | 待办（可开工） | P6-31 |
 
 各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`。
