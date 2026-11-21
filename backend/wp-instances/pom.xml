@@ -71,6 +71,12 @@
             <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Bench only: pool connections for InstanceBenchmark (BOM-managed version). -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: benchmark
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-31]
 ---
 
@@ -61,15 +61,23 @@ depends_on: [P6-31]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 冒烟报告中能看到「连接开销基线」两行、W1 的失败次数与失败率、连接池配置；执行记录中贴出冒烟报告里两行基线的 p50
-- [ ] `docs/perf/` 下没有新增报告（本卡不运行正式基准）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 冒烟报告中能看到「连接开销基线」两行、W1 的失败次数与失败率、连接池配置；执行记录中贴出冒烟报告里两行基线的 p50
+- [x] `docs/perf/` 下没有新增报告（本卡不运行正式基准）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 运行正式基准、判定门禁（P6-32 重跑）
 - `TraceQueries`、`InstanceStore` 或任何 `src/main` 改动（P6-53）
 - 修改语料、规模、查询、采样次数、W1 的参数或门禁阈值
 - 调整 PostgreSQL 配置；把 HikariCP 引入 `src/main`
+
+## 执行记录
+- 日期：2026-11-21
+- 分支：feature/p6-54-instance-benchmark-method
+- 测试：2026-11-21T18:04:35+08:00 通过（3 项）
+- 实际改动：InstanceBenchmark 改用 HikariCP（10/10）测查询与写入；报告新增连接开销基线（新建连接 p50≈23.90ms，池内 p50≈0.75ms）与 W1 失败次数/失败率；超时改为 3h。WarehouseCorpus 未改。docs/perf/ 无新报告。performance-optimizer 审查 LGTM（无 CRITICAL/HIGH/MEDIUM；LOW：HikariCP 版本常为 unknown，属卡片允许回退）。
+- 偏差：无
+- 审查：performance-optimizer

@@ -2,6 +2,8 @@ package wprebuild.instances.bench;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.io.IOException;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -25,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,11 +36,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
-import javax.sql.DataSource;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.postgresql.PGConnection;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,7 +181,9 @@ class InstanceBenchmark {
     @Container
     static PostgreSQLContainer postgres = new PostgreSQLContainer(DockerImageName.parse("postgres:18"));
 
-    private DataSource dataSource;
+    private static final int POOL_SIZE = 10;
+
+    private HikariDataSource dataSource;
     private InstanceStore store;
     private TraceQueries queries;
 
@@ -189,9 +195,17 @@ class InstanceBenchmark {
         queries = new TraceQueries(dataSource);
     }
 
+    @AfterEach
+    void tearDown() {
+        if (dataSource != null) {
+            dataSource.close();
+            dataSource = null;
+        }
+    }
+
     @Test
-    // Full Q3 is N+1 via TraceQueries.follow (~80s/sample × 120 × 2 rounds); allow headroom for W1.
-    @Timeout(value = 12, unit = TimeUnit.HOURS)
+    // Q3 is batched (P6-53); allow headroom for corpus load, two query rounds, and W1.
+    @Timeout(value = 3, unit = TimeUnit.HOURS)
     void writes_the_instances_poc_report() throws Exception {
         boolean smoke = Boolean.getBoolean("bench.smoke");
         int warmup = smoke ? SMOKE_WARMUP : WARMUP;
@@ -209,6 +223,11 @@ class InstanceBenchmark {
         analyze();
         TableSizes sizes = tableSizes();
 
+        awaitPoolFilled("before query sampling");
+        ConnectionBaseline baseline = measureConnectionBaseline();
+        String prepareThreshold = readPrepareThreshold();
+        PoolConfig poolConfig = PoolConfig.from(dataSource, prepareThreshold);
+
         // Two query rounds before W1 so row counts stay comparable (W1 mutates trays/links).
         QueryBundle firstQueries = measureQueries(loaded, warmup, samples, "1");
         QueryBundle secondQueries = measureQueries(loaded, warmup, samples, "2");
@@ -222,6 +241,7 @@ class InstanceBenchmark {
         String explainQ1 = explainQ1(loaded);
         String explainQ4 = explainSql(Q4_DEEP_TRACE_SQL, q4Params(loaded));
         String explainQ5 = explainSql(Q5_REVERSE_TRACE_SQL, q5Params(loaded));
+        awaitPoolFilled("before W1");
         WriteRun w1 = measureW1(loaded, smoke);
         BenchRun first = new BenchRun(
                 firstQueries.q1(),
@@ -244,12 +264,22 @@ class InstanceBenchmark {
                 "",
                 "");
 
-        Path report = writeReport(loaded, first, second, loadNanos, sizes, postgresVersion, pgSettings, smoke);
+        Path report = writeReport(
+                loaded, first, second, loadNanos, sizes, postgresVersion, pgSettings, baseline, poolConfig, smoke);
         assertThat(report).isRegularFile();
-        String text = Files.readString(report);
-        assertThat(text).contains("门禁结论", "Q4_DEEP_TRACE_SQL", "Q5_REVERSE_TRACE_SQL");
+        String reportText = Files.readString(report);
+        assertThat(reportText).contains("门禁结论", "Q4_DEEP_TRACE_SQL", "Q5_REVERSE_TRACE_SQL");
 
         if (smoke) {
+            assertThat(reportText)
+                    .contains("## 连接开销基线")
+                    .contains("| 新建连接 |")
+                    .contains("| 池内连接 |")
+                    .contains("| 失败次数 |")
+                    .contains("| 失败率 |")
+                    .contains("| maximumPoolSize |");
+            assertThat(reportText).containsPattern("\\| 新建连接 \\| [0-9]");
+            assertThat(reportText).containsPattern("\\| 池内连接 \\| [0-9]");
             log.info("smoke report {} (gates not asserted)", report);
             return;
         }
@@ -335,6 +365,8 @@ class InstanceBenchmark {
         long durationMs = smoke ? 5_000L : 60_000L;
         AtomicBoolean running = new AtomicBoolean(true);
         LongAdder ops = new LongAdder();
+        LongAdder failures = new LongAdder();
+        ConcurrentHashMap<String, LongAdder> failuresByType = new ConcurrentHashMap<>();
         List<Long> latencies = java.util.Collections.synchronizedList(new ArrayList<>());
         CountDownLatch ready = new CountDownLatch(threads);
         CountDownLatch done = new CountDownLatch(threads);
@@ -392,6 +424,10 @@ class InstanceBenchmark {
                             ops.increment();
                         } catch (IllegalArgumentException | IllegalStateException | SQLException ex) {
                             // Concurrent version conflicts are expected under load; skip the sample.
+                            failures.increment();
+                            failuresByType
+                                    .computeIfAbsent(ex.getClass().getSimpleName(), key -> new LongAdder())
+                                    .increment();
                             log.debug("W1 conflict on worker {}: {}", threadId, ex.toString());
                         }
                     }
@@ -415,8 +451,15 @@ class InstanceBenchmark {
         long[] nanos = latencies.stream().mapToLong(Long::longValue).toArray();
         double seconds = Math.max(0.001d, (wallEnd.toEpochMilli() - wallStart.toEpochMilli()) / 1000d);
         double throughput = ops.sum() / seconds;
+        Map<String, Long> failureDetail = new LinkedHashMap<>();
+        failuresByType.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry ->
+                        failureDetail.put(entry.getKey(), entry.getValue().sum()));
         return new WriteRun(
                 ops.sum(),
+                failures.sum(),
+                Map.copyOf(failureDetail),
                 throughput,
                 percentile(nanos, 0.50d),
                 percentile(nanos, 0.95d),
@@ -611,6 +654,8 @@ class InstanceBenchmark {
             TableSizes sizes,
             String postgresVersion,
             Map<String, String> pgSettings,
+            ConnectionBaseline baseline,
+            PoolConfig poolConfig,
             boolean smoke)
             throws IOException {
         LocalDate today = LocalDate.now(ZoneId.systemDefault());
@@ -623,7 +668,19 @@ class InstanceBenchmark {
         }
         Files.createDirectories(report.getParent());
         Files.writeString(
-                report, reportText(today, loaded, first, second, loadNanos, sizes, postgresVersion, pgSettings, smoke));
+                report,
+                reportText(
+                        today,
+                        loaded,
+                        first,
+                        second,
+                        loadNanos,
+                        sizes,
+                        postgresVersion,
+                        pgSettings,
+                        baseline,
+                        poolConfig,
+                        smoke));
         return report;
     }
 
@@ -636,6 +693,8 @@ class InstanceBenchmark {
             TableSizes sizes,
             String postgresVersion,
             Map<String, String> pgSettings,
+            ConnectionBaseline baseline,
+            PoolConfig poolConfig,
             boolean smoke) {
         StringBuilder text = new StringBuilder();
         text.append("# 实例库 PoC 基准（").append(today);
@@ -666,6 +725,13 @@ class InstanceBenchmark {
                     .append(entry.getValue())
                     .append(" |\n");
         }
+        text.append("| maximumPoolSize | ").append(poolConfig.maximumPoolSize()).append(" |\n");
+        text.append("| minimumIdle | ").append(poolConfig.minimumIdle()).append(" |\n");
+        text.append("| autoCommit | ").append(poolConfig.autoCommit()).append(" |\n");
+        text.append("| HikariCP | ").append(poolConfig.hikariVersion()).append(" |\n");
+        text.append("| prepareThreshold | ")
+                .append(poolConfig.prepareThreshold())
+                .append(" |\n");
 
         text.append("\n## 语料\n\n");
         WarehouseCorpus.Scale scale = loaded.scale();
@@ -706,6 +772,29 @@ class InstanceBenchmark {
         text.append("\n### 采样参数（固定种子）\n\n");
         text.append("```\n").append(loaded.samples()).append("\n```\n");
 
+        text.append("\n## 连接开销基线\n\n");
+        text.append("只记录，不判定。首次运行（2026-11-20）的每条 SQL 都付出了「新建连接」这一行的开销。\n\n");
+        text.append("| 方式 | p50 | p95 | max | 样本数 |\n");
+        text.append("| --- | --- | --- | --- | --- |\n");
+        text.append("| 新建连接 | ")
+                .append(millis(baseline.newConnection().p50Nanos()))
+                .append(" | ")
+                .append(millis(baseline.newConnection().p95Nanos()))
+                .append(" | ")
+                .append(millis(baseline.newConnection().maxNanos()))
+                .append(" | ")
+                .append(baseline.newConnection().samples())
+                .append(" |\n");
+        text.append("| 池内连接 | ")
+                .append(millis(baseline.pooled().p50Nanos()))
+                .append(" | ")
+                .append(millis(baseline.pooled().p95Nanos()))
+                .append(" | ")
+                .append(millis(baseline.pooled().maxNanos()))
+                .append(" | ")
+                .append(baseline.pooled().samples())
+                .append(" |\n");
+
         text.append("\n## 查询结果\n\n");
         text.append("| 查询 | p50 | p95 | p99 | max | 行数（两次） | 门禁 | 判定 |\n");
         text.append("| --- | --- | --- | --- | --- | --- | --- | --- |\n");
@@ -730,6 +819,25 @@ class InstanceBenchmark {
                 .append(" | ≤ 50 毫秒 | ")
                 .append(smoke ? "冒烟" : mark(w1.p95Nanos() <= W1_P95_LIMIT_NANOS))
                 .append(" |\n");
+        long failureOps = w1.failures();
+        long totalAttempts = w1.ops() + failureOps;
+        double failureRate = totalAttempts == 0 ? 0d : (100d * failureOps / totalAttempts);
+        text.append("| 失败次数 | ").append(grouped(failureOps)).append(" | — | — |\n");
+        text.append("| 失败率 | ")
+                .append(String.format(Locale.ROOT, "%.2f%%", failureRate))
+                .append("（失败 ÷ (成功 + 失败)） | — | — |\n");
+        if (!w1.failuresByType().isEmpty()) {
+            text.append("| 失败明细 | ");
+            boolean firstFailure = true;
+            for (Map.Entry<String, Long> entry : w1.failuresByType().entrySet()) {
+                if (!firstFailure) {
+                    text.append("；");
+                }
+                firstFailure = false;
+                text.append(entry.getKey()).append("=").append(entry.getValue());
+            }
+            text.append(" | — | — |\n");
+        }
 
         text.append("\n## 门禁结论\n\n");
         if (smoke) {
@@ -784,6 +892,15 @@ class InstanceBenchmark {
         text.append("- 造数：`WarehouseCorpus`，种子 ")
                 .append(WarehouseCorpus.SEED)
                 .append("，PostgreSQL `COPY`；写入后 `ANALYZE`。\n");
+        text.append("- 连接池：HikariCP（`maximumPoolSize`=")
+                .append(poolConfig.maximumPoolSize())
+                .append("，`minimumIdle`=")
+                .append(poolConfig.minimumIdle())
+                .append("，`autoCommit`=")
+                .append(poolConfig.autoCommit())
+                .append("）；查询与写入均经连接池执行，采样前与 W1 前等待空闲连接数等于池大小。\n");
+        text.append(
+                "- 连接开销基线：在第一轮查询前测量。新建连接用独立 `PGSimpleDataSource` 做 20 次 `getConnection` → `select 1` → `close`；池内连接从连接池做 100 次同样操作（前 10 次预热不计）。\n");
         text.append("- Q1 ~ Q3：`TraceQueries`；每条查询预热 ")
                 .append(smoke ? SMOKE_WARMUP : WARMUP)
                 .append(" 次、采样 ")
@@ -792,7 +909,7 @@ class InstanceBenchmark {
         text.append("- Q4 / Q5：基准内命名 SQL 常量（全文见下）；p50/p95/p99/max 用最近秩。\n");
         text.append("- W1：8 线程，upsert:unlink+link = 7:3，持续 ")
                 .append(smoke ? "5" : "60")
-                .append(" 秒。\n");
+                .append(" 秒；按异常简单类名统计失败次数（只记录，不作门禁；吞吐与 p95 仍只计成功操作）。\n");
         text.append("- 造数后跑两轮查询，断言各查询返回行数相同。\n");
 
         text.append("\n## SQL\n\n");
@@ -892,12 +1009,85 @@ class InstanceBenchmark {
         }
     }
 
-    private DataSource dataSource() {
-        PGSimpleDataSource ds = new PGSimpleDataSource();
-        ds.setUrl(postgres.getJdbcUrl());
-        ds.setUser(postgres.getUsername());
-        ds.setPassword(postgres.getPassword());
-        return ds;
+    private HikariDataSource dataSource() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(postgres.getJdbcUrl());
+        config.setUsername(postgres.getUsername());
+        config.setPassword(postgres.getPassword());
+        config.setMaximumPoolSize(POOL_SIZE);
+        config.setMinimumIdle(POOL_SIZE);
+        config.setAutoCommit(true);
+        config.setPoolName("instances-bench");
+        return new HikariDataSource(config);
+    }
+
+    private void awaitPoolFilled(String phase) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + 30_000L;
+        while (System.currentTimeMillis() < deadline) {
+            var mx = dataSource.getHikariPoolMXBean();
+            if (mx != null && mx.getIdleConnections() == dataSource.getMaximumPoolSize()) {
+                log.info("pool filled at {}: idle={}", phase, mx.getIdleConnections());
+                return;
+            }
+            Thread.sleep(100L);
+        }
+        var mx = dataSource.getHikariPoolMXBean();
+        int idle = mx == null ? -1 : mx.getIdleConnections();
+        int total = mx == null ? -1 : mx.getTotalConnections();
+        throw new AssertionError("HikariCP pool not filled within 30s (" + phase + "): idle=" + idle + ", total="
+                + total + ", maximumPoolSize=" + dataSource.getMaximumPoolSize());
+    }
+
+    private ConnectionBaseline measureConnectionBaseline() throws SQLException {
+        LatencyStats newConnection = measureNewConnectionOverhead();
+        LatencyStats pooled = measurePooledConnectionOverhead();
+        return new ConnectionBaseline(newConnection, pooled);
+    }
+
+    private LatencyStats measureNewConnectionOverhead() throws SQLException {
+        PGSimpleDataSource fresh = new PGSimpleDataSource();
+        fresh.setUrl(postgres.getJdbcUrl());
+        fresh.setUser(postgres.getUsername());
+        fresh.setPassword(postgres.getPassword());
+        long[] nanos = new long[20];
+        for (int i = 0; i < nanos.length; i++) {
+            long start = System.nanoTime();
+            try (Connection connection = fresh.getConnection();
+                    Statement statement = connection.createStatement();
+                    ResultSet rs = statement.executeQuery("select 1")) {
+                rs.next();
+            }
+            nanos[i] = System.nanoTime() - start;
+        }
+        return LatencyStats.of(nanos);
+    }
+
+    private LatencyStats measurePooledConnectionOverhead() throws SQLException {
+        for (int i = 0; i < 10; i++) {
+            try (Connection connection = dataSource.getConnection();
+                    Statement statement = connection.createStatement();
+                    ResultSet rs = statement.executeQuery("select 1")) {
+                rs.next();
+            }
+        }
+        long[] nanos = new long[90];
+        for (int i = 0; i < nanos.length; i++) {
+            long start = System.nanoTime();
+            try (Connection connection = dataSource.getConnection();
+                    Statement statement = connection.createStatement();
+                    ResultSet rs = statement.executeQuery("select 1")) {
+                rs.next();
+            }
+            nanos[i] = System.nanoTime() - start;
+        }
+        return LatencyStats.of(nanos);
+    }
+
+    private String readPrepareThreshold() throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PGConnection pg = connection.unwrap(PGConnection.class);
+            return Integer.toString(pg.getPrepareThreshold());
+        }
     }
 
     private static long percentile(long[] samples, double fraction) {
@@ -997,7 +1187,35 @@ class InstanceBenchmark {
             BackgroundDelta background) {}
 
     private record WriteRun(
-            long ops, double throughput, long p50Nanos, long p95Nanos, long p99Nanos, long maxNanos, long durationMs) {}
+            long ops,
+            long failures,
+            Map<String, Long> failuresByType,
+            double throughput,
+            long p50Nanos,
+            long p95Nanos,
+            long p99Nanos,
+            long maxNanos,
+            long durationMs) {}
+
+    private record LatencyStats(long p50Nanos, long p95Nanos, long maxNanos, int samples) {
+        static LatencyStats of(long[] nanos) {
+            return new LatencyStats(percentile(nanos, 0.50d), percentile(nanos, 0.95d), maxOf(nanos), nanos.length);
+        }
+    }
+
+    private record ConnectionBaseline(LatencyStats newConnection, LatencyStats pooled) {}
+
+    private record PoolConfig(
+            int maximumPoolSize, int minimumIdle, boolean autoCommit, String hikariVersion, String prepareThreshold) {
+        static PoolConfig from(HikariDataSource ds, String prepareThreshold) {
+            String version = HikariDataSource.class.getPackage().getImplementationVersion();
+            if (version == null || version.isBlank()) {
+                version = "unknown";
+            }
+            return new PoolConfig(
+                    ds.getMaximumPoolSize(), ds.getMinimumIdle(), ds.isAutoCommit(), version, prepareThreshold);
+        }
+    }
 
     private record QueryBundle(QueryRun q1, QueryRun q2, QueryRun q3, QueryRun q4, QueryRun q5) {}
 
