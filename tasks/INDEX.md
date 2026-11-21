@@ -2,10 +2,11 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 153 张卡：完成 128，进行中 0，阻塞 3，待办 22。
+共 153 张卡：完成 129，进行中 0，阻塞 3，待办 21。
 
 ## 现在可以开工的卡（按本地文件计算）
 
+- [P6-32](P6/P6-32-instance-store-benchmark.md) 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续
 - [P6-42](P6/P6-42-web-typescript-7-evaluation.md) Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点
 - [P6-43](P6/P6-43-forms-rea-planning.md) 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡
 - [P6-44](P6/P6-44-discussions-rea-planning.md) 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡
@@ -14,7 +15,6 @@
 - [P6-47](P6/P6-47-manchester-rea-planning.md) 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡
 - [P6-48](P6/P6-48-mcp-write-tools-planning.md) 规划卡：MCP 写工具与人工确认机制（设计、ADR 草案与拆卡）
 - [P6-50](P6/P6-50-upload-merge-apply-api.md) 后端：上传并合并到已有项目的预览、应用与放弃接口（在生成锁内校验预览时的修订号）
-- [P6-54](P6/P6-54-instance-benchmark-method.md) 实例库基准测法修订：改用连接池，记录连接开销基线与 W1 失败次数
 
 ## 阻塞中
 
@@ -186,7 +186,7 @@
 | [P6-29](P6/P6-29-admin-delete-user.md) | 后端：系统管理员删除用户（停用并清除个人信息，账户 ID 保留在历史中） | wp-app | app-security | M | 待办 | P6-50 |
 | [P6-30](P6/P6-30-web-delete-user.md) | Web 端：用户管理页删除用户，并标出已删除的用户 | wp-web | web | S | 待办 | P6-29 |
 | [P6-31](P6/P6-31-instance-store-schema.md) | 实例库 PoC（一）：新建 wp-instances 模块，instances / links 表结构、带有效期的写入与追溯查询 | wp-instances | db | M | 完成 | P6-11 |
-| [P6-32](P6/P6-32-instance-store-benchmark.md) | 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续 | wp-instances | benchmark | S | 待办 | P6-31、P6-53、P6-54 |
+| [P6-32](P6/P6-32-instance-store-benchmark.md) | 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续 | wp-instances | benchmark | S | 待办（可开工） | P6-31、P6-53、P6-54 |
 | [P6-33](P6/P6-33-instance-store-validation.md) | 实例库 PoC（三）：从本体投影表生成定义域 / 值域校验规则，写入实例时校验 | wp-instances | db | M | 待办 | P6-32、P6-13 |
 | [P6-34](P6/P6-34-instance-service-planning.md) | 规划卡：依据实例库 PoC 结论，规划实例库服务化 | tasks/P6 | planning | S | 待办 | P6-33 |
 | [P6-35](P6/P6-35-outbox-kafka-publisher.md) | outbox 发布器 → Kafka：把每个修订事件按项目分区、按提交顺序发布到 Kafka 主题（默认关闭） | wp-app | app-service | M | 待办 | P6-21、P6-51 |
@@ -208,6 +208,6 @@
 | [P6-51](P6/P6-51-oidc-login-flow.md) | 后端：通用 OpenID Connect 登录（授权码流程、与账号密码登录相同的会话、登录方式列表接口） | wp-app | app-security | M | 待办 | P6-37、P6-52 |
 | [P6-52](P6/P6-52-deleted-user-session-revocation.md) | 后端：已删除用户的已登录会话立即失效（会话注册表 + 按请求检查） | wp-app | app-security | M | 待办 | P6-29 |
 | [P6-53](P6/P6-53-trace-follow-batched.md) | TraceQueries.follow 改为每一跳一条 SQL，消除逐节点查询（N+1） | wp-instances | db | S | 完成 | P6-31 |
-| [P6-54](P6/P6-54-instance-benchmark-method.md) | 实例库基准测法修订：改用连接池，记录连接开销基线与 W1 失败次数 | wp-instances | benchmark | S | 待办（可开工） | P6-31 |
+| [P6-54](P6/P6-54-instance-benchmark-method.md) | 实例库基准测法修订：改用连接池，记录连接开销基线与 W1 失败次数 | wp-instances | benchmark | S | 完成 | P6-31 |
 
 各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`。
