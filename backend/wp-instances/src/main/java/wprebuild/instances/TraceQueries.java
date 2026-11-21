@@ -8,7 +8,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.sql.DataSource;
@@ -21,10 +24,29 @@ import javax.sql.DataSource;
  */
 public final class TraceQueries {
 
+    /** Caps tips bound into one {@code = any(?)} parameter; batches are merged before expansion. */
+    static final int MAX_BATCH = 10_000;
+
     private final DataSource dataSource;
 
     public TraceQueries(DataSource dataSource) {
         this.dataSource = Objects.requireNonNull(dataSource, "dataSource");
+    }
+
+    /** Split {@code items} into contiguous chunks of at most {@code size}. */
+    static <T> List<List<T>> chunks(List<T> items, int size) {
+        Objects.requireNonNull(items, "items");
+        if (size < 1) {
+            throw new IllegalArgumentException("size must be >= 1");
+        }
+        if (items.isEmpty()) {
+            return List.of();
+        }
+        List<List<T>> out = new ArrayList<>((items.size() + size - 1) / size);
+        for (int i = 0; i < items.size(); i += size) {
+            out.add(List.copyOf(items.subList(i, Math.min(i + size, items.size()))));
+        }
+        return List.copyOf(out);
     }
 
     /**
@@ -111,53 +133,88 @@ public final class TraceQueries {
             return List.of(List.of(startIri));
         }
 
-        List<List<String>> frontier = List.of(List.of(startIri));
-        for (PathStep step : path) {
-            List<List<String>> next = new ArrayList<>();
-            for (List<String> current : frontier) {
-                String tip = current.get(current.size() - 1);
-                for (String neighbor : neighbors(tip, step, asOf)) {
-                    List<String> extended = new ArrayList<>(current);
-                    extended.add(neighbor);
-                    next.add(List.copyOf(extended));
+        try (Connection connection = dataSource.getConnection()) {
+            List<List<String>> frontier = List.of(List.of(startIri));
+            Timestamp asOfTs = Timestamp.from(asOf);
+            for (PathStep step : path) {
+                List<String> tips = uniqueTips(frontier);
+                Map<String, List<String>> edges = hopEdges(connection, tips, step, asOfTs);
+                if (edges.isEmpty()) {
+                    return List.of();
                 }
+                List<List<String>> next = new ArrayList<>();
+                for (List<String> current : frontier) {
+                    String tip = current.get(current.size() - 1);
+                    List<String> neighbors = edges.get(tip);
+                    if (neighbors == null) {
+                        continue;
+                    }
+                    for (String neighbor : neighbors) {
+                        List<String> extended = new ArrayList<>(current);
+                        extended.add(neighbor);
+                        next.add(List.copyOf(extended));
+                    }
+                }
+                if (next.isEmpty()) {
+                    return List.of();
+                }
+                frontier = next;
             }
-            frontier = next;
-            if (frontier.isEmpty()) {
-                return List.of();
-            }
+            return List.copyOf(frontier);
+        } catch (SQLException e) {
+            throw new IllegalStateException("follow failed for " + startIri, e);
         }
-        return List.copyOf(frontier);
     }
 
-    private List<String> neighbors(String iri, PathStep step, Instant asOf) {
+    private static List<String> uniqueTips(List<List<String>> frontier) {
+        LinkedHashSet<String> tips = new LinkedHashSet<>(frontier.size());
+        for (List<String> path : frontier) {
+            tips.add(path.get(path.size() - 1));
+        }
+        return List.copyOf(tips);
+    }
+
+    private static Map<String, List<String>> hopEdges(
+            Connection connection, List<String> tips, PathStep step, Timestamp asOfTs) throws SQLException {
         String sql = step.direction() == Direction.FORWARD ? """
-                        select object_iri
+                        select subject_iri as from_iri, object_iri as to_iri
                         from links
-                        where subject_iri = ? and property_iri = ?
+                        where subject_iri = any (?) and property_iri = ?
                           and valid_from <= ? and (valid_to is null or valid_to > ?)
                         """ : """
-                        select subject_iri
+                        select object_iri as from_iri, subject_iri as to_iri
                         from links
-                        where object_iri = ? and property_iri = ?
+                        where object_iri = any (?) and property_iri = ?
                           and valid_from <= ? and (valid_to is null or valid_to > ?)
                         """;
-        try (Connection connection = dataSource.getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql)) {
-            Timestamp asOfTs = Timestamp.from(asOf);
-            ps.setString(1, iri);
-            ps.setString(2, step.propertyIri());
-            ps.setTimestamp(3, asOfTs);
-            ps.setTimestamp(4, asOfTs);
-            try (ResultSet rs = ps.executeQuery()) {
-                List<String> out = new ArrayList<>();
-                while (rs.next()) {
-                    out.add(rs.getString(1));
+
+        Map<String, List<String>> edges = new HashMap<>();
+        for (List<String> batch : chunks(tips, MAX_BATCH)) {
+            Array tipArray = connection.createArrayOf("text", batch.toArray());
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setArray(1, tipArray);
+                ps.setString(2, step.propertyIri());
+                ps.setTimestamp(3, asOfTs);
+                ps.setTimestamp(4, asOfTs);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String from = rs.getString("from_iri");
+                        String to = rs.getString("to_iri");
+                        edges.computeIfAbsent(from, key -> new ArrayList<>()).add(to);
+                    }
                 }
-                return out;
+            } finally {
+                freeQuietly(tipArray);
             }
-        } catch (SQLException e) {
-            throw new IllegalStateException("neighbors failed for " + iri, e);
+        }
+        return edges;
+    }
+
+    private static void freeQuietly(Array array) {
+        try {
+            array.free();
+        } catch (SQLException ignored) {
+            // Prefer the query failure if both free and execute throw.
         }
     }
 }

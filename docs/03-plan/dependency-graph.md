@@ -172,7 +172,7 @@ flowchart LR
         P6_50["P6-50"]:::todo
         P6_51["P6-51"]:::todo
         P6_52["P6-52"]:::todo
-        P6_53["P6-53"]:::todo
+        P6_53["P6-53"]:::done
         P6_54["P6-54"]:::todo
     end
     P0_01 --> P0_02
