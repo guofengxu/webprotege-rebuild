@@ -7,8 +7,8 @@ type: impl
 size: S
 work_type: benchmark
 ecc_extra: []
-status: blocked
-depends_on: [P6-31]
+status: todo
+depends_on: [P6-31, P6-53, P6-54]
 ---
 
 # P6-32 实例库 PoC（二）：规模基准与通过标准
@@ -21,6 +21,8 @@ depends_on: [P6-31]
 - P6-31：`InstanceStore`、`TraceQueries`、`V1__instances_schema.sql`
 - P6-18：基准测法（写入后 `ANALYZE`、预热后采样、记录执行计划、返回行数、autovacuum 与 GC；冒烟模式），以及 `docs/perf/projection-poc-2026-11-14-root-cause.md` 的教训
 - `backend/wp-app/src/test/java/wprebuild/app/projection/ProjectionBenchmark.java`：报告格式与 `-Dbench=true`、`-Dbench.smoke=true` 开关的写法
+- 首次运行：`docs/perf/instances-poc-2026-11-20.md`；根因分析：`docs/perf/instances-poc-2026-11-20-root-cause.md`
+- 修复卡：P6-53（`TraceQueries.follow` 每一跳一条 SQL）、P6-54（基准测法修订：连接池、连接开销基线、W1 失败次数）
 
 ## 产出
 - `backend/wp-instances/src/test/java/wprebuild/instances/bench/WarehouseCorpus.java`：固定随机种子的造数器，用 PostgreSQL `COPY` 写入。全量规模：
@@ -45,6 +47,14 @@ depends_on: [P6-31]
 - 采样参数（起点 IRI）用固定种子从造数结果中抽取，并在报告中列出，便于复现。
 - 造数可能需要几分钟；JVM 用 `-Xmx6g`。冒烟模式应在 2 分钟内完成。
 
+### 重跑（P6-53、P6-54 合并之后）
+- 本卡已经按原产出跑过一次，结果见「首次运行记录」。重跑时语料、规模、五条查询、W1 的参数和门禁阈值**都不改**。测法以 P6-54 修订后的 `InstanceBenchmark` 为准（查询和写入经连接池执行，采样前连接池已填满）；Q2、Q3 走 P6-53 修改后的 `TraceQueries.follow`。重跑只运行验收命令、生成新报告，**不再改基准代码**；发现基准代码有问题时运行 `task.py block`。
+- 开工前，人需要先删除已合并的旧分支：`feature/p6-32-instance-store-benchmark` 已经合并到 `main`（合并提交 `c6d39fc`），但远程分支还在。不删的话，`task.py start P6-32` 会因为远程分支已存在而拒绝；加 `--resume` 又会切到旧分支，拿不到 P6-53、P6-54 的代码。要在人自己的终端运行的命令：`git push origin --delete feature/p6-32-instance-store-benchmark`；如果本地也有这个分支，再运行 `git branch -d feature/p6-32-instance-store-benchmark`。Agent 遇到 `start` 报错时，把报错原文告诉人，不要绕过。
+- 尽量在首次运行的同一台机器上重跑（Intel Xeon E5-2673 v3 × 8，32 GB 内存，JDK 25，`-Xmx6g`，Testcontainers 中的 PostgreSQL 18），方便和首次结果对比。换了机器的话，在执行记录中写明。
+- 新报告按运行日期命名；与已有报告同名时，`nextReportPath` 会自动加 `-2` 后缀。首次报告和根因分析都保留，不删除、不改写。
+- 在执行记录（`--summary`）中逐项写出首次运行与重跑的对比：Q1 ~ Q5 的 p50 / p95 与返回行数、W1 的吞吐、p95 与失败次数，以及报告中「连接开销基线」两行的 p50。
+- 重跑后仍有不达标项：照旧把本卡标为 `blocked`，列出数据和相关执行计划，不要自行优化。由人按根因分析最后一节选择下一步。
+
 ## ECC 技能
 工作项类型：`benchmark` —— 性能基准。规则见 `.cursor/skills/wp-ecc-routing/SKILL.md`，也可以运行 `python tools/task.py ecc P6-32` 查看。
 
@@ -63,13 +73,18 @@ depends_on: [P6-31]
 - [ ] 验收命令全部通过
 - [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
 - [ ] 报告的「门禁结论」全部达标（不达标时本卡阻塞，不勾选）
+- [ ] 执行记录中写有与首次运行（2026-11-20）的逐项对比
 - [ ] 执行记录已填写
 
 ## 不在本卡范围
-- 任何优化：索引、物化路径、闭包表、AGE
+- 任何优化：索引、物化路径、闭包表、AGE（`follow` 的逐节点查询已拆到 P6-53）
+- 修改基准代码、语料、规模、查询或门禁阈值（测法修订已拆到 P6-54；调整门禁由人决定）
 - 本体校验（P6-33）
 - 服务化之后经网络接口的端到端写入基准（见 P6-34）
 
-## 阻塞
+## 首次运行记录（2026-11-20，当时标为 blocked）
 - 日期：2026-11-21
-- 原因：Q3 p95≈94s ≫ 200ms（TraceQueries.follow N+1）；其余查询达标；见 docs/perf/…
+- 原因（原文）：Q3 p95≈94s ≫ 200ms（TraceQueries.follow N+1）；其余查询达标；见 docs/perf/…
+- 更正（2026-11-21）：报告为 `docs/perf/instances-poc-2026-11-20.md`。未达标的共 3 项：Q3 p95 94,403.54 毫秒（≤ 200 毫秒）；W1 吞吐 167.6 次/秒（≥ 200）；W1 单次写入 p95 93.66 毫秒（≤ 50 毫秒）。原记录漏了 W1 的两项。Q1 p95 32.36、Q2 p95 102.09、Q4 p95 146.84、Q5 p95 39.21 毫秒和两次行数一致达标。
+- 根因（2026-11-21 分析，详见 `docs/perf/instances-poc-2026-11-20-root-cause.md`）：主要是测法缺陷。基准用不带连接池的 `PGSimpleDataSource`，每条 SQL 都新建一条物理连接；按报告数字反推，每次约 20 毫秒，而 Q1 的执行只要 0.46 毫秒。生产代码的 `TraceQueries.follow` 逐节点查询，把它放大了：Q3 一次调用发出 4,617 条 SQL（4,617 × 约 20 毫秒 ≈ 94 秒）。W1 每次写入平均要建 1.6 次连接（约 32 毫秒），报告中每次写入平均约 48 毫秒。本次分析没有在机器上复现，连接开销的直接测量由 P6-54 加进报告。现有数据不能作为评估 Apache AGE 的依据。
+- 处理：人要求按根因分析拆卡（2026-11-21）。拆出 P6-53（生产：`follow` 每一跳一条 SQL）和 P6-54（基准测法修订：连接池、连接开销基线、W1 失败次数），两张都合并后重跑本卡。不调整门禁，不改 V1 表结构，不加索引，不改 ADR-013。本卡状态改回 `todo`，并依赖这两张卡。
