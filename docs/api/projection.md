@@ -157,3 +157,22 @@ Replace `CHANGE_ME` with a secret managed outside the repository.
 3. **Manual reset**: delete the project's `projection.project_state` row (and optionally its data rows). The next outbox revision for that project triggers a full rebuild when projection is enabled.
 
 Both admin endpoints require application action `EDIT_APPLICATION_SETTINGS` (only `SYSTEM_ADMIN`). Status may be read for trashed projects; rebuild returns `409 PROJECT_TRASHED`.
+
+## How the instance store uses projection tables
+
+The instance-store PoC (`wp-instances`, package `wprebuild.instances.rules`) reads these tables through a projection-reader datasource and builds closed-world write-gate rules. Changing the listed columns requires a coordinated change in `wp-instances`.
+
+| Table | Columns read | Purpose |
+|---|---|---|
+| `projection.project_state` | `project_id`, `rev_no` | Stamp successful writes with `ontology_rev`; missing row means projection is not enabled for the project |
+| `projection.entities` | `project_id`, `iri`, `entity_type`, `deprecated` | Class / object-property / data-property existence; deprecated classes |
+| `projection.hierarchy_edges` | `project_id`, `hierarchy`, `child_iri`, `parent_iri` (only `hierarchy = 'CLASS'`) | Subclass ancestor closure for domain / range checks |
+| `projection.property_domains` | `project_id`, `property_iri`, `class_iri` | Declared named-class domains |
+| `projection.property_ranges` | `project_id`, `property_iri`, `range_iri`, `range_kind` | Declared named-class or datatype ranges |
+
+Semantics (write gate, not OWL reasoning):
+
+- Domain and range axioms are enforced as constraints on the written class IRIs, not used to infer types.
+- Multiple domain (or class-range) rows for one property are an **intersection**: the instance class must belong to every declared class via subclass closure. No declared domain / range means that aspect is not checked.
+- Only named classes declared on the property itself appear in the projection. Inherited domains / ranges from parent properties and complex class expressions are absent.
+- Required properties, cardinality, and enumeration value constraints are not in the projection schema yet; extending them needs a new ADR and follow-up work (see P6-34).

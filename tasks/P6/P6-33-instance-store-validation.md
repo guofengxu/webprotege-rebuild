@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: db
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-32, P6-13]
 ---
 
@@ -57,12 +57,20 @@ depends_on: [P6-32, P6-13]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 必填属性、基数、枚举取值（需要扩展投影表，另开 ADR）
 - 规则的缓存与自动刷新、outbox 订阅（P6-34）
 - 修改编辑器的投影表或 wp-app 代码
+
+## 执行记录
+- 日期：2026-11-21
+- 分支：feature/p6-33-instance-store-validation
+- 测试：2026-11-21T22:50:54+08:00 通过（3 项）
+- 实际改动：Added wprebuild.instances.rules (ProjectionRuleSource, ValidationRules, InstanceValidator, ValidatingInstanceWriter) to load projection domains/ranges under REPEATABLE READ and gate InstanceStore writes; documented projection column dependencies; InstanceValidationTest covers domain intersection, subclass domain, datatype/range mismatches, and no-write-on-failure.
+- 偏差：无
+- 审查：database-reviewer, java-reviewer
