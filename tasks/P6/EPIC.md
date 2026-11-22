@@ -155,3 +155,48 @@ P6-32 首次运行（`docs/perf/instances-poc-2026-11-20.md`）有 3 项未达�
 | P6-32 | 两张修复卡合并后重跑；语料、规模、查询、W1 参数和门禁阈值不改 |
 
 依赖：P6-31 → {P6-53、P6-54} → P6-32 → P6-33。两张修复卡可以并行。共享文件：`TraceQueries.java` 只由 P6-53 修改；`InstanceBenchmark.java`、`WarehouseCorpus.java` 和 `backend/wp-instances/pom.xml` 只由 P6-54 修改。两张修复卡都不新增 Flyway 迁移，不改 `docs/02-architecture/overview.md`，也不改 OpenAPI。重跑仍不达标时，由人按根因分析最后一节选择下一步。本次拆卡用掉 P6-53、P6-54 两个编号。
+
+## 实例库服务化（P6-34，2026-11-22）
+
+依据：P6-32 重跑报告 `docs/perf/instances-poc-2026-11-21.md`（门禁全部达标）；P6-33（定义域 / 值域校验；必填、基数、枚举列为需扩展投影表）；ADR-013 第 4、5 节；P6-08 outbox 中继（进程内 `OutboxConsumer`）；P6-13 投影只读账号与 `project_state.rev_no`。planner / architect 审查后修订了租户边界、Flyway 归属与卡拆分（见下）。
+
+### 决定（待人在提交前确认「服务形态」）
+
+| # | 议题 | 决定 |
+|---|---|---|
+| 1 | 服务形态 | **同仓独立 Spring Boot 服务** `backend/wp-instances-app`，依赖纯 JDBC 库 `wp-instances`；独立数据库 `wp_instances`。与 ADR-013「独立服务、独立数据库」一致，**不**改 ADR-013，也**不**放进 wp-app Modulith。 |
+| 2 | 写入接口与租户 | REST 批量写入（upsert / link / unlink / retire）；调用方提供 `at`；认证用**实例库自己的** API Key（**不**复用编辑器密钥）。**首期单租户**：配置项 `wp.instances.project-id` 指定唯一允许的本体项目；路径中的 `{projectId}` 必须与之相等，否则 403；IRI 表仍为全局（V1 无 `project_id` 列）。多项目隔离（表加 `project_id` 或按项目分库）与按项目绑键留给后续卡。幂等键见 P6-64。 |
+| 3 | 规则刷新 | 投影表是编辑器 outbox 的**物化面**；跨进程不能挂 `OutboxConsumer`，故实例服务**写前核对** `projection.project_state.rev_no`（`CachedRuleSource`），等价于消费投影进度，**不**改 ADR-013 原文。本体变严后已有实例：**不回溯改写**；新写入按当前规则；漂移报告另开卡。首期校验仅为定义域 / 值域 / 类与属性存在性（**部分**满足 ADR-013 §4；必填 / 基数 / 枚举见 P6-63）。 |
+| 4 | 必填 / 基数 / 枚举 | **首期不做**；P6-63 产出 ADR 草案（提议）与编辑器侧拆卡。 |
+| 5 | 性能 | P6-32 已达标 → **不**加索引 / 物化路径 / AGE / 图库 ADR。 |
+| 6 | 部署与运维 | Compose：**同一 Postgres 实例上的第二库** `wp_instances`（本地）；非开发环境应使用独立实例 / 独立备份。文档含备份、监控、投影只读账号、反向代理限流建议。网络写入基准见 P6-62（门禁锁定如下）。 |
+| 7 | 契约版本 | **要**：`project_state.contract_version`（编辑器 Flyway **V9**，依赖 V8 已在 main）；实例库 `EXPECTED_VERSION` 不一致则拒绝写入并打 ERROR 日志（期望 / 实际）。破坏性投影变更须同提交递增两侧常量。 |
+
+**P6-62 门禁（锁定）**：冒烟模式只写报告、不判定；全量模式（`-Dbench=true` 且非 smoke）门禁为单批 p95 ≤ 100 ms **且** 失败率 = 0；吞吐只记录不定门禁。不达标 → `task.py block`，不改生产代码。
+
+### 展开卡片
+
+| 卡片 | 内容 | 模块 |
+|---|---|---|
+| P6-55 | 编辑器：`project_state.contract_version`（V9）与投影文档 | wp-app/projection |
+| P6-56 | 内核：按 `rev_no` 刷新的规则缓存 + 契约版本校验 | wp-instances |
+| P6-57 | **PoC**：`wp-instances-app` 骨架（双数据源、内核+app 两套 Flyway、liveness/readiness） | wp-instances-app |
+| P6-58 | 独立 API Key（bootstrap + SQL；无管理 REST） | wp-instances-app |
+| P6-59 | REST 批量写入（调用方时间戳、校验、单租户校验） | wp-instances-app |
+| P6-60 | REST 读取与追溯 | wp-instances-app |
+| P6-61 | Compose（同实例第二库）与运维说明 | root |
+| P6-62 | 经网络的端到端写入基准 | wp-instances-app |
+| P6-63 | 规划卡：必填 / 基数 / 枚举 → ADR 草案与拆卡 | tasks/P6 |
+| P6-64 | 写入幂等键（`Idempotency-Key`）与 instances OpenAPI 初稿 | wp-instances-app |
+
+依赖（`A → B` 表示 B 依赖 A）：P6-37 → P6-55（**仅** Flyway V8→V9 串行，与 OIDC 功能无关；V8 进 main 后方可开工）；{P6-33、P6-55} → P6-56；P6-31 → P6-57 → {P6-58、P6-61}；{P6-56、P6-58} → P6-59 → P6-60 → P6-64；{P6-64、P6-61} → P6-62；P6-33 → P6-63。P6-57 与 P6-55 可并行。
+
+### 共享文件与迁移号（服务化）
+
+- 编辑器 Flyway：P6-55 用 **V9**。已分配 V6（P6-20）、V7（P6-29）、V8（P6-37）。
+- 内核 Flyway `classpath:db/instances`：仍只有 **V1**（P6-31）；**服务卡不得往此目录加脚本**。
+- 应用 Flyway `classpath:db/instances-app`（由 P6-57 挂上，启动时先 `InstanceSchema.migrate` 再跑 app 位置）：P6-58 用 **V1**（API Key）；P6-64 用 **V2**（幂等键）。与编辑器、内核迁移号无关。
+- 根 `pom.xml`、`docs/02-architecture/overview.md` 第 1 节：只有 P6-57。
+- `compose.yaml`、`docker/`：只有 P6-61。
+- `docs/api/instances.md`：串行 **P6-58 → P6-59 → P6-60 → P6-64**；`docs/api/instances-openapi.json` 只由 P6-64 新增。不改编辑器 OpenAPI / `@wp/api-types`。
+- `docs/api/projection.md`：P6-55、P6-56；扩展列归 P6-63。
