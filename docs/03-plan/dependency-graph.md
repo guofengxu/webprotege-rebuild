@@ -161,7 +161,7 @@ flowchart LR
         P6_39["P6-39"]:::blocked
         P6_40["P6-40"]:::todo
         P6_41["P6-41"]:::blocked
-        P6_42["P6-42"]:::todo
+        P6_42["P6-42"]:::blocked
         P6_43["P6-43"]:::todo
         P6_44["P6-44"]:::todo
         P6_45["P6-45"]:::todo

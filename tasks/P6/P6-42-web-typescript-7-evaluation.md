@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: todo
+status: blocked
 depends_on: [P6-07]
 ---
 
@@ -58,3 +58,9 @@ test -s docs/03-plan/typescript-7-evaluation.md
 ## 不在本卡范围
 - `@wp/api-types` 与移动端的 TypeScript 版本
 - 为了兼容 TypeScript 7 而替换 `vue-tsc` 或 lint 工具链
+
+## 阻塞
+- 日期：2026-11-22
+- 原因：评估结论与文档已完成：直接升级 typescript 到 7.0.2 后 vue-tsc（ERR_PACKAGE_PATH_NOT_EXPORTED: ./lib/tsc）与 eslint（typescript-eslint does not support TS 7.0）失败，已撤回依赖改动，保持 6.0.3；docs/03-plan/typescript-7-evaluation.md 已写好。
+
+验收命令 pnpm --filter wp-web run verify 在撤回后仍失败，原因不在本卡范围：src/features/workspace/WorkspacePage.spec.ts 的 “opening with ?entity=” 用例未 mock GET /api/projects/{id}/frames/class 与 entities/history，真实 ClassFrameEditor / EntityHistoryTab 报「发生了未知错误」，页面文本不含 IRI。该失败在 stash 掉本卡文档后仍稳定复现（与 TS 版本无关）。建议：另开小卡补齐 WorkspacePage.spec 的 handlers，或允许本卡附带最小测试 mock 修复后再 finish。
