@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-32]
 ---
 
@@ -46,12 +46,20 @@ python tools/plan_lint.py --check
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 新卡片已通过评审
-- [ ] 人已确认评估结论
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 新卡片已通过评审
+- [x] 人已确认评估结论
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 写任何业务代码
+
+## 执行记录
+- 日期：2026-11-22
+- 分支：docs/p6-36-graph-publisher-evaluation
+- 测试：2026-11-22T11:58:39+08:00 通过（2 项）
+- 实际改动：对照 ADR-013 §5 四条件记录暂不做结论于 EPIC（P6-32 Q4/Q5 达标、~3.1M 边、投影+MCP 覆盖 Agent）；写明重新评估触发条件与 TBox/实例侧同步分支；不新建 ADR 或实现卡。审查：planner APPROVE；architect 先 REQUEST_CHANGES 后已按意见改（拆分 Kafka vs 实例同步、未排期措辞、§5#1 实例范围说明）。
+- 偏差：无新卡（结论为暂不做）；docs/03-plan/dependency-graph.md 与 INDEX 由 plan_lint/finish 自动更新
+- 审查：planner, architect
