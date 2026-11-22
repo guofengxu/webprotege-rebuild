@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-33]
 ---
 
@@ -50,12 +50,20 @@ python tools/plan_lint.py --check
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 新卡片已通过评审
-- [ ] 人已确认服务形态
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 新卡片已通过评审
+- [x] 人已确认服务形态
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 写任何业务代码
+
+## 执行记录
+- 日期：2026-11-22
+- 分支：docs/p6-34-instance-service-planning
+- 测试：2026-11-22T11:40:19+08:00 通过（2 项）
+- 实际改动：Recorded seven serviceization decisions in EPIC (independent wp-instances-app, single-tenant project-id, poll projection rev_no, defer required/cardinality/enum, P6-32 pass so no AGE, compose second DB, contract_version V9). Added cards P6-55..P6-64 covering contract version, rule cache, Spring Boot PoC, API keys, write/read APIs, compose/ops, network write bench, constraints planning, and idempotency/OpenAPI.
+- 偏差：无
+- 审查：planner, architect, (REQUEST_CHANGES, then, APPROVE, after, Flyway, ownership, single-tenant, readiness, card, split, and, gate, lock, fixes)
