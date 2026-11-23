@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 172 张卡：完成 134，进行中 0，阻塞 3，待办 35。
+共 181 张卡：完成 135，进行中 0，阻塞 3，待办 43。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-44](P6/P6-44-discussions-rea-planning.md) 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡
 - [P6-45](P6/P6-45-watches-rea-planning.md) 规划卡：关注（Watches）与邮件通知逆向分析，确定首期范围并拆卡
 - [P6-46](P6/P6-46-tags-rea-planning.md) 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡
 - [P6-47](P6/P6-47-manchester-rea-planning.md) 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡
@@ -199,7 +198,7 @@
 | [P6-41](P6/P6-41-web-vue-3-6-upgrade.md) | Web 端：升级到 Vue 3.6 正式版（不启用 Vapor 模式），验证生态库兼容 | wp-web | web | S | 阻塞 | P6-42 |
 | [P6-42](P6/P6-42-web-typescript-7-evaluation.md) | Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点 | wp-web | web | S | 待办 | P6-07、P6-65 |
 | [P6-43](P6/P6-43-forms-rea-planning.md) | 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 完成 | P4-22 |
-| [P6-44](P6/P6-44-discussions-rea-planning.md) | 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P6-03 |
+| [P6-44](P6/P6-44-discussions-rea-planning.md) | 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 完成 | P6-03 |
 | [P6-45](P6/P6-45-watches-rea-planning.md) | 规划卡：关注（Watches）与邮件通知逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P6-21 |
 | [P6-46](P6/P6-46-tags-rea-planning.md) | 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P3-19 |
 | [P6-47](P6/P6-47-manchester-rea-planning.md) | 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P4-09 |
@@ -229,5 +228,14 @@
 | [P6-71](P6/P6-71-forms-migrator-export.md) | 迁移工具：从 Mongo 导出 Forms 与 FormSelectors 到迁移包 | wp-legacy-migrator | migrator | M | 待办 | P6-66 |
 | [P6-72](P6/P6-72-forms-migration-import.md) | 后端：导入迁移包中的表单描述符与选择器 | wp-app/migration | app-service | M | 待办 | P6-66、P6-71 |
 | [P6-73](P6/P6-73-entity-forms-save-api.md) | 后端：保存实体表单接口（ChangePipeline、expectedHead 与 pristine 锚定） | wp-app/ontology | app-service | M | 待办 | P6-68、P6-69 |
+| [P6-74](P6/P6-74-discussion-schema.md) | 讨论：entity_discussion_thread / comment 表结构（V11）、JDBC 仓储与 Modulith discussion 模块壳 | wp-app/discussion | db | M | 待办 | P6-44、P6-66 |
+| [P6-75](P6/P6-75-discussion-permissions.md) | 访问控制：填实 CAN_COMMENT 的讨论动作（VIEW/CREATE/EDIT_OWN/SET_STATUS） | wp-app/access | app-security | S | 待办 | P6-44、P6-67 |
+| [P6-76](P6/P6-76-discussion-api.md) | 后端：实体讨论 REST（线程与评论 CRUD、域事件） | wp-app/discussion | app-service | M | 待办 | P6-74、P6-75、P6-73、P6-82 |
+| [P6-77](P6/P6-77-discussion-events.md) | 事件：讨论域事件接入 ProjectEvent / SSE，并扩展 api-types 联合类型 | wp-app/events | app-service | M | 待办 | P6-76、P6-03 |
+| [P6-78](P6/P6-78-web-discussions.md) | Web 端：实体讨论面板与讨论事件的 applyProjectEvent 处理 | wp-web | web | M | 待办 | P6-77 |
+| [P6-79](P6/P6-79-discussion-merge-transfer.md) | 后端：合并实体（DELETE）后将讨论线程转移到目标实体 | wp-app/discussion | app-service | S | 待办 | P6-74、P6-24 |
+| [P6-80](P6/P6-80-discussions-migrator-export.md) | 迁移工具：从 Mongo 导出 EntityDiscussionThreads 到迁移包 | wp-legacy-migrator | migrator | M | 待办 | P6-74 |
+| [P6-81](P6/P6-81-discussions-migration-import.md) | 后端：导入迁移包中的实体讨论线程 | wp-app/migration | app-service | M | 待办 | P6-74、P6-80、P6-82 |
+| [P6-82](P6/P6-82-comment-renderer.md) | 讨论：服务端 CommentRenderer（CommonMark + 提及 span + HTML 消毒） | wp-app/discussion | app-service | S | 待办 | P6-74 |
 
 各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`。

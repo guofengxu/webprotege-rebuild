@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P6-03]
 ---
 
@@ -49,12 +49,20 @@ test -s docs/01-rea/discussions.md
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 新卡片已通过评审
-- [ ] 人已确认首期范围
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 新卡片已通过评审
+- [x] 人已确认首期范围
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 写任何业务代码；GitHub 风格的 Issue / Milestone（旧系统中是死代码）
+
+## 执行记录
+- 日期：2026-11-23
+- 分支：docs/p6-44-discussions-rea-planning
+- 测试：2026-11-23T11:16:20+08:00 通过（3 项）
+- 实际改动：逆向实体讨论并写入 discussions.md / BS-19~20；EPIC 锁定首期范围（服务端 Markdown+消毒、仅 @user、邮件留给 P6-45、SSE 同 head 事件、删除合并转移线程、迁移）；拆出 P6-74~P6-82。按 planner/architect 意见拆出渲染器卡、固定导入重渲、hub 同 head 唤醒与删除权限门。
+- 偏差：相对初稿增补 P6-82 渲染器卡；删除统一走 EDIT_OWN_OBJECT_COMMENT+作者校验；导入必须重渲消毒；P6-77 须推广 ProjectEventHub 同 head 唤醒
+- 审查：planner, architect

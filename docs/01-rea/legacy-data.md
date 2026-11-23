@@ -55,7 +55,7 @@ P2 迁移工具按本文读取旧数据。旧出处路径的缩写见 `behavior-
 | `Forms`、`FormSelectors` | 表单描述符与适用条件（值在公理中，见 `forms.md`） | 否→P6（P6-71 / P6-72） |
 | `Tags` | 标签 | 否（P6） |
 | `Watches` | 关注 | 否（P6） |
-| `EntityDiscussionThreads` | 讨论 | 否（P6） |
+| `EntityDiscussionThreads` | 讨论 | 否→P6（P6-80 / P6-81） |
 | `EntityGraphSettings`、`EntitySearchFilters`、`CollectionItemData` | 其它 | 否 |
 
 **密码**：旧系统用加盐 MD5（`Md5DigestAlgorithmProvider`，见 `../webprotege/webprotege-cli/src/main/java/edu/stanford/bmir/protege/web/server/cmdline/SetupTools.java`），而且摘要是在浏览器端计算的。新系统不继承这种做法：迁移后的账户没有密码，首次登录前由管理员重置。
