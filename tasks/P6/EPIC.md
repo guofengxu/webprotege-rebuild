@@ -18,7 +18,7 @@
 | 移动端推送通知 | 关注的实体被修改时推送。P5 暂停期间不排期 | |
 | Vue 3.6 升级 | 3.6 正式发布后升级 Web 端，单独一张卡 | |
 | TypeScript 7 评估 | vue-tsc 正式支持后再评估 | |
-| 表单（Forms） | 旧系统后期扩张最快的子系统，复杂度高，建议单独做逆向分析后再拆卡 | |
+| 表单（Forms） | 已逆向并拆首期卡（P6-43 → P6-66~P6-73）；见文末「表单（P6-43）」 | |
 | 讨论与评论 | 实体级讨论线程 | |
 | 关注（Watches）与通知 | 关注实体、邮件通知 | |
 | 标签 | 项目标签、实体打标签 | |
@@ -89,7 +89,7 @@ P6-11 首次运行（`docs/perf/projection-poc-2026-11-14.md`）只有一项未�
 | TypeScript 7 评估 | 3 | P6-42 | TypeScript 7.0 已正式发布（npm `latest` 为 7.0.2）；“vue-tsc 正式支持”需要实测才能确认，评估卡给出结论 |
 | Vue 3.6 升级 | 条件满足后 | P6-41（阻塞） | 截至 2026-11-15，3.6 仍是 RC（`3.6.0-rc.15`） |
 | 多实例部署 | 未排期（规划卡） | P6-40 | 牵涉 ADR-006 等多处单实例假设，先出 ADR 草案 |
-| 表单（Forms） | 未排期（逆向分析） | P6-43 | 规模最大（服务端约 83、共享约 146、客户端约 237 个文件），先逆向分析再拆卡 |
+| 表单（Forms） | 1（首期范围见下文「表单（P6-43）」） | P6-43、P6-66 ~ P6-73 | 逆向见 `docs/01-rea/forms.md`、BS-16 ~ BS-18；首期只读+TEXT/NUMBER（PROPERTY）可写 |
 | 讨论与评论 | 未排期（逆向分析） | P6-44 | 需要先定 Markdown 渲染与 XSS 防护、邮件、新事件类型 |
 | 关注（Watches）与通知 | 未排期（逆向分析） | P6-45 | 需要邮件发送能力；可以复用 P6-21 的“登记 + 独立投递”模式 |
 | 标签 | 未排期（逆向分析） | P6-46 | 按条件打标签（`MatchingEngine`）的规模需要评估 |
@@ -142,7 +142,7 @@ P6-34、P6-36、P6-40、P6-43 ~ P6-48 这九张规划卡都会编写新卡、修
 
 - 规划卡一次只做一张：开工前确认没有其它规划卡处于 `in_progress`（`python tools/task.py next` 与 `tasks/INDEX.md` 可以看到状态）；
 - 新卡编号取开工时 main 上的最大编号 + 1；新的 Flyway 版本号取当时 main 上已分配（含已规划未实现）的最大版本 + 1，并在本文件的共享文件小节中登记；BS 编号同理；
-- 分支名规则只允许两位卡号，P6 最多到 P6-99。本轮用到 P6-52；九张规划卡的产出若可能超过 P6-99，由人决定是否开新的阶段目录。
+- 分支名规则只允许两位卡号，P6 最多到 P6-99。P6-43 表单拆卡用到 P6-73；九张规划卡的产出若可能超过 P6-99，由人决定是否开新的阶段目录。
 
 ## P6-32 首次运行与拆卡（2026-11-21）
 
@@ -255,3 +255,47 @@ P6-42 的评估已经完成（`docs/03-plan/typescript-7-evaluation.md`，结论
 
 - CI 的 `frontend` job 增加 wp-web 的 `verify`（`.github/workflows/ci.yml` 属于开发标准文件，由人另开分支修改），避免同类失败再次只在本地暴露。
 - `main` 上 CI 的 `java` job 从 2026-11-14 前后起持续失败（`AdminUserManagementTest` 2 条断言失败）。Java 卡的全量检查是 `./mvnw -q verify`，需要先查清根因，再决定是否建修复卡。
+
+## 表单（P6-43，2026-11-23）
+
+依据：`docs/01-rea/forms.md`；BS-16 ~ BS-18；旧工程 `server/form`、`shared/form`、`client/form`；P3-15 ~ P4-22 Frame 读写；P6-26 `ChangePipeline` 期望 head；P2 迁移包格式。planner / architect 审查后若调整首期边界，以 EPIC 本小节与卡片为准。
+
+### 决定（待人在提交前确认「首期范围」）
+
+| # | 议题 | 决定 |
+|---|---|---|
+| 1 | 首期目标 | **实体表单运行时**：按选择器取表单并投影；**TEXT / NUMBER**（仅 `PROPERTY` 绑定）可编辑并经 `ChangePipeline` 写回公理；其它控件只读占位。描述符经 REST 管理。 |
+| 2 | 条件选择器 | **纳入简化版**：criteria 全量 jsonb 存储；匹配仅 `EntityTypeIsOneOf` + `SubClassOf`（ALL/ANY；`SubClassOf`=任意祖先）。criteria 树任一未支持节点 → **整条**选择器不命中。完整 MatchingEngine 不在首期（P6-46）。 |
+| 3 | 表格 / 子表单 | **首期不做可写**；投影返回空/占位，保存时若 edited≠pristine 则拒绝。 |
+| 4 | 表单设计器 Web UI | **首期不做**（可用 API / 迁移导入描述符）。 |
+| 5 | 旧数据迁移 | **纳入**：导出/导入 `Forms` + `FormSelectors`；`formatVersion` 仍为 1（新文件可选；导出**始终写空文件**）；迁移报告警告含未支持节点的选择器。 |
+| 6 | 并发 | 保存同时校验 **`expectedHead`** 与 **pristine≡当前运行时**（两层 409：`STALE_HEAD` / `FORM_DATA_CHANGED`）。 |
+| 7 | 模块 | 新 Modulith 模块 **`form`**：仅描述符/选择器持久化与管理命令（deps：`bus`、`access`、`shared`；**不**直接调 `ChangePipeline`）。实体表单读写命令放在 **`ontology`**（符合 overview「ProjectRuntime 处理器在 ontology」）。允许依赖 `form` 的模块：`web`、`migration`、**`ontology`（只读仓储/门面，加载描述符与选择器）**。内核 `wprebuild.kernel.form` 放变更生成器。 |
+| 8 | 不做 | Collections 表单、`FormDataRepository`、跨项目复制 UI、IMAGE 上传、完整 MatchingEngine、旧系统漏检的无权限写（新系统一律校验 `EDIT_FORMS`）。 |
+
+### 展开卡片
+
+| 卡片 | 内容 | 模块 |
+|---|---|---|
+| P6-66 | 表单表结构 V10 + JDBC 仓储 + Modulith `form` 壳（含 `web`/`migration`→`form`） | wp-app/form |
+| P6-67 | `EDIT_FORMS` + 描述符/选择器 CRUD（Handler 在 form；Controller 在 web） | wp-app/form |
+| P6-68 | 内核：表单数据 → 公理变更生成器（BS-18 子集 + pristine 锚定） | wp-kernel |
+| P6-69 | 按实体取表单 API（BS-17：匹配 + PROPERTY 投影） | wp-app/ontology |
+| P6-73 | 保存实体表单 API（BS-18 + 双层 409） | wp-app/ontology |
+| P6-70 | Web：实体表单面板（TEXT/NUMBER 读写，其它只读） | wp-web |
+| P6-71 | 迁移工具：导出 Forms / FormSelectors（含选择器警告） | wp-legacy-migrator |
+| P6-72 | 后端：导入交换包中的表单描述符与选择器 | wp-app/migration |
+
+依赖（`A → B` 表示 B 依赖 A）：P6-55 → P6-66 → P6-67；P6-67 → P6-69；{P6-68、P6-69} → P6-73 → P6-70；P6-26 → P6-68；P6-66 → P6-71；{P6-66、P6-71} → P6-72。P6-68 与 P6-66/67/71 可并行。OpenAPI 全局串行接在 P6-51 之后：… → P6-51 → P6-67 → P6-69 → P6-73。
+
+### 共享文件与迁移号（表单）
+
+- 编辑器 Flyway：P6-66 用 **V10**（**P6-55 V9 进 main 后方可开工**）。已分配 V6…V9 不变。
+- `docs/02-architecture/overview.md` 第 2 节、`ModularityTest`、`web`/`migration`/`ontology` 的 `allowedDependencies`：只有 **P6-66**（一次性登记 `form` 及 `ontology|web|migration → form` 边）。
+- `access/Action.java`、`ProjectRole.java`、`BS10_AccessServiceTest`：只有 P6-67。
+- `docs/api/openapi.json`、`@wp/api-types`、`OpenApiResponseSchemasTest`：串行 **P6-51 → P6-67 → P6-69 → P6-73**（P6-67 的 `depends_on` 含 P6-51 仅为此串行）。
+- `docs/02-architecture/interchange-format.md`：串行 **P6-71 → P6-72**（不升 `formatVersion`；IC 增补表单文件；始终导出空文件）。
+- `docs/01-rea/behavior-specs.md` BS-16~18 / `forms.md`：本规划卡已写；实现卡只引用不改规格语义（发现偏差写阻塞）。
+- Web：表单功能目录与相关 `queryKeys` 只由 P6-70 改。
+
+本次拆卡用掉 P6-66 ~ P6-73（其中 P6-73 为保存 API）八个编号。

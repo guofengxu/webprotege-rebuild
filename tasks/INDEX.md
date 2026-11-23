@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 164 张卡：完成 133，进行中 0，阻塞 3，待办 28。
+共 172 张卡：完成 134，进行中 0，阻塞 3，待办 35。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-43](P6/P6-43-forms-rea-planning.md) 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡
 - [P6-44](P6/P6-44-discussions-rea-planning.md) 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡
 - [P6-45](P6/P6-45-watches-rea-planning.md) 规划卡：关注（Watches）与邮件通知逆向分析，确定首期范围并拆卡
 - [P6-46](P6/P6-46-tags-rea-planning.md) 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡
@@ -16,6 +15,7 @@
 - [P6-57](P6/P6-57-instances-app-poc.md) PoC：新建 wp-instances-app Spring Boot 服务骨架（双数据源、Flyway、健康检查）
 - [P6-63](P6/P6-63-projection-constraints-planning.md) 规划卡：扩展投影表以支持必填、基数、枚举取值（ADR 草案与拆卡）
 - [P6-65](P6/P6-65-web-workspace-spec-isolation.md) Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败
+- [P6-68](P6/P6-68-form-change-generator.md) 内核：实体表单数据转公理变更生成器（BS-18 首期子集 TEXT/NUMBER）
 
 ## 阻塞中
 
@@ -198,7 +198,7 @@
 | [P6-40](P6/P6-40-multi-instance-planning.md) | 规划卡：多实例部署（按项目路由），产出 ADR 草案与拆卡 | tasks/P6 | planning | S | 待办 | P6-52、P6-27、P6-21 |
 | [P6-41](P6/P6-41-web-vue-3-6-upgrade.md) | Web 端：升级到 Vue 3.6 正式版（不启用 Vapor 模式），验证生态库兼容 | wp-web | web | S | 阻塞 | P6-42 |
 | [P6-42](P6/P6-42-web-typescript-7-evaluation.md) | Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点 | wp-web | web | S | 待办 | P6-07、P6-65 |
-| [P6-43](P6/P6-43-forms-rea-planning.md) | 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P4-22 |
+| [P6-43](P6/P6-43-forms-rea-planning.md) | 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 完成 | P4-22 |
 | [P6-44](P6/P6-44-discussions-rea-planning.md) | 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P6-03 |
 | [P6-45](P6/P6-45-watches-rea-planning.md) | 规划卡：关注（Watches）与邮件通知逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P6-21 |
 | [P6-46](P6/P6-46-tags-rea-planning.md) | 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P3-19 |
@@ -221,5 +221,13 @@
 | [P6-63](P6/P6-63-projection-constraints-planning.md) | 规划卡：扩展投影表以支持必填、基数、枚举取值（ADR 草案与拆卡） | tasks/P6 | planning | S | 待办（可开工） | P6-33 |
 | [P6-64](P6/P6-64-instances-idempotency.md) | 实例库服务：写入幂等键（Idempotency-Key）与 instances OpenAPI 初稿 | wp-instances-app | app-service | M | 待办 | P6-60 |
 | [P6-65](P6/P6-65-web-workspace-spec-isolation.md) | Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败 | wp-web | web | S | 待办（可开工） | — |
+| [P6-66](P6/P6-66-form-schema.md) | 表单：project_form / project_form_selector 表结构（V10）、JDBC 仓储与 Modulith form 模块壳 | wp-app/form | db | M | 待办 | P6-43、P6-55 |
+| [P6-67](P6/P6-67-form-descriptor-api.md) | 后端：EDIT_FORMS 权限与表单描述符、选择器的增删改查接口 | wp-app/form | app-security | M | 待办 | P6-66、P6-51 |
+| [P6-68](P6/P6-68-form-change-generator.md) | 内核：实体表单数据转公理变更生成器（BS-18 首期子集 TEXT/NUMBER） | wp-kernel | kernel | M | 待办（可开工） | P1-11、P6-26 |
+| [P6-69](P6/P6-69-entity-forms-api.md) | 后端：按实体取表单接口（选择器子集与 PROPERTY 投影） | wp-app/ontology | app-service | M | 待办 | P6-67 |
+| [P6-70](P6/P6-70-web-entity-forms.md) | Web 端：实体表单面板（TEXT/NUMBER 可编辑，其它控件只读占位） | wp-web | web | M | 待办 | P6-73 |
+| [P6-71](P6/P6-71-forms-migrator-export.md) | 迁移工具：从 Mongo 导出 Forms 与 FormSelectors 到迁移包 | wp-legacy-migrator | migrator | M | 待办 | P6-66 |
+| [P6-72](P6/P6-72-forms-migration-import.md) | 后端：导入迁移包中的表单描述符与选择器 | wp-app/migration | app-service | M | 待办 | P6-66、P6-71 |
+| [P6-73](P6/P6-73-entity-forms-save-api.md) | 后端：保存实体表单接口（ChangePipeline、expectedHead 与 pristine 锚定） | wp-app/ontology | app-service | M | 待办 | P6-68、P6-69 |
 
 各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`。

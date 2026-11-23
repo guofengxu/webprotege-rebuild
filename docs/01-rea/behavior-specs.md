@@ -139,7 +139,7 @@ OBO 方式的细节（用户区间、零填充位数）以旧测试为准，移�
 | CAN_VIEW | VIEW_PROJECT、VIEW_CHANGES、DOWNLOAD_PROJECT |
 | CAN_COMMENT | （MVP 暂无评论功能，保留角色占位） |
 | CAN_EDIT | EDIT_ONTOLOGY、EDIT_ONTOLOGY_ANNOTATIONS、CREATE_CLASS、DELETE_CLASS、CREATE_PROPERTY、DELETE_PROPERTY、CREATE_INDIVIDUAL、DELETE_INDIVIDUAL、REVERT_CHANGES |
-| CAN_MANAGE | EDIT_PROJECT_SETTINGS、EDIT_SHARING_SETTINGS、EDIT_NEW_ENTITY_SETTINGS、EDIT_PROJECT_PREFIXES、MOVE_ANY_PROJECT_TO_TRASH（仅本项目） |
+| CAN_MANAGE | EDIT_PROJECT_SETTINGS、EDIT_SHARING_SETTINGS、EDIT_NEW_ENTITY_SETTINGS、EDIT_PROJECT_PREFIXES、MOVE_ANY_PROJECT_TO_TRASH（仅本项目）、**EDIT_FORMS**（BS-16，由 P6-67 加入） |
 
 | 应用角色 | 动作 |
 |---|---|
@@ -148,6 +148,7 @@ OBO 方式的细节（用户区间、零填充位数）以旧测试为准，移�
 
 - 项目创建者自动获得该项目的 CAN_MANAGE。
 - **P6 第二轮新增**（P6-19 规划，旧出处同上 `BuiltInRole.java`）：CAN_EDIT 增加 `MERGE_ENTITIES`（BS-13，由 P6-24 加入）；CAN_MANAGE 增加 `UPLOAD_AND_MERGE`、`UPLOAD_AND_MERGE_ADDITIONS`（BS-14，由 P6-27 加入）。归属与旧系统一致（旧系统中前者属于 PROJECT_EDITOR，后两者属于 PROJECT_MANAGER）。
+- **P6 表单**（P6-43 规划，旧出处同上）：CAN_MANAGE 增加 `EDIT_FORMS`（旧系统 PROJECT_MANAGER）。实体表单**读**仍用 `VIEW_PROJECT`，**写值**仍用 `EDIT_ONTOLOGY`（不新增 VIEW_FORMS）。
 - 权限校验在命令总线入口统一执行（旧出处：`LEG/dispatch/impl/DispatchServiceExecutorImpl.java`，`RequestValidator` 链），不在各 Handler 里零散判断。
 
 ## BS-11 高层事件
@@ -214,3 +215,38 @@ MVP 需要的事件（其余见 P6）：
 - 旧系统用全局单线程发送，同一项目的通知按修订顺序发出；没有重试、没有超时设置、没有签名，响应状态只记日志。
 - 旧系统的 `COMMENT_POSTED` 可以在界面上勾选，但服务端从不发送；Slack 通知只在发表评论时发送。**两者都不移植**。
 - **新系统新增**（P6-20、P6-21）：由 outbox 中继驱动，对每个 webhook 至少投递一次，同一 webhook 按修订顺序投递；请求带事件类型、投递 ID（供接收方去重）与可选的 HMAC-SHA256 签名头；连接与读取有超时；失败按指数退避重试，超过次数后放弃并记录；只允许 `http` / `https` 地址，默认拒绝回环、私有与链路本地地址（可配置放开）。旧系统对静默修订不发通知，新系统的 outbox 不区分静默修订，**每个修订都通知**。
+
+## BS-16 表单描述符与选择器
+
+旧出处：`LEG_SHARED/form/FormDescriptor.java`、`FormFieldDescriptor` / `FormControlDescriptor` / `OwlBinding`、`EntityFormSelector.java`；`LEG/form/EntityFormRepositoryImpl.java`、`EntityFormSelectorRepositoryImpl.java`、`SetEntityFormDescriptorActionHandler.java`；测试 `LEG_TEST/form/EntityFormRepositoryImpl_IT.java`、`EntityFormSelectorRepositoryImpl_IT.java`。详解见 `forms.md`。
+
+- 每个项目有一组表单描述符：`formId`（UUID）、多语言标签、有序字段列表；字段含控件描述（八种之一）、可选 OWL 绑定、必填/可重复/只读等元数据；可选“主体工厂”描述如何为新行铸造实体。
+- 每个 `formId` 至多一条选择器：`CompositeRootCriteria` 决定哪些实体适用该表单；描述符与选择器**分存**，删除描述符时应同时去掉选择器。
+- 描述符列表有稳定顺序（旧系统 `ordinal`）；整表替换时按提交顺序重编号。
+- 改描述符或选择器需要 `EDIT_FORMS`（归入 CAN_MANAGE，见 BS-10）。**新系统修正**：凡写入描述符的接口都必须校验该动作（旧系统部分 Handler 未声明）。
+- 表单**字段值**不进描述符表；无独立“表单值”存储（旧 `FormDataRepository` 已废弃，不移植）。
+- **首期控件写入范围**见 EPIC「表单（P6-43）」；JSON 须能表示全部八种控件与四种绑定，以便迁移与后续卡，即使运行时只实现子集。
+
+## BS-17 按实体取表单（投影）
+
+旧出处：`LEG/form/EntityFormManager.java`、`GetEntityFormActionHandler.java`、`EntityFrameFormDataDtoBuilder.java`、`BindingValuesExtractor.java`；客户端 `LEG_CLIENT/form/EntityFormStackPresenter.java`。
+
+- 给定实体：用项目全部选择器匹配实体，加载命中的描述符（可再按请求中的 `formId` 过滤）；无选择器的表单**不适用**任何实体。
+- 对每个适用表单，按字段绑定从**当前本体**投影控件值；结果带描述符，供客户端作 pristine 快照。
+- 读需要 `VIEW_PROJECT`。
+- **首期选择器匹配**只实现 `EntityTypeIsOneOf` 与 `SubClassOf`（可组合 ALL/ANY）。`SubClassOf`：**任意祖先**（含间接超类）即命中，与旧 `MatchingEngine` 对类层级的常用语义一致；仅比较直接父类会误伤迁移数据。criteria 树中**任一**未支持节点 → **整条选择器不命中**（不部分求值）。完整 MatchingEngine 留给 P6-46 后再扩。
+- **首期投影**：`TEXT` / `NUMBER` 且绑定为 `PROPERTY` 时，投影该属性在主体上的值（数据属性字面量与注解断言均支持，按属性种类区分）；`CLASS` / `INSTANCE` / `SUBCLASS` 绑定的字段首期返回空占位（只读）。其余控件种类返回空值或只读占位，不得抛错导致整表失败。分页 / 区域过滤 / 排序：首期默认整页。
+
+## BS-18 保存实体表单（→ 公理变更）
+
+旧出处：`LEG_SHARED/form/SetEntityFormsDataAction.java`；`LEG/form/SetEntityFormsDataActionHandler.java`、`FormDataUpdateSanityChecker.java`、`EntityFormChangeListGenerator.java`、`FormFrameFlattener.java`、`FormFrameConverter.java`、`processor/*`；公理差分经 `LEG/frame/FrameChangeGenerator.java`；管线 `LEG/project/chg/ChangeManager.java`。
+
+- 请求携带同一批 `formId` 的 **pristine** 与 **edited** 表单数据；两侧 `formId` 集合必须相同，且每对描述符相等，否则拒绝（不写修订）。
+- 按表单将数据转为 `FormFrame`，嵌套主体摊平合并后，对每个 `OWLEntity` 主体求 Frame 差分并生成公理增删；类主体上的“实例”集合额外以类断言公理处理（默认本体）。无变更的表单跳过。
+- 新主体（网格行 / 子表单）经主体工厂生成临时 IRI，由写管线铸造正式 IRI（BS-05）。
+- 权限：`EDIT_ONTOLOGY`（不是 `EDIT_FORMS`）。必须经 `ChangePipeline` 提交；成功则产生修订与高层事件，与其它本体编辑一致。
+- **新系统并发（两层，均在生成锁内）**：
+  1. 请求必须带期望的项目 head；与当前 head 不等 → `StaleHeadException` / 409 `STALE_HEAD`（与 BS-14 一致）。旧系统无此检查。
+  2. 对每个摊平后的主体，由 **pristine** 推出的 Frame（首期仅 PROPERTY 上的 TEXT/NUMBER 相关断言）必须等于当前运行时；不等 → 409 `FORM_DATA_CHANGED`（语义对齐 Frame 编辑的 `from` 校验 / `FRAME_CHANGED`），不写修订。仅校验 head 不足以防止同修订号下的内容冲突。
+- **首期可写**：仅 `TEXT` / `NUMBER` 且 `OwlBinding` 为 `PROPERTY`（数据属性或注解属性）。其它控件或绑定的 edited 必须与 pristine 相等，否则拒绝。表格 / 子表单 / 实体名等另开卡。
+- **往返不变量**（P6-69/P6-73 测试）：投影后不改即保存 → 不产生修订；改一处 TEXT/NUMBER 属性值 → 与直接 Frame 更新同一绑定的公理结果一致。
