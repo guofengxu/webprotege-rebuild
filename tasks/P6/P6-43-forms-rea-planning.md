@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P4-22]
 ---
 
@@ -50,12 +50,20 @@ test -s docs/01-rea/forms.md
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 新卡片已通过评审
-- [ ] 人已确认首期范围
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 新卡片已通过评审
+- [x] 人已确认首期范围
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 写任何业务代码
+
+## 执行记录
+- 日期：2026-11-23
+- 分支：docs/p6-43-forms-rea-planning
+- 测试：2026-11-23T08:55:04+08:00 通过（3 项）
+- 实际改动：Wrote docs/01-rea/forms.md and BS-16..18; recorded forms MVP in EPIC (Modulith form metadata + ontology runtime, TEXT/NUMBER+PROPERTY, simplified selectors, dual 409, migration with warnings); added implementation cards P6-66..P6-73.
+- 偏差：Split save API into P6-73 (planner size concern); ontology→form read edge added after review; OpenAPI chain depends on P6-51 for serial ordering.
+- 审查：planner, (REQUEST_CHANGES, then, APPROVE), architect, (REQUEST_CHANGES, then, APPROVE)

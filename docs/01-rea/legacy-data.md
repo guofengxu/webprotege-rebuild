@@ -52,7 +52,7 @@ P2 迁移工具按本文读取旧数据。旧出处路径的缩写见 `behavior-
 | `ProjectAccess` | 最近访问记录 | 否 |
 | `PrefixDeclarations` | 项目前缀 | 是 |
 | `EntityCrudKitSettings` | 新实体 IRI 生成设置 | 是 |
-| `Forms`、`FormSelectors` | 表单 | 否（P6） |
+| `Forms`、`FormSelectors` | 表单描述符与适用条件（值在公理中，见 `forms.md`） | 否→P6（P6-71 / P6-72） |
 | `Tags` | 标签 | 否（P6） |
 | `Watches` | 关注 | 否（P6） |
 | `EntityDiscussionThreads` | 讨论 | 否（P6） |
