@@ -2,7 +2,7 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 163 张卡：完成 133，进行中 0，阻塞 4，待办 26。
+共 164 张卡：完成 133，进行中 0，阻塞 3，待办 28。
 
 ## 现在可以开工的卡（按本地文件计算）
 
@@ -15,13 +15,13 @@
 - [P6-50](P6/P6-50-upload-merge-apply-api.md) 后端：上传并合并到已有项目的预览、应用与放弃接口（在生成锁内校验预览时的修订号）
 - [P6-57](P6/P6-57-instances-app-poc.md) PoC：新建 wp-instances-app Spring Boot 服务骨架（双数据源、Flyway、健康检查）
 - [P6-63](P6/P6-63-projection-constraints-planning.md) 规划卡：扩展投影表以支持必填、基数、枚举取值（ADR 草案与拆卡）
+- [P6-65](P6/P6-65-web-workspace-spec-isolation.md) Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败
 
 ## 阻塞中
 
 - [P5-00](P5/P5-00-mobile-planning.md) 规划卡：细化移动端（uni-app）MVP 任务卡
 - [P6-39](P6/P6-39-wecom-login.md) 后端：企业微信扫码登录（复用 P6-37 的外部身份绑定与会话建立）
 - [P6-41](P6/P6-41-web-vue-3-6-upgrade.md) Web 端：升级到 Vue 3.6 正式版（不启用 Vapor 模式），验证生态库兼容
-- [P6-42](P6/P6-42-web-typescript-7-evaluation.md) Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点
 
 ## P0
 
@@ -197,7 +197,7 @@
 | [P6-39](P6/P6-39-wecom-login.md) | 后端：企业微信扫码登录（复用 P6-37 的外部身份绑定与会话建立） | wp-app | app-security | M | 阻塞 | P6-51 |
 | [P6-40](P6/P6-40-multi-instance-planning.md) | 规划卡：多实例部署（按项目路由），产出 ADR 草案与拆卡 | tasks/P6 | planning | S | 待办 | P6-52、P6-27、P6-21 |
 | [P6-41](P6/P6-41-web-vue-3-6-upgrade.md) | Web 端：升级到 Vue 3.6 正式版（不启用 Vapor 模式），验证生态库兼容 | wp-web | web | S | 阻塞 | P6-42 |
-| [P6-42](P6/P6-42-web-typescript-7-evaluation.md) | Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点 | wp-web | web | S | 阻塞 | P6-07 |
+| [P6-42](P6/P6-42-web-typescript-7-evaluation.md) | Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点 | wp-web | web | S | 待办 | P6-07、P6-65 |
 | [P6-43](P6/P6-43-forms-rea-planning.md) | 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P4-22 |
 | [P6-44](P6/P6-44-discussions-rea-planning.md) | 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P6-03 |
 | [P6-45](P6/P6-45-watches-rea-planning.md) | 规划卡：关注（Watches）与邮件通知逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P6-21 |
@@ -220,5 +220,6 @@
 | [P6-62](P6/P6-62-instances-network-write-bench.md) | 实例库服务：经网络接口的端到端批量写入基准（只测量，不优化） | wp-instances-app | benchmark | S | 待办 | P6-64、P6-61 |
 | [P6-63](P6/P6-63-projection-constraints-planning.md) | 规划卡：扩展投影表以支持必填、基数、枚举取值（ADR 草案与拆卡） | tasks/P6 | planning | S | 待办（可开工） | P6-33 |
 | [P6-64](P6/P6-64-instances-idempotency.md) | 实例库服务：写入幂等键（Idempotency-Key）与 instances OpenAPI 初稿 | wp-instances-app | app-service | M | 待办 | P6-60 |
+| [P6-65](P6/P6-65-web-workspace-spec-isolation.md) | Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败 | wp-web | web | S | 待办（可开工） | — |
 
 各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`。

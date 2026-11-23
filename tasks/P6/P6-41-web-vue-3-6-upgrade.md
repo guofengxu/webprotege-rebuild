@@ -61,3 +61,5 @@ pnpm -C frontend --filter wp-web exec node -e "const v=require('vue/package.json
 - 日期：2026-11-15
 - 原因：外部条件未满足。截至 2026-11-15，npm 上 `vue` 的 `latest` 仍为 3.5.45，3.6 只有 `3.6.0-rc.15`（2026-11-12 发布）；候选清单要求正式发布后再升级。
 - 恢复方式：`npm view vue dist-tags.latest` 显示 3.6.x，且 `element-plus` 等关键依赖没有已知的不兼容问题时，人把本卡 `status` 改回 `todo` 并删除本节，再按 `python tools/task.py start P6-41` 开工。
+- 复核（2026-11-22）：外部条件仍未满足。npm 上 `vue` 的 `latest` 为 3.5.46，3.6 最新为 `3.6.0-rc.16`（2026-11-20 发布）；`element-plus` 的 `latest` 仍为 2.14.8。
+- 依赖说明（2026-11-22）：`task.py start` 要求全部依赖为 `done`，而本卡依赖的 P6-42 当时是 `blocked`（被一条与 TypeScript 无关的 wp-web 测试失败卡住）。修复卡 P6-65 合并、P6-42 按“保持 6.0.3”结束后，这项依赖即可解除；之后本卡只等 Vue 3.6 正式版。恢复时如果 P6-42 还没有完成，先完成 P6-42，不要去掉本卡对它的依赖（两张卡都修改 `package.json` 与锁文件，需要串行）。
