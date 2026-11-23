@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P6-21]
 ---
 
@@ -49,12 +49,20 @@ test -s docs/01-rea/watches.md
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 新卡片已通过评审
-- [ ] 人已确认首期范围
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 新卡片已通过评审
+- [x] 人已确认首期范围
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 写任何业务代码；移动端推送通知（P5 暂停）
+
+## 执行记录
+- 日期：2026-11-23
+- 分支：docs/p6-45-watches-rea-planning
+- 测试：2026-11-23T13:15:24+08:00 通过（3 项）
+- 实际改动：完成关注（Watches）五层逆向与首期拆卡：docs/01-rea/watches.md、BS-21/22、EPIC「关注（P6-45）」决定（独立 SMTP 卡、outbox 按修订触发、排除作者、每用户每修订一封、不做站内通知）；实现卡 P6-83~P6-91（邮件 V12、关注 V13、权限、API、事件、outbox 匹配、Web、迁移进出）。审查后钉死受影响实体=revision_subjects 语义、匿名个体拒绝、读锁后再入队等。
+- 偏差：无
+- 审查：planner, (APPROVE, after, fixes), architect, (APPROVE;, MEDIUM, RevisionHistoryQueries, note, applied)

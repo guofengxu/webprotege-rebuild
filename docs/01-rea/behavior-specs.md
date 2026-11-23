@@ -136,7 +136,7 @@ OBO 方式的细节（用户区间、零填充位数）以旧测试为准，移�
 
 | 项目角色 | 新增动作 |
 |---|---|
-| CAN_VIEW | VIEW_PROJECT、VIEW_CHANGES、DOWNLOAD_PROJECT |
+| CAN_VIEW | VIEW_PROJECT、VIEW_CHANGES、DOWNLOAD_PROJECT、**WATCH_CHANGES**（BS-21，由 P6-85 填实） |
 | CAN_COMMENT | VIEW_OBJECT_COMMENT、CREATE_OBJECT_COMMENT、EDIT_OWN_OBJECT_COMMENT、SET_OBJECT_COMMENT_STATUS（BS-19，由 P6-75 填实；MVP 曾为占位） |
 | CAN_EDIT | EDIT_ONTOLOGY、EDIT_ONTOLOGY_ANNOTATIONS、CREATE_CLASS、DELETE_CLASS、CREATE_PROPERTY、DELETE_PROPERTY、CREATE_INDIVIDUAL、DELETE_INDIVIDUAL、REVERT_CHANGES |
 | CAN_MANAGE | EDIT_PROJECT_SETTINGS、EDIT_SHARING_SETTINGS、EDIT_NEW_ENTITY_SETTINGS、EDIT_PROJECT_PREFIXES、MOVE_ANY_PROJECT_TO_TRASH（仅本项目）、**EDIT_FORMS**（BS-16，由 P6-67 加入） |
@@ -150,6 +150,7 @@ OBO 方式的细节（用户区间、零填充位数）以旧测试为准，移�
 - **P6 第二轮新增**（P6-19 规划，旧出处同上 `BuiltInRole.java`）：CAN_EDIT 增加 `MERGE_ENTITIES`（BS-13，由 P6-24 加入）；CAN_MANAGE 增加 `UPLOAD_AND_MERGE`、`UPLOAD_AND_MERGE_ADDITIONS`（BS-14，由 P6-27 加入）。归属与旧系统一致（旧系统中前者属于 PROJECT_EDITOR，后两者属于 PROJECT_MANAGER）。
 - **P6 表单**（P6-43 规划，旧出处同上）：CAN_MANAGE 增加 `EDIT_FORMS`（旧系统 PROJECT_MANAGER）。实体表单**读**仍用 `VIEW_PROJECT`，**写值**仍用 `EDIT_ONTOLOGY`（不新增 VIEW_FORMS）。
 - **P6 讨论**（P6-44 规划，旧出处同上 `BuiltInRole.OBJECT_COMMENTER`）：CAN_COMMENT 填入上表四类评论动作（旧系统还有 `EDIT_ANY_OBJECT_COMMENT` 与 Issue 相关动作，**首期不移植**）。编辑 / 删除评论还必须是作者本人（见 BS-19）。
+- **P6 关注**（P6-45 规划，旧出处同上 `BuiltInRole.PROJECT_VIEWER`）：CAN_VIEW 增加 `WATCH_CHANGES`（BS-21，由权限实现卡填实）。
 - 权限校验在命令总线入口统一执行（旧出处：`LEG/dispatch/impl/DispatchServiceExecutorImpl.java`，`RequestValidator` 链），不在各 Handler 里零散判断。
 
 ## BS-11 高层事件
@@ -167,9 +168,10 @@ MVP 需要的事件（其余见 P6）：
 | PermissionsChanged | 项目角色分配变化 | 项目 |
 | CommentPosted / CommentUpdated / CommentDeleted | 讨论评论增删改（BS-20） | 见 BS-20 |
 | DiscussionThreadCreated / DiscussionThreadStatusChanged | 讨论线程创建或状态变化（BS-20） | 见 BS-20 |
+| WatchAdded / WatchRemoved | 用户增删实体关注（BS-21） | userId、实体、watchType；`revNo` = head |
 
 - 事件从**已提交的修订**派生，修订号作为事件流的游标，客户端断线后可以凭修订号补齐。
-- **非修订事件**（`PermissionsChanged`、讨论事件）：仍带当前项目 head 作为 `revNo` 游标（与角色变更同一模式），不产生新修订。
+- **非修订事件**（`PermissionsChanged`、讨论事件、关注增删事件）：仍带当前项目 head 作为 `revNo` 游标（与角色变更同一模式），不产生新修订。
 - 静默生成器（旧系统的 `SilentChangeListGenerator`）产生的修订只发 ProjectChanged。
 
 ## BS-12 支持的格式
@@ -283,3 +285,30 @@ MVP 需要的事件（其余见 P6）：
 - 全部实现 `ProjectEvent`：`type` + `revNo`（取发布时项目 head，与 `PermissionsChanged` 相同），不新增修订。
 - 讨论模块持久化成功后发 Spring 域事件；`events` 模块翻译并 `ProjectEventHub.publish`。Web / 长轮询客户端必须穷尽处理新 `type`（与现有五类事件同一联合类型）。
 - 讨论事件**不**写入项目 webhook 投递（与 BS-15：旧 `COMMENT_POSTED` 从未发送一致）。
+
+## BS-21 实体关注（Watches）
+
+旧出处：`LEG_SHARED/watches/Watch.java`、`WatchType.java`；`LEG/watches/WatchRecord.java`、`WatchRecordRepositoryImpl.java`、`WatchManagerImpl.java`、`IndirectlyWatchedEntitiesFinder.java`、`*ActionHandler.java`；客户端 `LEG_CLIENT/watches/WatchPresenter.java`。详解见 `watches.md`。
+
+- 每个项目有一组关注记录：`userId`、实体（iri + 类型）、`watchType` ∈ {`ENTITY`,`BRANCH`}。同一用户对同一实体**至多一条**（后写覆盖类型；不能同时持有 ENTITY 与 BRANCH）。
+- **匹配**（给定一次修订中“受影响”的实体集合；该集合**不**预扩展子孙）：
+  - `ENTITY`：仅当变更实体等于关注实体时命中；
+  - `BRANCH`：当关注实体等于变更实体，或关注实体属于变更实体的“相关祖先集合”时命中；
+  - 类 / 对象属性 / 数据属性 / 注解属性的相关祖先 = 对应层级祖先（是否含自身以实现为准，但 **BRANCH 关注实体自身被改时必须命中**）；
+  - 命名个体的相关集合 = 其**命名类断言**上的类 **以及**这些类的祖先（**含这些类自身**；与旧 `IndirectlyWatchedEntitiesFinder` 对个体走 `getAncestors(cls)` 且匹配阶段把实体自身并入查询集合的效果一致：关注某类的 BRANCH 会命中该类的实例）；
+  - Datatype：只匹配自身；匿名个体首期不作为关注目标（API 拒绝）。
+- 读写关注需要 `WATCH_CHANGES`（归入 `CAN_VIEW`，见 BS-10）。**新系统修正**：设置 / 清除关注的接口必须声明该动作（旧 `SetEntityWatches` / `RemoveWatches` 未声明）。
+- 关注写路径**不**产生修订。成功增删后发 `WatchAdded` / `WatchRemoved`（见 BS-11；载荷含 userId、实体、watchType；`revNo` = 当前 head）。
+- **首期不做**：按关注扫描全部修订的变更列表 API（旧 `GetWatchedEntityChanges` 全表扫描）；合并实体时转移或清理关注（旧系统也不做）。
+
+## BS-22 关注变更邮件通知
+
+旧出处：`LEG/watches/WatchManagerImpl.java`（Frame 事件入口）、`WatchTriggeredHandlerImpl.java`、`templates/watch-notification-email-template.html`；邮件 API `LEG/mail/SendMailImpl.java`。详解见 `watches.md`。
+
+- **触发源（新系统）**：outbox 消费者在修订已提交且内存模型已应用到该修订后，求出受影响实体，再按 BS-21 匹配关注。模型尚未应用到该修订时抛 `OutboxRetryLater`，中继**不**前进该消费者进度（同投影表 P6-12）。**不**在写路径进程内按 Frame 事件直接发邮件。
+- **受影响实体（新系统钉死）**：与写入 `revision_subjects` / `projection.AffectedSubjects` **同一主语集合**——公理 `getSignature()` 中的实体 IRI，外加 `OWLAnnotationAssertion` 的 **IRI 主体**（因此改 `rdfs:label` 等会触发）。**不**包括导入声明、本体注解、前缀；匿名个体注解主体不纳入；**不**在此步预扩展子孙或祖先。P6-88 **优先**按 `project_id+rev_no` 读 `revision_subjects`（若 `RevisionHistoryQueries` 尚无按修订列主语的方法，本卡在 revision 模块**最小增补**只读查询；避免依赖 `projection`）；禁止为本功能改 ontology 公共接口。
+- **合并粒度（新系统）**：同一修订、同一收件用户至多一封邮件，正文列出全部命中的实体（旧系统按 Frame 事件逐实体发送）；列表过长时可截断并附剩余条数（实现卡设上限，例如 50）。
+- **收件人**：匹配到的关注用户，去掉**本修订的作者**（**新系统修正**：旧关注通知不排除修改者；对齐讨论邮件排除作者的做法）；再过滤无 `VIEW_PROJECT` 或无邮箱的用户。邮箱来自 `access` 模块 `UserService.findById` → `UserAccount.email()`（可空）。**每个收件人单独一封**（单 `To`），**不**把多位用户放在同一封的 TO 里互见地址。
+- **投递**：登记到邮件投递表后由独立投递线程发送（登记 + 认领 + 指数退避重试，对齐 BS-15 / P6-21）。`wp.mail.enabled=false` 或未配置 SMTP 时：消费者仍完成 outbox 进度，投递记为 `SKIPPED`（或明确不登记并记日志，二选一由 P6-83 钉死为 **SKIPPED**），**不得**用 `OutboxRetryLater` 表示邮件关闭，也不得阻塞中继。
+- **退订与频率（首期）**：退订 = 用户清除对应关注；不做全局退订表、不做跨修订摘要/限频。邮件脚注说明“因你关注了…收到此信”，并链到项目。
+- **首期不做**：站内通知中心、移动推送、讨论评论邮件（可日后复用同一投递队列）。
