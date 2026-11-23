@@ -7,8 +7,8 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: blocked
-depends_on: [P6-07]
+status: todo
+depends_on: [P6-07, P6-65]
 ---
 
 # P6-42 Web 端：TypeScript 7 评估
@@ -20,6 +20,8 @@ depends_on: [P6-07]
 - `tasks/P6/EPIC.md` 候选项“TypeScript 7 评估：vue-tsc 正式支持后再评估”
 - 现状（2026-11-15）：npm 上 `typescript` 的 `latest` 为 7.0.2（2026-07-08 发布）；`vue-tsc` 的 `latest` 为 3.3.14，`peerDependencies` 写的是 `typescript >= 5.0.0`，但它依赖 TypeScript 的 JS 编程接口，是否能与原生编译器配合需要实测
 - `frontend/wp-web/package.json`（`typescript` 6.0.3、`vue-tsc` 3.3.14、`@vue/eslint-config-typescript` 14.9.0、`eslint` 10.14.0；`verify` = `vue-tsc --noEmit && eslint . && vitest run && vite build`）
+- 首次执行（2026-11-22）的评估文档：`docs/03-plan/typescript-7-evaluation.md`，已随 PR #145 合并到 `main`
+- 修复卡：P6-65（`WorkspacePage.spec.ts` 与真实注册表隔离，修复首次执行时卡住 `verify` 的那条用例）
 
 ## 产出
 - 试升级：把 wp-web 的 `typescript` 改为 7.0 的最新正式版，按需调整 `tsconfig`（例如被移除的选项），依次运行 `vue-tsc --noEmit`、`eslint .`、`vitest run`、`vite build`，记录每一步的结果与 `vue-tsc` 的耗时（与 6.0.3 对比）。
@@ -32,6 +34,13 @@ depends_on: [P6-07]
 - 只评估 wp-web；`frontend/packages/api-types` 固定使用 TypeScript 5.9.3（P3-27），不在本卡范围。
 - 结论文档无论升级与否都要写；它是本卡的主要交付物。
 - 与 P6-41（Vue 3.6）都修改 `package.json`，所以 P6-41 依赖本卡。
+
+### 重新执行（P6-65 合并之后）
+- 本卡已经按原产出执行过一次，评估文档已在 `main` 上，结论是“保持 6.0.3”。重新执行时**不重复整套试升级**，先复核上游：`npm view typescript dist-tags`、`npm view vue-tsc dist-tags`，以及 `typescript-eslint` 最新版的 `peerDependencies`（2026-11-22 复核时，`typescript-eslint@8.73.0` 仍为 `typescript >=4.8.4 <6.1.0`，`vue-tsc` 仍为 3.3.14）。
+- 上游仍不满足文档「重新评估条件」：在评估文档末尾追加“复核（日期）”小节，写明复核到的版本，结论保持 6.0.3；`package.json` 与锁文件不改；验收通过后按正常流程 `finish`（不是 `block`），执行记录写明“保持 6.0.3”。
+- 上游已满足条件：按「产出」重新做一次完整试升级，并更新评估文档。
+- 首次执行的评估文档不删除；只追加，不改写已有的结果与摘录。
+- 开工前，人需要先删除已合并的旧分支：`feature/p6-42-web-typescript-7-evaluation` 已经合并到 `main`（合并提交 `c32552f`），但远程分支还在。不删的话，`task.py start P6-42` 会因为远程分支已存在而拒绝；加 `--resume` 又会切到旧分支，拿不到 P6-65 的修复。要在人自己的终端运行的命令：`git push origin --delete feature/p6-42-web-typescript-7-evaluation`；如果本地也有这个分支，再运行 `git branch -d feature/p6-42-web-typescript-7-evaluation`。Agent 遇到 `start` 报错时，把报错原文告诉人，不要绕过。
 
 ## ECC 技能
 工作项类型：`web` —— Web 端（Vue 3.5 + Vite 8 + Element Plus）。规则见 `.cursor/skills/wp-ecc-routing/SKILL.md`，也可以运行 `python tools/task.py ecc P6-42` 查看。
@@ -59,8 +68,10 @@ test -s docs/03-plan/typescript-7-evaluation.md
 - `@wp/api-types` 与移动端的 TypeScript 版本
 - 为了兼容 TypeScript 7 而替换 `vue-tsc` 或 lint 工具链
 
-## 阻塞
+## 首次执行记录（2026-11-22，当时标为 blocked）
 - 日期：2026-11-22
-- 原因：评估结论与文档已完成：直接升级 typescript 到 7.0.2 后 vue-tsc（ERR_PACKAGE_PATH_NOT_EXPORTED: ./lib/tsc）与 eslint（typescript-eslint does not support TS 7.0）失败，已撤回依赖改动，保持 6.0.3；docs/03-plan/typescript-7-evaluation.md 已写好。
+- 原因（原文）：评估结论与文档已完成：直接升级 typescript 到 7.0.2 后 vue-tsc（ERR_PACKAGE_PATH_NOT_EXPORTED: ./lib/tsc）与 eslint（typescript-eslint does not support TS 7.0）失败，已撤回依赖改动，保持 6.0.3；docs/03-plan/typescript-7-evaluation.md 已写好。
 
 验收命令 pnpm --filter wp-web run verify 在撤回后仍失败，原因不在本卡范围：src/features/workspace/WorkspacePage.spec.ts 的 “opening with ?entity=” 用例未 mock GET /api/projects/{id}/frames/class 与 entities/history，真实 ClassFrameEditor / EntityHistoryTab 报「发生了未知错误」，页面文本不含 IRI。该失败在 stash 掉本卡文档后仍稳定复现（与 TS 版本无关）。建议：另开小卡补齐 WorkspacePage.spec 的 handlers，或允许本卡附带最小测试 mock 修复后再 finish。
+- 根因（2026-11-22 分析）：这条用例从 P4-09（`ac0d7ac`，2026-11-13）起就在 `main` 上失败：P4-09 为 `CLASS` 注册了 `ClassFrameEditor`，而 `WorkspacePage.spec.ts` 用的是收集全部 `register.ts` 的默认注册表，详情面板因此渲染真实编辑器，未 mock 的 `/frames/class` 请求让它停在“加载中…”，页面上没有 IRI。在 `bf28b23`（P4-09 合并前）通过，在 `1347beb`、`0f88386`、`c32552f` 上都稳定失败。CI 的 `frontend` job 不运行 wp-web 的 `verify`，所以一直没有被发现。修法不选“补齐 handlers”，改为用空注册表隔离页面用例（与同目录的 `EntityDetailPanel.spec.ts`、`HierarchyPanel.spec.ts` 一致），以免以后每注册一个特性都再坏一次。
+- 处理：人要求按分析建修复卡（2026-11-22）。拆出 P6-65（只改 `WorkspacePage.spec.ts` 与 `authGuard.spec.ts`）。本卡状态改回 `todo` 并依赖 P6-65；P6-65 合并后按「实现要点 / 重新执行」复核上游并结束本卡。

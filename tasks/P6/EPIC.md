@@ -115,7 +115,7 @@ P6-11 首次运行（`docs/perf/projection-poc-2026-11-14.md`）只有一项未�
 - Kafka：{P6-21、P6-51} → P6-35；图数据库评估：P6-32 → P6-36
 - 企业登录：P6-29 → P6-37；{P6-37、P6-52} → P6-51 → {P6-38（另依赖 P6-28）、P6-39}
 - 多实例：{P6-52、P6-27、P6-21} → P6-40
-- 前端升级：P6-07 → P6-42 → P6-41
+- 前端升级：P6-07 → P6-42 → P6-41（2026-11-22 起 P6-65 → P6-42，见下文「P6-42 首次执行与修复卡」）
 - 逆向分析：P4-22 → P6-43；P6-03 → P6-44；P6-21 → P6-45；P3-19 → P6-46；P4-09 → P6-47
 - MCP 写工具：{P6-16、P6-24} → P6-48
 
@@ -238,3 +238,20 @@ P6-32 首次运行（`docs/perf/instances-poc-2026-11-20.md`）有 3 项未达�
 
 - **TBox / 修订 RDF 导出或外部订阅本体变更**：优先订阅 P6-35 Kafka，其次直接消费编辑器 outbox（避免再挂一个与编辑器同进程的图库消费者）。
 - **ADR-013 §5 的实例侧升级**（实例 SPARQL、AGE 失败、边规模、图算法）：从实例库写路径或其自身 outbox / 变更流同步，**不要**默认走编辑器 Kafka。
+
+## P6-42 首次执行与修复卡（2026-11-22）
+
+P6-42 的评估已经完成（`docs/03-plan/typescript-7-evaluation.md`，结论保持 TypeScript 6.0.3），但验收命令 `pnpm -C frontend --filter wp-web run verify` 因一条与 TypeScript 无关的用例失败，被标为 `blocked`。复盘结论：`WorkspacePage.spec.ts` 的 “opening with ?entity= shows the same IRI in the detail panel” 从 P4-09（`ac0d7ac`，2026-11-13）起就在 `main` 上失败。P4-09 为 `CLASS` 注册了 `ClassFrameEditor`，而这条页面用例使用收集全部 `register.ts` 的默认注册表，详情面板渲染的是真实编辑器，未 mock 的 `/frames/class` 请求让它停在“加载中…”。在 `bf28b23`（P4-09 合并前）通过，在 `1347beb`、`0f88386`、`c32552f` 上都稳定失败。CI 的 `frontend` job 只运行安装与 `@wp/api-types` 的检查，不运行 wp-web 的 `verify`，所以没有被拦下。全量 `vitest run` 时还观察到 `authGuard.spec.ts` 一条用例偶发超过 5 秒超时。
+
+| 卡片 | 内容 |
+|---|---|
+| P6-65 | 只改测试：`WorkspacePage.spec.ts` 用空注册表隔离（与 `EntityDetailPanel.spec.ts`、`HierarchyPanel.spec.ts` 的写法一致）；`authGuard.spec.ts` 把测试体内的 `import("./router")` 改为静态导入 |
+| P6-42 | 状态改回 `todo`，依赖 {P6-07、P6-65}；重新执行时只复核上游版本并在评估文档中追加复核记录，不重复整套试升级。开工前由人删除已合并的远程分支 `feature/p6-42-web-typescript-7-evaluation` |
+| P6-41 | 仍为 `blocked`：npm 上 `vue` 的 `latest` 为 3.5.46，3.6 只到 `3.6.0-rc.16`（2026-11-20）。补记依赖说明：P6-42 完成后，本卡只等 Vue 3.6 正式版 |
+
+依赖：P6-65 → P6-42 → P6-41。共享文件：`WorkspacePage.spec.ts`、`authGuard.spec.ts` 只由 P6-65 修改；`frontend/wp-web/package.json` 与锁文件仍按 P6-42 → P6-41 串行。P6-39（企业微信登录）按人的要求本次不处理，保持原状。本次用掉 P6-65 一个编号。
+
+不建卡、由人处理的事项：
+
+- CI 的 `frontend` job 增加 wp-web 的 `verify`（`.github/workflows/ci.yml` 属于开发标准文件，由人另开分支修改），避免同类失败再次只在本地暴露。
+- `main` 上 CI 的 `java` job 从 2026-11-14 前后起持续失败（`AdminUserManagementTest` 2 条断言失败）。Java 卡的全量检查是 `./mvnw -q verify`，需要先查清根因，再决定是否建修复卡。
