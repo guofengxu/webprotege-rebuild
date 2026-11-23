@@ -137,7 +137,7 @@ OBO 方式的细节（用户区间、零填充位数）以旧测试为准，移�
 | 项目角色 | 新增动作 |
 |---|---|
 | CAN_VIEW | VIEW_PROJECT、VIEW_CHANGES、DOWNLOAD_PROJECT |
-| CAN_COMMENT | （MVP 暂无评论功能，保留角色占位） |
+| CAN_COMMENT | VIEW_OBJECT_COMMENT、CREATE_OBJECT_COMMENT、EDIT_OWN_OBJECT_COMMENT、SET_OBJECT_COMMENT_STATUS（BS-19，由 P6-75 填实；MVP 曾为占位） |
 | CAN_EDIT | EDIT_ONTOLOGY、EDIT_ONTOLOGY_ANNOTATIONS、CREATE_CLASS、DELETE_CLASS、CREATE_PROPERTY、DELETE_PROPERTY、CREATE_INDIVIDUAL、DELETE_INDIVIDUAL、REVERT_CHANGES |
 | CAN_MANAGE | EDIT_PROJECT_SETTINGS、EDIT_SHARING_SETTINGS、EDIT_NEW_ENTITY_SETTINGS、EDIT_PROJECT_PREFIXES、MOVE_ANY_PROJECT_TO_TRASH（仅本项目）、**EDIT_FORMS**（BS-16，由 P6-67 加入） |
 
@@ -149,6 +149,7 @@ OBO 方式的细节（用户区间、零填充位数）以旧测试为准，移�
 - 项目创建者自动获得该项目的 CAN_MANAGE。
 - **P6 第二轮新增**（P6-19 规划，旧出处同上 `BuiltInRole.java`）：CAN_EDIT 增加 `MERGE_ENTITIES`（BS-13，由 P6-24 加入）；CAN_MANAGE 增加 `UPLOAD_AND_MERGE`、`UPLOAD_AND_MERGE_ADDITIONS`（BS-14，由 P6-27 加入）。归属与旧系统一致（旧系统中前者属于 PROJECT_EDITOR，后两者属于 PROJECT_MANAGER）。
 - **P6 表单**（P6-43 规划，旧出处同上）：CAN_MANAGE 增加 `EDIT_FORMS`（旧系统 PROJECT_MANAGER）。实体表单**读**仍用 `VIEW_PROJECT`，**写值**仍用 `EDIT_ONTOLOGY`（不新增 VIEW_FORMS）。
+- **P6 讨论**（P6-44 规划，旧出处同上 `BuiltInRole.OBJECT_COMMENTER`）：CAN_COMMENT 填入上表四类评论动作（旧系统还有 `EDIT_ANY_OBJECT_COMMENT` 与 Issue 相关动作，**首期不移植**）。编辑 / 删除评论还必须是作者本人（见 BS-19）。
 - 权限校验在命令总线入口统一执行（旧出处：`LEG/dispatch/impl/DispatchServiceExecutorImpl.java`，`RequestValidator` 链），不在各 Handler 里零散判断。
 
 ## BS-11 高层事件
@@ -164,8 +165,11 @@ MVP 需要的事件（其余见 P6）：
 | EntityFrameChanged | 某实体的 Frame 内容（标签、注解、父类、属性值）发生变化 | 实体 |
 | BrowserTextChanged | 某实体的显示名称变化 | 实体、新显示名 |
 | PermissionsChanged | 项目角色分配变化 | 项目 |
+| CommentPosted / CommentUpdated / CommentDeleted | 讨论评论增删改（BS-20） | 见 BS-20 |
+| DiscussionThreadCreated / DiscussionThreadStatusChanged | 讨论线程创建或状态变化（BS-20） | 见 BS-20 |
 
 - 事件从**已提交的修订**派生，修订号作为事件流的游标，客户端断线后可以凭修订号补齐。
+- **非修订事件**（`PermissionsChanged`、讨论事件）：仍带当前项目 head 作为 `revNo` 游标（与角色变更同一模式），不产生新修订。
 - 静默生成器（旧系统的 `SilentChangeListGenerator`）产生的修订只发 ProjectChanged。
 
 ## BS-12 支持的格式
@@ -187,7 +191,7 @@ MVP 需要的事件（其余见 P6）：
    - `DELETE_MERGED_ENTITY`：不加弃用断言，源实体从此不再出现在任何公理中。
 - 生成器的结果是目标实体；修订描述为用户填写的说明。
 - **新系统新增**：用户没有填写说明时，描述为 `Merged <n> entities into <目标显示名>`；按以下顺序检查，命中即拒绝合并、不产生修订：源集合为空 → 目标在源集合中 → 源或目标是内置实体（例如 `owl:Thing`）→ 源或目标未声明 → 实体类型不一致（实体类型从本体声明中解析，请求不携带类型）。
-- 旧系统在 `DELETE_MERGED_ENTITY` 时把讨论线程移到目标实体；新系统目前没有讨论功能，这一步不移植（讨论功能见 P6-44 的逆向分析）。
+- 旧系统在 `DELETE_MERGED_ENTITY` 时把讨论线程移到目标实体；**新系统**在讨论功能落地后同样转移（P6-79）：合并修订提交成功后，把源实体上的全部讨论线程改挂到目标实体；`DEPRECATE_MERGED_ENTITY` **不**转移。转移在应用层完成（Spring 事件），不进入内核变更生成器。
 - 与旧测试对应的断言：源 IRI 被替换为目标 IRI；源的 `rdfs:label` / `skos:prefLabel` 变成目标的 `skos:altLabel`；`DELETE_MERGED_ENTITY` 时没有弃用断言；`DEPRECATE_MERGED_ENTITY` 时有弃用断言。
 
 ## BS-14 上传并合并到已有项目
@@ -250,3 +254,32 @@ MVP 需要的事件（其余见 P6）：
   2. 对每个摊平后的主体，由 **pristine** 推出的 Frame（首期仅 PROPERTY 上的 TEXT/NUMBER 相关断言）必须等于当前运行时；不等 → 409 `FORM_DATA_CHANGED`（语义对齐 Frame 编辑的 `from` 校验 / `FRAME_CHANGED`），不写修订。仅校验 head 不足以防止同修订号下的内容冲突。
 - **首期可写**：仅 `TEXT` / `NUMBER` 且 `OwlBinding` 为 `PROPERTY`（数据属性或注解属性）。其它控件或绑定的 edited 必须与 pristine 相等，否则拒绝。表格 / 子表单 / 实体名等另开卡。
 - **往返不变量**（P6-69/P6-73 测试）：投影后不改即保存 → 不产生修订；改一处 TEXT/NUMBER 属性值 → 与直接 Frame 更新同一绑定的公理结果一致。
+
+## BS-19 实体讨论线程与评论
+
+旧出处：`LEG_SHARED/issues/EntityDiscussionThread.java`、`Comment.java`、`Status.java`；`LEG/issues/*Handler.java`、`EntityDiscussionThreadRepository.java`、`CommentRenderer.java`；详解见 `discussions.md`。
+
+- 每个项目有一组挂在 OWL 实体上的讨论线程：`threadId`（UUID）、实体（iri + 类型）、`OPEN`/`CLOSED`、有序评论列表。一条实体可有多条线程。
+- 评论：`commentId`（UUID，项目内唯一）、`createdBy`、`createdAt`、可选 `updatedAt`、Markdown `body`、服务端生成的 `renderedBody`（消毒后的 HTML）。
+- **Markdown**：服务端渲染（CommonMark + Autolink / Strikethrough / Tables / Ins）；**必须**消毒，禁止原样输出用户提供的 HTML。客户端展示 `renderedBody`，不以客户端 Markdown 作为安全边界。
+- **提及（首期）**：仅识别 `@userId` / `@{displayName}`，渲染为用户提 span；`#数字`（旧 Issue）、`Rn`、实体字面量**不**做特殊解析或跳转（可原样留在 Markdown 文本中）。
+- 读线程 / 有评论实体列表：`VIEW_OBJECT_COMMENT`（**新系统修正**：旧 `GetCommentedEntities` 未声明该动作）。创建线程与追加评论：`CREATE_OBJECT_COMMENT`。开关线程：`SET_OBJECT_COMMENT_STATUS`。编辑与删除评论：命令总线声明 `EDIT_OWN_OBJECT_COMMENT`，**且** Handler 校验当前用户必须是该评论 `createdBy`（**新系统修正**：旧编辑未校验作者；旧删除无 BuiltInAction、仅自定义校验；旧客户端删除按钮未开放——新系统首期开放删除并发 `CommentDeleted`）。首期不提供“编辑/删除任意评论”。
+- 删光某线程全部评论后：允许留下空线程，或级联删除空线程——实现卡选一并测试钉死（旧系统可留空线程）。
+- 讨论写路径**不**产生修订、不经 `ChangePipeline`。向已 `CLOSED` 的线程追加评论：允许，且**不**自动重开（与旧系统一致）。
+- **首期不做**：邮件通知、Slack、GitHub 风格 Issue / Milestone、项目 webhook 的 `COMMENT_POSTED`。
+
+## BS-20 讨论高层事件
+
+旧出处：`LEG_SHARED/issues/CommentPostedEvent.java`、`CommentUpdatedEvent.java`、`DiscussionThreadCreatedEvent.java`、`DiscussionThreadStatusChangedEvent.java`；投递经旧 `EventManager`。新系统经 `ProjectEventHub`（ADR-007）。
+
+| 事件 | 触发 | 载荷（要点） |
+|---|---|---|
+| DiscussionThreadCreated | 新建线程 | threadId、实体、首条评论摘要 |
+| CommentPosted | 新建线程的首评或追加评论 | threadId、comment、实体、该实体评论数 / OPEN 线程评论数 |
+| CommentUpdated | 编辑评论成功 | threadId、comment |
+| CommentDeleted | 删除评论成功（**新系统新增**；旧系统无事件） | threadId、commentId、实体 |
+| DiscussionThreadStatusChanged | 开关线程 | threadId、实体、status、该实体 OPEN 评论数 |
+
+- 全部实现 `ProjectEvent`：`type` + `revNo`（取发布时项目 head，与 `PermissionsChanged` 相同），不新增修订。
+- 讨论模块持久化成功后发 Spring 域事件；`events` 模块翻译并 `ProjectEventHub.publish`。Web / 长轮询客户端必须穷尽处理新 `type`（与现有五类事件同一联合类型）。
+- 讨论事件**不**写入项目 webhook 投递（与 BS-15：旧 `COMMENT_POSTED` 从未发送一致）。

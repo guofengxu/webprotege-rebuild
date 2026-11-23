@@ -19,7 +19,7 @@
 | Vue 3.6 升级 | 3.6 正式发布后升级 Web 端，单独一张卡 | |
 | TypeScript 7 评估 | vue-tsc 正式支持后再评估 | |
 | 表单（Forms） | 已逆向并拆首期卡（P6-43 → P6-66~P6-73）；见文末「表单（P6-43）」 | |
-| 讨论与评论 | 实体级讨论线程 | |
+| 讨论与评论 | 已逆向并拆首期卡（P6-44 → P6-74~P6-82）；见文末「讨论（P6-44）」 | |
 | 关注（Watches）与通知 | 关注实体、邮件通知 | |
 | 标签 | 项目标签、实体打标签 | |
 | webhook | 修订提交后回调外部 URL（可以基于 outbox 实现）。建议在 P6-08 完成后作为消费者接入 | |
@@ -90,7 +90,7 @@ P6-11 首次运行（`docs/perf/projection-poc-2026-11-14.md`）只有一项未�
 | Vue 3.6 升级 | 条件满足后 | P6-41（阻塞） | 截至 2026-11-15，3.6 仍是 RC（`3.6.0-rc.15`） |
 | 多实例部署 | 未排期（规划卡） | P6-40 | 牵涉 ADR-006 等多处单实例假设，先出 ADR 草案 |
 | 表单（Forms） | 1（首期范围见下文「表单（P6-43）」） | P6-43、P6-66 ~ P6-73 | 逆向见 `docs/01-rea/forms.md`、BS-16 ~ BS-18；首期只读+TEXT/NUMBER（PROPERTY）可写 |
-| 讨论与评论 | 未排期（逆向分析） | P6-44 | 需要先定 Markdown 渲染与 XSS 防护、邮件、新事件类型 |
+| 讨论与评论 | 1（首期范围见下文「讨论（P6-44）」） | P6-44、P6-74 ~ P6-82 | 逆向见 `docs/01-rea/discussions.md`、BS-19 ~ BS-20；邮件留给 P6-45 |
 | 关注（Watches）与通知 | 未排期（逆向分析） | P6-45 | 需要邮件发送能力；可以复用 P6-21 的“登记 + 独立投递”模式 |
 | 标签 | 未排期（逆向分析） | P6-46 | 按条件打标签（`MatchingEngine`）的规模需要评估 |
 | Manchester 语法编辑 | 未排期（逆向分析） | P6-47 | 旧渲染器约 68 个文件，评估 OWL API 5 自带的渲染器能否替代 |
@@ -299,3 +299,52 @@ P6-42 的评估已经完成（`docs/03-plan/typescript-7-evaluation.md`，结论
 - Web：表单功能目录与相关 `queryKeys` 只由 P6-70 改。
 
 本次拆卡用掉 P6-66 ~ P6-73（其中 P6-73 为保存 API）八个编号。
+
+## 讨论（P6-44，2026-11-23）
+
+依据：`docs/01-rea/discussions.md`；BS-19 ~ BS-20；旧工程 `server/issues`、`shared/issues`、`client/issues`；P6-03 事件推送；P6-24 合并实体；BS-10 `CAN_COMMENT` 占位。planner / architect 审查后若调整首期边界，以 EPIC 本小节与卡片为准。
+
+### 决定（待人在提交前确认「首期范围」）
+
+| # | 议题 | 决定 |
+|---|---|---|
+| 1 | 首期目标 | **实体讨论运行时**：按实体列线程；新建线程 / 回复；编辑与删除**自己的**评论；开关线程；有评论实体列表；Web 讨论面板。 |
+| 2 | Markdown 与 XSS | **服务端** CommonMark（+ Autolink / Strikethrough / Tables / Ins）渲染并**消毒** HTML；持久化 `body` + `rendered_body`；客户端展示 `renderedBody`，不以客户端 Markdown 为安全边界。 |
+| 3 | 提及 | **仅** `@userId` / `@{name}` 特殊渲染（供日后邮件）；`#N` Issue、`Rn`、实体字面量首期不做特殊解析。 |
+| 4 | 邮件通知 | **首期不做**；与关注（P6-45）共用日后的 SMTP / 投递能力。讨论 API 仍发域事件，便于后续订阅。 |
+| 5 | 事件与 SSE | 扩展 `ProjectEvent`：`DiscussionThreadCreated`、`CommentPosted`、`CommentUpdated`、`CommentDeleted`（新）、`DiscussionThreadStatusChanged`；`revNo` = 当前 head（同 `PermissionsChanged`）。后端事件 + `@wp/api-types` + Web 穷尽处理放在相邻卡。不进项目 webhook。 |
+| 6 | 合并实体 | **纳入**：`DELETE_MERGED_ENTITY` 成功后把源实体线程改挂目标；`DEPRECATE_MERGED_ENTITY` 不转移。经 Spring 事件，不改内核生成器。 |
+| 7 | 旧数据迁移 | **纳入**：导出/导入 `EntityDiscussionThreads`；`formatVersion` 仍为 1；导出始终写文件（可空）。 |
+| 8 | 模块 | 新 Modulith 模块 **`discussion`**：deps `bus, access, shared`；`web` / `migration` / `events` 允许依赖它；`ontology` **不**直接依赖（合并用 Spring 事件）。 |
+| 9 | 不做 | Slack、Issue/Milestone、`EDIT_ANY_OBJECT_COMMENT`、邮件、webhook `COMMENT_POSTED`、旧系统漏检的“改他人评论”。 |
+| 10 | 新依赖 | P6-76 允许引入 CommonMark（含旧系统同款扩展）与 OWASP Java HTML Sanitizer（或执行记录中写明的同等消毒库）；不升 Spring Boot / OWL API。 |
+
+### 展开卡片
+
+| 卡片 | 内容 | 模块 |
+|---|---|---|
+| P6-74 | 讨论表结构 V11 + JDBC 仓储 + Modulith `discussion` 壳 | wp-app/discussion |
+| P6-75 | 填实 `CAN_COMMENT` 四类动作（Action / ProjectRole / BS-10 测试） | wp-app/access |
+| P6-82 | `CommentRenderer`（CommonMark + 提及 + 消毒）与允许的 POM 依赖 | wp-app/discussion |
+| P6-76 | 讨论 REST：线程/评论 CRUD、域事件（Controller 在 web；OpenAPI 路径） | wp-app/discussion |
+| P6-77 | 讨论 → `ProjectEvent` + hub 同 head 唤醒 + OpenAPI / `@wp/api-types` | wp-app/events |
+| P6-78 | Web：讨论面板 + 有评论实体列表 + `applyProjectEvent` 穷尽分支 | wp-web |
+| P6-79 | 合并实体后转移讨论线程（BS-13；可最小改 `MergeEntitiesHandler`） | wp-app/discussion |
+| P6-80 | 迁移工具：导出 EntityDiscussionThreads | wp-legacy-migrator |
+| P6-81 | 后端：导入讨论线程（按 body 重渲消毒） | wp-app/migration |
+
+依赖（`A → B` 表示 B 依赖 A）：P6-66 → P6-74（**仅** Flyway V10→V11）；P6-74 → P6-82 → P6-76；P6-75 → P6-76；P6-73 → P6-76（**仅** OpenAPI 串行）；P6-76 → P6-77 → P6-78；{P6-74、P6-24} → P6-79；P6-74 → P6-80；{P6-74、P6-80、P6-82} → P6-81。P6-74 与 P6-75 可并行；P6-82 与 P6-75 可并行；P6-79 / P6-80 可与 P6-76 并行（不共享 OpenAPI 时）。
+
+### 共享文件与迁移号（讨论）
+
+- 编辑器 Flyway：P6-74 用 **V11**（**P6-66 V10 进 main 后方可开工**）。已分配 V6…V10 不变。
+- `docs/02-architecture/overview.md` 第 2 节、`ModularityTest`：只有 **P6-74**（登记 `discussion` 及 `web|migration|events → discussion`）。
+- `access/Action.java`、`ProjectRole.java`、`BS10_AccessServiceTest`：只有 **P6-75**（与 P6-67 的 `EDIT_FORMS` 串行：P6-67 → P6-75）。
+- `wp-app/pom.xml` 渲染相关依赖：只有 **P6-82**。
+- `docs/api/openapi.json`、`@wp/api-types`、`OpenApiResponseSchemasTest`：串行 **… → P6-73 → P6-76 → P6-77**。
+- `ProjectEvent` 密封接口、`EventTranslator`、`ProjectEventHub.takeWaiters`、`applyProjectEvent` / `projectEvents`：P6-77（后端含同 head 唤醒）与 P6-78（前端）分工。
+- `docs/02-architecture/interchange-format.md`：串行 **P6-80 → P6-81**（不升 `formatVersion`）。
+- `MergeEntitiesHandler` / 合并后 Spring 事件：只有 **P6-79**（允许该 Handler 最小发布改动）。
+- `docs/01-rea/behavior-specs.md` BS-19~20 / `discussions.md`：本规划卡已写；实现卡只引用不改规格语义。
+
+本次拆卡用掉 P6-74 ~ P6-82（其中 P6-82 为渲染器）九个编号。

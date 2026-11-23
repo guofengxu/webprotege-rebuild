@@ -12,6 +12,7 @@
 | `behavior-specs.md` | 编号的行为规格 BS-xx，可直接写成测试 | 大部分 P1/P3 卡 |
 | `legacy-data.md` | 旧数据目录、BinaryOWL 元数据、Mongo 集合 | P2 全部卡、P3-10 |
 | `forms.md` | 表单子系统五层逆向（描述符、选择器、投影与保存） | P6-43、P6-66 ~ P6-73 |
+| `discussions.md` | 实体讨论线程五层逆向（评论、提及、事件与合并转移） | P6-44、P6-74 ~ P6-82 |
 
 ## 1. 边界与上下文
 
@@ -53,6 +54,7 @@
 - 2019 年以后 server-core 中改动最多的目录：`index`（989 次文件变更）、`form`（418）、`frame`（220）、`change`（204）、`inject`（196）。
   - 解读一：上游后期做过一次大重构，用细粒度索引替换 `OWLOntology`，主要为了控制内存。
   - 解读二：表单（forms）是后期业务扩张最快的子系统。规格见 `forms.md`；首期实现卡为 P6-66 ~ P6-73（P6-43 规划）。
+  - 讨论（issues / EntityDiscussionThreads）体量较小但是协同编辑的常用能力；规格见 `discussions.md`；首期实现卡为 P6-74 ~ P6-82（P6-44 规划）。
 
 ## 6. 本质约束与偶然实现
 
