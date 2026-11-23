@@ -20,7 +20,7 @@
 | TypeScript 7 评估 | vue-tsc 正式支持后再评估 | |
 | 表单（Forms） | 已逆向并拆首期卡（P6-43 → P6-66~P6-73）；见文末「表单（P6-43）」 | |
 | 讨论与评论 | 已逆向并拆首期卡（P6-44 → P6-74~P6-82）；见文末「讨论（P6-44）」 | |
-| 关注（Watches）与通知 | 关注实体、邮件通知 | |
+| 关注（Watches）与通知 | 已逆向并拆首期卡（P6-45 → P6-83~P6-91）；见文末「关注（P6-45）」 | |
 | 标签 | 项目标签、实体打标签 | |
 | webhook | 修订提交后回调外部 URL（可以基于 outbox 实现）。建议在 P6-08 完成后作为消费者接入 | |
 | 合并实体 | 把实体 A 合并到 B，并替换全部引用 | |
@@ -91,7 +91,7 @@ P6-11 首次运行（`docs/perf/projection-poc-2026-11-14.md`）只有一项未�
 | 多实例部署 | 未排期（规划卡） | P6-40 | 牵涉 ADR-006 等多处单实例假设，先出 ADR 草案 |
 | 表单（Forms） | 1（首期范围见下文「表单（P6-43）」） | P6-43、P6-66 ~ P6-73 | 逆向见 `docs/01-rea/forms.md`、BS-16 ~ BS-18；首期只读+TEXT/NUMBER（PROPERTY）可写 |
 | 讨论与评论 | 1（首期范围见下文「讨论（P6-44）」） | P6-44、P6-74 ~ P6-82 | 逆向见 `docs/01-rea/discussions.md`、BS-19 ~ BS-20；邮件留给 P6-45 |
-| 关注（Watches）与通知 | 未排期（逆向分析） | P6-45 | 需要邮件发送能力；可以复用 P6-21 的“登记 + 独立投递”模式 |
+| 关注（Watches）与通知 | 1（首期范围见下文「关注（P6-45）」） | P6-45、P6-83 ~ P6-91 | 逆向见 `docs/01-rea/watches.md`、BS-21 ~ BS-22；SMTP / 投递队列独立首卡，讨论邮件可日后复用 |
 | 标签 | 未排期（逆向分析） | P6-46 | 按条件打标签（`MatchingEngine`）的规模需要评估 |
 | Manchester 语法编辑 | 未排期（逆向分析） | P6-47 | 旧渲染器约 68 个文件，评估 OWL API 5 自带的渲染器能否替代 |
 | MCP 写工具（“MCP 工具”条目的剩余部分） | 未排期（规划卡） | P6-48 | 第一轮只做了只读工具；人工确认机制需要先出 ADR 草案 |
@@ -348,3 +348,53 @@ P6-42 的评估已经完成（`docs/03-plan/typescript-7-evaluation.md`，结论
 - `docs/01-rea/behavior-specs.md` BS-19~20 / `discussions.md`：本规划卡已写；实现卡只引用不改规格语义。
 
 本次拆卡用掉 P6-74 ~ P6-82（其中 P6-82 为渲染器）九个编号。
+
+## 关注（P6-45，2026-11-23）
+
+依据：`docs/01-rea/watches.md`；BS-21 ~ BS-22；旧工程 `server/watches`、`shared/watches`、`client/watches`；P6-08 / P6-21 outbox 登记与投递；BS-08 层级；P6-44 已把讨论邮件留给本卡的 SMTP。planner / architect 审查后若调整首期边界，以 EPIC 本小节与卡片为准。
+
+### 决定（待人在提交前确认「首期范围」）
+
+| # | 议题 | 决定 |
+|---|---|---|
+| 1 | 首期目标 | **实体关注运行时** + **按修订的邮件通知**：设置 ENTITY/BRANCH；列出我的关注；Web 关注入口；修订提交后匹配关注并发邮件。 |
+| 2 | 邮件发送能力 | **独立首卡**（P6-83）：新增 `spring-boot-starter-mail`；`mail_deliveries` 表（V12）+ 认领/重试投递线程，放在 `integration` 模块，供关注与**日后**讨论邮件共用。未配置 SMTP 或 `wp.mail.enabled=false` 时不阻塞 outbox。 |
+| 3 | 通知触发源 | **outbox 消费者**（非写路径进程内 Frame 事件）：按修订求受影响实体 → BS-21 匹配；模型未应用该修订时 `OutboxRetryLater`（同 P6-12）。 |
+| 4 | 同一修订多次命中 | **每用户每修订一封**，正文列全部命中实体（旧系统按实体多次发送）。 |
+| 5 | 是否排除修改者 | **排除**本修订作者（**新系统修正**；旧关注通知不排除）。仍要求收件人有 `VIEW_PROJECT` 与邮箱。 |
+| 6 | 退订与频率 | 退订 = 清除关注；不做全局退订表、不做跨修订摘要/限频。 |
+| 7 | 站内通知 | **首期不做**通知中心；已有 SSE `EntityFrameChanged` 等实时事件即可。 |
+| 8 | 权限 | `WATCH_CHANGES` 归入 `CAN_VIEW`；所有关注读写 API 必须声明该动作。 |
+| 9 | 模块 | 新 Modulith 模块 **`watch`**：deps `bus, access, shared, revision, ontology, integration`（读运行时/层级做匹配，并登记邮件；对齐 `projection` + 邮件）；`web` / `migration` / `events` → `watch`。 |
+| 10 | 迁移 | **纳入**导出/导入 Mongo `Watches`；`formatVersion` 仍为 1。 |
+| 11 | 不做 | 关注变更历史全表扫描 API、合并时转移关注、移动推送、讨论评论邮件、站内收件箱、把多收件人放同一 TO。 |
+
+### 展开卡片
+
+| 卡片 | 内容 | 模块 |
+|---|---|---|
+| P6-83 | 邮件：`spring-boot-starter-mail` + `mail_deliveries` V12 + 投递线程（登记/认领/重试） | wp-app/integration |
+| P6-84 | 关注表结构 V13 + JDBC 仓储 + Modulith `watch` 壳 | wp-app/watch |
+| P6-85 | `WATCH_CHANGES` 动作与 `CAN_VIEW` 映射 | wp-app/access |
+| P6-86 | 关注 REST：按实体 get/set、列出我的关注（Controller 在 web；OpenAPI） | wp-app/watch |
+| P6-87 | 关注 → `ProjectEvent`（WatchAdded/Removed）+ hub + OpenAPI / `@wp/api-types` | wp-app/events |
+| P6-88 | outbox 消费者：按修订匹配关注并登记邮件投递（`OutboxRetryLater`） | wp-app/watch |
+| P6-89 | Web：实体关注控件 + 我的关注列表 + `applyProjectEvent` 穷尽分支 | wp-web |
+| P6-90 | 迁移工具：导出 Watches | wp-legacy-migrator |
+| P6-91 | 后端：导入交换包中的 Watches | wp-app/migration |
+
+依赖（`A → B` 表示 B 依赖 A）：P6-74 → P6-83（**仅** Flyway V11→V12）；P6-83 → P6-84（**仅** V12→V13）；P6-84 → P6-86；P6-85 → P6-86；P6-77 → P6-86（**仅** OpenAPI 串行）；P6-86 → P6-87 → P6-89；{P6-84、P6-83、P6-21} → P6-88；P6-84 → P6-90；{P6-84、P6-90} → P6-91。P6-85 与 P6-84 可并行；P6-90 可与 P6-86 并行（不共享 OpenAPI 时）。P6-87 另硬依赖 P6-77 对 `ProjectEvent` / `EventTranslator` / `takeWaiters` 的改动（同 head 非修订事件唤醒须覆盖 WatchAdded/Removed）。
+
+### 共享文件与迁移号（关注）
+
+- 编辑器 Flyway：P6-83 用 **V12**，P6-84 用 **V13**（**P6-74 V11 进 main 后方可开工 P6-83**）。已分配 V6…V11 不变。
+- `backend/wp-app/pom.xml`：只有 **P6-83** 增加 `spring-boot-starter-mail`（理由：JDK 无内置 SMTP 客户端；与 Spring Boot 4.1.1 对齐的官方 starter；讨论邮件日后复用同一依赖）。
+- `docs/02-architecture/overview.md` 第 2 节、`ModularityTest`：只有 **P6-84**（登记 `watch`，deps 含 `revision, ontology, integration`；`web|migration|events → watch`；`integration` 职责注明含邮件投递）。
+- `access/Action.java`、`ProjectRole.java`、`BS10_AccessServiceTest`：只有 **P6-85**（与 P6-75 串行：P6-75 → P6-85）。
+- `docs/api/openapi.json`、`@wp/api-types`、`OpenApiResponseSchemasTest`：串行 **… → P6-77 → P6-86 → P6-87**（同时只许一个写者；无“改挂链尾”回退）。
+- `ProjectEvent` 密封接口、`EventTranslator`、`ProjectEventHub.takeWaiters`、`applyProjectEvent`：P6-87（后端，含同 head 唤醒覆盖 Watch 事件）与 P6-89（前端）分工；这些文件不随 OpenAPI 链尾放行，默认写者链承接 P6-77。
+- `docs/api/README.md` 邮件小节：只由 **P6-83** 追加。
+- `docs/02-architecture/interchange-format.md`：串行 **P6-90 → P6-91**（不升 `formatVersion`）。
+- `docs/01-rea/behavior-specs.md` BS-21~22 / `watches.md`：本规划卡已写；实现卡只引用不改规格语义。
+
+本次拆卡用掉 P6-83 ~ P6-91 九个编号。
