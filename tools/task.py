@@ -256,7 +256,7 @@ def run_shell(bash: str, command: str) -> tuple[int, float]:
 
 def dependents(card_id: str) -> list[str]:
     cards, _, _ = plan_lint.load_cards()
-    return sorted(c.id for c in cards if card_id in c.deps)
+    return sorted((c.id for c in cards if card_id in c.deps), key=plan_lint.id_sort_key)
 
 
 
@@ -845,13 +845,13 @@ def cmd_next(args: argparse.Namespace) -> None:
     free = [c for c in ready if c.id not in claimed]
     taken = [c for c in cards.values() if c.id in claimed and c.status != "done"]
     say(f"主分支 {REMOTE}/{MAIN} 上现在可以开工、且还没有人认领的卡：")
-    for c in sorted(free, key=lambda c: c.id):
+    for c in sorted(free, key=lambda c: plan_lint.id_sort_key(c.id)):
         say(f"  {c.id}  {c.meta['title']}")
     if not free:
         say("  无")
     if taken:
         say("\n已被认领（远程已有分支，尚未合并）：")
-        for c in sorted(taken, key=lambda c: c.id):
+        for c in sorted(taken, key=lambda c: plan_lint.id_sort_key(c.id)):
             say(f"  {c.id}  {c.meta['title']}  ← {claimed[c.id]}")
 
 
