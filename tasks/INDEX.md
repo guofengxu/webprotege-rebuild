@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 190 张卡：完成 136，进行中 0，阻塞 3，待办 51。
+共 198 张卡：完成 137，进行中 0，阻塞 3，待办 58。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-46](P6/P6-46-tags-rea-planning.md) 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡
 - [P6-47](P6/P6-47-manchester-rea-planning.md) 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡
 - [P6-48](P6/P6-48-mcp-write-tools-planning.md) 规划卡：MCP 写工具与人工确认机制（设计、ADR 草案与拆卡）
 - [P6-50](P6/P6-50-upload-merge-apply-api.md) 后端：上传并合并到已有项目的预览、应用与放弃接口（在生成锁内校验预览时的修订号）
@@ -199,7 +198,7 @@
 | [P6-43](P6/P6-43-forms-rea-planning.md) | 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 完成 | P4-22 |
 | [P6-44](P6/P6-44-discussions-rea-planning.md) | 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 完成 | P6-03 |
 | [P6-45](P6/P6-45-watches-rea-planning.md) | 规划卡：关注（Watches）与邮件通知逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 完成 | P6-21 |
-| [P6-46](P6/P6-46-tags-rea-planning.md) | 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P3-19 |
+| [P6-46](P6/P6-46-tags-rea-planning.md) | 规划卡：标签（项目标签、实体标签、按条件自动打标签）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 完成 | P3-19 |
 | [P6-47](P6/P6-47-manchester-rea-planning.md) | 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 待办（可开工） | P4-09 |
 | [P6-48](P6/P6-48-mcp-write-tools-planning.md) | 规划卡：MCP 写工具与人工确认机制（设计、ADR 草案与拆卡） | tasks/P6 | planning | S | 待办（可开工） | P6-16、P6-24 |
 | [P6-49](P6/P6-49-webhook-management-api.md) | 后端：项目 webhook 的管理接口（增删改查、停用时取消待投递记录、最近投递记录） | wp-app | app-security | M | 完成 | P6-20 |
@@ -245,5 +244,13 @@
 | [P6-89](P6/P6-89-web-watches.md) | Web：实体关注控件、我的关注列表与 Watch 事件穷尽处理 | wp-web | web | M | 待办 | P6-45、P6-87 |
 | [P6-90](P6/P6-90-watches-migrator-export.md) | 迁移工具：导出 Mongo Watches 到交换包 | wp-legacy-migrator | migrator | S | 待办 | P6-45、P6-84 |
 | [P6-91](P6/P6-91-watches-migration-import.md) | 后端：导入交换包中的 Watches | wp-app/migration | app-service | S | 待办 | P6-45、P6-84、P6-90 |
+| [P6-92](P6/P6-92-tag-schema.md) | 标签：project_tag / entity_tag 表结构（V14）、JDBC 仓储与 Modulith tag 模块壳 | wp-app/tag | db | M | 待办 | P6-46、P6-84 |
+| [P6-93](P6/P6-93-tag-permissions.md) | 访问控制：CAN_MANAGE 增加 EDIT_PROJECT_TAGS，CAN_COMMENT 增加 EDIT_ENTITY_TAGS | wp-app/access | app-security | S | 待办 | P6-46、P6-85 |
+| [P6-94](P6/P6-94-tag-api.md) | 标签 REST：项目标签目录 get/set、实体显式标签 get/update（OpenAPI） | wp-app/tag | app-service | M | 待办 | P6-46、P6-92、P6-93、P6-87 |
+| [P6-95](P6/P6-95-entity-node-tags.md) | EntityNode 显式标签字段与层级/搜索响应填充 | wp-app/web | app-service | M | 待办 | P6-46、P6-94 |
+| [P6-96](P6/P6-96-tag-events.md) | 标签高层事件：ProjectTagsChanged / EntityTagsChanged 进入 ProjectEventHub 与 api-types | wp-app/events | app-service | S | 待办 | P6-46、P6-87、P6-94、P6-95 |
+| [P6-97](P6/P6-97-web-tags.md) | Web：项目标签设置、实体打标、chips、显示过滤与标签事件穷尽处理 | wp-web | web | M | 待办 | P6-46、P6-95、P6-96 |
+| [P6-98](P6/P6-98-tags-migrator-export.md) | 迁移工具：导出 Mongo Tags 与 EntityTags 到交换包 | wp-legacy-migrator | migrator | M | 待办 | P6-46、P6-92、P6-91 |
+| [P6-99](P6/P6-99-tags-migration-import.md) | 后端：从交换包导入 Tags 与 EntityTags | wp-app/migration | app-service | M | 待办 | P6-46、P6-92、P6-98 |
 
 各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`。

@@ -21,7 +21,7 @@
 | 表单（Forms） | 已逆向并拆首期卡（P6-43 → P6-66~P6-73）；见文末「表单（P6-43）」 | |
 | 讨论与评论 | 已逆向并拆首期卡（P6-44 → P6-74~P6-82）；见文末「讨论（P6-44）」 | |
 | 关注（Watches）与通知 | 已逆向并拆首期卡（P6-45 → P6-83~P6-91）；见文末「关注（P6-45）」 | |
-| 标签 | 项目标签、实体打标签 | |
+| 标签 | 已逆向并拆首期卡（P6-46 → P6-92~P6-99）；见文末「标签（P6-46）」 | |
 | webhook | 修订提交后回调外部 URL（可以基于 outbox 实现）。建议在 P6-08 完成后作为消费者接入 | |
 | 合并实体 | 把实体 A 合并到 B，并替换全部引用 | |
 | 上传并合并到已有项目 | 对应旧系统的 `merge_add` | |
@@ -92,7 +92,7 @@ P6-11 首次运行（`docs/perf/projection-poc-2026-11-14.md`）只有一项未�
 | 表单（Forms） | 1（首期范围见下文「表单（P6-43）」） | P6-43、P6-66 ~ P6-73 | 逆向见 `docs/01-rea/forms.md`、BS-16 ~ BS-18；首期只读+TEXT/NUMBER（PROPERTY）可写 |
 | 讨论与评论 | 1（首期范围见下文「讨论（P6-44）」） | P6-44、P6-74 ~ P6-82 | 逆向见 `docs/01-rea/discussions.md`、BS-19 ~ BS-20；邮件留给 P6-45 |
 | 关注（Watches）与通知 | 1（首期范围见下文「关注（P6-45）」） | P6-45、P6-83 ~ P6-91 | 逆向见 `docs/01-rea/watches.md`、BS-21 ~ BS-22；SMTP / 投递队列独立首卡，讨论邮件可日后复用 |
-| 标签 | 未排期（逆向分析） | P6-46 | 按条件打标签（`MatchingEngine`）的规模需要评估 |
+| 标签 | 已拆首期卡（显式标签） | P6-46 → P6-92~P6-99 | MatchingEngine / 条件自动打标另议；见文末「标签（P6-46）」 |
 | Manchester 语法编辑 | 未排期（逆向分析） | P6-47 | 旧渲染器约 68 个文件，评估 OWL API 5 自带的渲染器能否替代 |
 | MCP 写工具（“MCP 工具”条目的剩余部分） | 未排期（规划卡） | P6-48 | 第一轮只做了只读工具；人工确认机制需要先出 ADR 草案 |
 | 移动端：iOS 与微信小程序、移动端推送通知 | P5 暂停期间不排期 | — | 人的决定：移动端继续暂停 |
@@ -265,7 +265,7 @@ P6-42 的评估已经完成（`docs/03-plan/typescript-7-evaluation.md`，结论
 | # | 议题 | 决定 |
 |---|---|---|
 | 1 | 首期目标 | **实体表单运行时**：按选择器取表单并投影；**TEXT / NUMBER**（仅 `PROPERTY` 绑定）可编辑并经 `ChangePipeline` 写回公理；其它控件只读占位。描述符经 REST 管理。 |
-| 2 | 条件选择器 | **纳入简化版**：criteria 全量 jsonb 存储；匹配仅 `EntityTypeIsOneOf` + `SubClassOf`（ALL/ANY；`SubClassOf`=任意祖先）。criteria 树任一未支持节点 → **整条**选择器不命中。完整 MatchingEngine 不在首期（P6-46）。 |
+| 2 | 条件选择器 | **纳入简化版**：criteria 全量 jsonb 存储；匹配仅 `EntityTypeIsOneOf` + `SubClassOf`（ALL/ANY；`SubClassOf`=任意祖先）。criteria 树任一未支持节点 → **整条**选择器不命中。完整 MatchingEngine 不在首期（P6-46 亦不移植；另议 Query/匹配规划卡）。 |
 | 3 | 表格 / 子表单 | **首期不做可写**；投影返回空/占位，保存时若 edited≠pristine 则拒绝。 |
 | 4 | 表单设计器 Web UI | **首期不做**（可用 API / 迁移导入描述符）。 |
 | 5 | 旧数据迁移 | **纳入**：导出/导入 `Forms` + `FormSelectors`；`formatVersion` 仍为 1（新文件可选；导出**始终写空文件**）；迁移报告警告含未支持节点的选择器。 |
@@ -398,3 +398,51 @@ P6-42 的评估已经完成（`docs/03-plan/typescript-7-evaluation.md`，结论
 - `docs/01-rea/behavior-specs.md` BS-21~22 / `watches.md`：本规划卡已写；实现卡只引用不改规格语义。
 
 本次拆卡用掉 P6-83 ~ P6-91 九个编号。
+
+## 标签（P6-46，2026-11-23）
+
+依据：`docs/01-rea/tags.md`；BS-23 ~ BS-24；旧工程 `server/tag`、`shared/tag`、`client/tag`；P3-19 实体搜索（逆向确认旧系统**无**按项目 Tag 过滤搜索）；BS-10 / BS-11。planner / architect 审查后若调整首期边界，以 EPIC 本小节与卡片为准。
+
+### 决定（待人在提交前确认「首期范围」）
+
+| # | 议题 | 决定 |
+|---|---|---|
+| 1 | 首期目标 | **显式标签**：项目标签目录 CRUD（整表替换）、实体差分打标、层级/搜索节点展示、Web 设置与打标 UI、迁移。 |
+| 2 | 条件自动打标签 | **首期不做** MatchingEngine / 条件编辑 UI。`criteria` 列 jsonb **只存不求值**（迁移保真）；日后再挂匹配引擎。 |
+| 3 | MatchingEngine 规模 | 约 13 个 EntityMatch 根类型、~66 Criteria、~126 客户端 match 文件，与 Query 共用——单独为标签移植不划算。 |
+| 4 | 「搜索过滤」 | 旧系统**没有**按项目 Tag 的服务端搜索过滤（仅层级 CSS「显示的标签」）。原产出中的搜索过滤卡改为：**EntityNode 附带显式标签**（P6-95）+ Web 可见性过滤；**不做**服务端 search-by-tag。 |
+| 5 | 权限 | `EDIT_PROJECT_TAGS` → `CAN_MANAGE`；`EDIT_ENTITY_TAGS` → `CAN_COMMENT`；写接口均须服务端声明（修正旧 UpdateEntityTags 漏洞）。 |
+| 6 | 修订 | 标签**不**产生修订；与项目设置同属编辑器元数据。 |
+| 7 | 事件 | `ProjectTagsChanged` / `EntityTagsChanged` 进 `ProjectEventHub`（`revNo` = head）；不进 webhook。 |
+| 8 | 模块 | 新 Modulith 模块 **`tag`**：deps `bus, access, shared`；`web` / `migration` / `events` → `tag`；**不**依赖 `revision` / `ontology`。 |
+| 9 | EntityNode | 增加显式标签摘要字段；由 **web** 在层级/搜索响应组装时批量填充（避免 `ontology`→`tag`）。 |
+| 10 | 迁移 | **纳入**导出/导入 Mongo `Tags` + `EntityTags`；`formatVersion` 仍为 1。 |
+| 11 | 不做 | 条件自动打标、usage 计数、search-by-tag、webhook、本体变更重算标签事件。 |
+
+### 展开卡片
+
+| 卡片 | 内容 | 模块 |
+|---|---|---|
+| P6-92 | 标签表结构 V14 + JDBC 仓储 + Modulith `tag` 壳 | wp-app/tag |
+| P6-93 | `EDIT_PROJECT_TAGS` / `EDIT_ENTITY_TAGS` 与角色映射 | wp-app/access |
+| P6-94 | 标签 REST：项目目录 get/set、实体标签 get/update（OpenAPI） | wp-app/tag |
+| P6-95 | EntityNode 显式标签字段 + 层级/搜索响应填充 | wp-app/web |
+| P6-96 | 标签 → `ProjectEvent`（ProjectTagsChanged / EntityTagsChanged）+ hub + api-types | wp-app/events |
+| P6-97 | Web：项目标签设置、实体打标、chips、显示过滤、`applyProjectEvent` | wp-web |
+| P6-98 | 迁移工具：导出 Tags / EntityTags | wp-legacy-migrator |
+| P6-99 | 后端：导入交换包中的 Tags / EntityTags | wp-app/migration |
+
+依赖（`A → B` 表示 B 依赖 A）：P6-84 → P6-92（**仅** Flyway V13→V14）；P6-92 → P6-94；P6-93 → P6-94；P6-87 → P6-94（**仅** OpenAPI 串行）；P6-94 → P6-95 → P6-96 → P6-97；P6-95 → P6-97；P6-91 → P6-98（**仅** interchange-format 串行）；P6-92 → P6-98；{P6-92、P6-98} → P6-99。P6-93 与 P6-92 可并行；P6-98 可与 P6-94 并行（不共享 OpenAPI 时）。P6-96 另硬依赖 P6-87 对同 head 非修订事件唤醒的覆盖（须纳入 Tag 事件）；P6-96 扩展 `ProjectEvent` 联合类型后须与 P6-97 紧邻合并以免打断 Web 穷尽检查。
+
+### 共享文件与迁移号（标签）
+
+- 编辑器 Flyway：P6-92 用 **V14**（**P6-84 V13 进 main 后方可开工**）。已分配 V6…V13 不变。
+- `docs/02-architecture/overview.md` 第 2 节、`ModularityTest`：只有 **P6-92**（登记 `tag`，deps `bus, access, shared`；`web|migration|events → tag`）。
+- `access/Action.java`、`ProjectRole.java`、`BS10_AccessServiceTest`：只有 **P6-93**（与 P6-85 串行：P6-85 → P6-93）。
+- `docs/api/openapi.json`、`@wp/api-types`、`OpenApiResponseSchemasTest`：串行 **… → P6-87 → P6-94 → P6-95 → P6-96**（同时只许一个写者）。
+- `EntityNode`（ontology dto）与 `ResponseSchemasCustomizer`：由 **P6-95** 扩展 tags 字段（默认空）；**web Controller** 在 `bus.execute` 之后批量填充（禁止 `ontology`/`search`→`tag`）。
+- `ProjectEvent` 密封接口、`EventTranslator`、`ProjectEventHub.takeWaiters`、`applyProjectEvent`：P6-96（后端）与 P6-97（前端）分工；承接 P6-87。
+- `docs/02-architecture/interchange-format.md`：串行 **P6-91 → P6-98 → P6-99**（不升 `formatVersion`）。
+- `docs/01-rea/behavior-specs.md` BS-23~24 / `tags.md`：本规划卡已写；实现卡只引用不改规格语义。
+
+本次拆卡用掉 P6-92 ~ P6-99 八个编号。

@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P3-19]
 ---
 
@@ -47,12 +47,20 @@ test -s docs/01-rea/tags.md
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 新卡片已通过评审
-- [ ] 人已确认首期范围
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 新卡片已通过评审
+- [x] 人已确认首期范围
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 写任何业务代码
+
+## 执行记录
+- 日期：2026-11-24
+- 分支：docs/p6-46-tags-rea-planning
+- 测试：2026-11-24T08:40:21+08:00 通过（3 项）
+- 实际改动：逆向旧系统标签子系统，写 tags.md 与 BS-23/BS-24；首期仅显式标签（criteria 只存不求值）；拆 P6-92~P6-99（存储/权限/API/EntityNode/事件/Web/迁移）；审查后修正 OpenAPI 链与剥离事件。
+- 偏差：原产出「搜索过滤」改为 EntityNode 显式标签填充 + Web 可见性过滤；旧系统无按项目 Tag 的服务端搜索过滤，故不做 search-by-tag。
+- 审查：planner, architect
