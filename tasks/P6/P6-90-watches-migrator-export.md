@@ -8,7 +8,7 @@ size: S
 work_type: migrator
 ecc_extra: [rea]
 status: todo
-depends_on: [P6-45, P6-84]
+depends_on: [P6-45, P6-84, P6-81]
 ---
 
 # P6-90 导出 Watches
@@ -21,7 +21,7 @@ depends_on: [P6-45, P6-84]
 - 旧集合 `Watches`；EPIC「关注（P6-45）」决定第 10 条
 
 ## 产出
-- 交换包项目目录增加 watches 文件（JSONL 或卡片选定的稳定格式：userId、entity iri/type、watchType）。
+- 每个 `projects/<projectId>/` **始终**写入 `watches.jsonl`（布局同讨论导出的 `discussion-threads.jsonl`），每行一个对象：`userId`、`entityIri`、`entityType`、`watchType`。`entityType` 取值与 P6-84 的 check 一致（OWL API `EntityType.getName()`：`Class`、`ObjectProperty`、`DataProperty`、`AnnotationProperty`、`NamedIndividual`、`Datatype`），`watchType` 为 `ENTITY` / `BRANCH`。
 - `interchange-format.md` 增补该文件说明；**不**升 `formatVersion`。
 - 导出始终写文件（可空）；SHA256SUMS 纳入。
 - 测试：有/无 Watches 的样例导出。
@@ -29,6 +29,7 @@ depends_on: [P6-45, P6-84]
 ## 实现要点
 - 只读旧工程数据；不复制旧 Java 源码。
 - 对 P6-84 只对齐字段语义；`wp-legacy-migrator` **禁止**依赖 `wp-app`。
+- 依赖 P6-81 **只为**串行修改 `interchange-format.md` 与迁移包文件清单（`export/PackageFiles.java` 的 `CHECKED`、`PackageVerifier`）：讨论与关注的导出、导入卡不同时改这些文件。
 
 ## ECC 技能
 工作项类型：`migrator` —— 旧数据迁移工具（wp-legacy-migrator，OWL API 4）；附加：rea。规则见 `.cursor/skills/wp-ecc-routing/SKILL.md`，也可以运行 `python tools/task.py ecc P6-90` 查看。

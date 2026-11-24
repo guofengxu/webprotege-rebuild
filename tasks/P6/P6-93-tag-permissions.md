@@ -8,7 +8,7 @@ size: S
 work_type: app-security
 ecc_extra: []
 status: todo
-depends_on: [P6-46, P6-85]
+depends_on: [P6-46, P6-85, P6-86]
 ---
 
 # P6-93 标签权限动作
@@ -25,9 +25,11 @@ depends_on: [P6-46, P6-85]
 - `Action` 增加项目作用域动作 `EDIT_PROJECT_TAGS`、`EDIT_ENTITY_TAGS`。
 - `ProjectRole.CAN_MANAGE` 纳入 `EDIT_PROJECT_TAGS`；`ProjectRole.CAN_COMMENT` 纳入 `EDIT_ENTITY_TAGS`（更高角色经继承获得）。
 - 更新 `BS10_AccessServiceTest`（及枚举穷尽测试）。
+- `docs/api/openapi.json` 与 `@wp/api-types`：`permissions/me` 响应的 `actions` 枚举增加两个动作；更新 `OpenApiResponseSchemasTest`。
 
 ## 实现要点
 - 依赖 P6-85 **只为**与关注权限串行修改同一 `Action` / `ProjectRole` 文件。
+- 依赖 P6-86 **只为** OpenAPI 串行（`… → P6-86 → P6-93 → P6-94`；2026-11-24 关注审查修订时发现动作枚举已发布）。
 
 ## ECC 技能
 工作项类型：`app-security` —— 认证、授权、令牌与其它安全相关接口。规则见 `.cursor/skills/wp-ecc-routing/SKILL.md`，也可以运行 `python tools/task.py ecc P6-93` 查看。
@@ -39,7 +41,7 @@ depends_on: [P6-46, P6-85]
 
 ## 验收
 ```bash
-./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest='BS10_AccessServiceTest'
+./mvnw -q -pl :wp-app -am test -Dsurefire.failIfNoSpecifiedTests=false -Dtest='BS10_AccessServiceTest,OpenApiResponseSchemasTest'
 ```
 
 ## 完成判据

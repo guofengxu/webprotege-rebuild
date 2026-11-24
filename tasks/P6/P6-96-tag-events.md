@@ -8,7 +8,7 @@ size: S
 work_type: app-service
 ecc_extra: []
 status: todo
-depends_on: [P6-46, P6-87, P6-94, P6-95]
+depends_on: [P6-46, P6-77, P6-94, P6-95]
 ---
 
 # P6-96 标签项目事件
@@ -17,12 +17,12 @@ depends_on: [P6-46, P6-87, P6-94, P6-95]
 项目标签目录或实体显式标签变更后，已连接客户端能通过 SSE / 长轮询收到 `ProjectTagsChanged` / `EntityTagsChanged`（`revNo` = 当前 head）。
 
 ## 参考
-- BS-11、BS-24；EPIC「标签（P6-46）」；对齐 P6-77 / P6-87
+- BS-11、BS-24；EPIC「标签（P6-46）」；对齐 P6-77（关注审查修订后关注不发项目事件，原 P6-87 已改为邮件投递线程）
 
 ## 产出
 - 扩展密封 `ProjectEvent`：`ProjectTagsChanged`、`EntityTagsChanged`（载荷见 BS-24）。
 - `EventTranslator` 监听 tag 域事件并 `ProjectEventHub.publish`。
-- `ProjectEventHub.takeWaiters`：对上述事件在 `revNo >= after` 时唤醒（与 PermissionsChanged / 讨论 / 关注同模式）。硬依赖 P6-87。
+- `ProjectEventHub.takeWaiters`：对上述事件在 `revNo >= after` 时唤醒（与 PermissionsChanged / 讨论同模式）。硬依赖 P6-77 对同 head 非修订事件唤醒的改动。
 - OpenAPI / `@wp/api-types` 事件联合类型更新。
 - 测试：改目录 / 改实体标签后订阅方收到事件；`revNo` 等于当时 head；整表替换删除仍被实体使用的标签 → 同时收到 `ProjectTagsChanged` 与受影响实体的 `EntityTagsChanged`（剥离后显式集合）。
 

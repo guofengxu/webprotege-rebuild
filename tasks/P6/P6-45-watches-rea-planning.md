@@ -66,3 +66,4 @@ test -s docs/01-rea/watches.md
 - 实际改动：完成关注（Watches）五层逆向与首期拆卡：docs/01-rea/watches.md、BS-21/22、EPIC「关注（P6-45）」决定（独立 SMTP 卡、outbox 按修订触发、排除作者、每用户每修订一封、不做站内通知）；实现卡 P6-83~P6-91（邮件 V12、关注 V13、权限、API、事件、outbox 匹配、Web、迁移进出）。审查后钉死受影响实体=revision_subjects 语义、匿名个体拒绝、读锁后再入队等。
 - 偏差：无
 - 审查：planner, (APPROVE, after, fixes), architect, (APPROVE;, MEDIUM, RevisionHistoryQueries, note, applied)
+- 修订：2026-11-24 合并后复核拆卡并修订（关注不发项目事件、受影响实体改为公理主语、邮件拆为 P6-83 登记 + P6-87 投递线程等），见 EPIC「关注（P6-45）」的「审查修订（2026-11-24）」。

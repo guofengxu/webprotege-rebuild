@@ -235,20 +235,20 @@
 | [P6-80](P6/P6-80-discussions-migrator-export.md) | 迁移工具：从 Mongo 导出 EntityDiscussionThreads 到迁移包 | wp-legacy-migrator | migrator | M | 待办 | P6-74 |
 | [P6-81](P6/P6-81-discussions-migration-import.md) | 后端：导入迁移包中的实体讨论线程 | wp-app/migration | app-service | M | 待办 | P6-74、P6-80、P6-82 |
 | [P6-82](P6/P6-82-comment-renderer.md) | 讨论：服务端 CommentRenderer（CommonMark + 提及 span + HTML 消毒） | wp-app/discussion | app-service | S | 待办 | P6-74 |
-| [P6-83](P6/P6-83-mail-delivery.md) | 邮件投递基础：spring-boot-starter-mail、mail_deliveries（V12）与认领/重试投递线程 | wp-app/integration | app-service | M | 待办 | P6-45、P6-74 |
+| [P6-83](P6/P6-83-mail-delivery.md) | 邮件投递登记：mail_deliveries（V12）、MailEnqueue 与 MailProperties | wp-app/integration | db | S | 待办 | P6-45、P6-74 |
 | [P6-84](P6/P6-84-watch-schema.md) | 关注：entity_watch 表结构（V13）、JDBC 仓储与 Modulith watch 模块壳 | wp-app/watch | db | M | 待办 | P6-45、P6-83 |
-| [P6-85](P6/P6-85-watch-permissions.md) | 访问控制：CAN_VIEW 增加 WATCH_CHANGES | wp-app/access | app-security | S | 待办 | P6-45、P6-75 |
+| [P6-85](P6/P6-85-watch-permissions.md) | 访问控制：CAN_VIEW 增加 WATCH_CHANGES | wp-app/access | app-security | S | 待办 | P6-45、P6-75、P6-77 |
 | [P6-86](P6/P6-86-watch-api.md) | 关注 REST：按实体 get/set、列出当前用户关注（OpenAPI） | wp-app/watch | app-service | M | 待办 | P6-45、P6-84、P6-85、P6-77 |
-| [P6-87](P6/P6-87-watch-events.md) | 关注高层事件：WatchAdded/WatchRemoved 进入 ProjectEventHub 与 api-types | wp-app/events | app-service | S | 待办 | P6-45、P6-77、P6-86 |
+| [P6-87](P6/P6-87-mail-dispatcher.md) | 邮件投递线程：spring-boot-starter-mail、SMTP 配置与认领/重试发送 | wp-app/integration | app-service | M | 待办 | P6-45、P6-83 |
 | [P6-88](P6/P6-88-watch-outbox-notify.md) | 关注通知 outbox 消费者：按修订匹配关注并登记邮件投递 | wp-app/watch | app-service | M | 待办 | P6-45、P6-84、P6-83、P6-21 |
-| [P6-89](P6/P6-89-web-watches.md) | Web：实体关注控件、我的关注列表与 Watch 事件穷尽处理 | wp-web | web | M | 待办 | P6-45、P6-87 |
-| [P6-90](P6/P6-90-watches-migrator-export.md) | 迁移工具：导出 Mongo Watches 到交换包 | wp-legacy-migrator | migrator | S | 待办 | P6-45、P6-84 |
+| [P6-89](P6/P6-89-web-watches.md) | Web：实体右键菜单关注对话框与「我的关注」页面 | wp-web | web | M | 待办 | P6-45、P6-86 |
+| [P6-90](P6/P6-90-watches-migrator-export.md) | 迁移工具：导出 Mongo Watches 到交换包 | wp-legacy-migrator | migrator | S | 待办 | P6-45、P6-84、P6-81 |
 | [P6-91](P6/P6-91-watches-migration-import.md) | 后端：导入交换包中的 Watches | wp-app/migration | app-service | S | 待办 | P6-45、P6-84、P6-90 |
 | [P6-92](P6/P6-92-tag-schema.md) | 标签：project_tag / entity_tag 表结构（V14）、JDBC 仓储与 Modulith tag 模块壳 | wp-app/tag | db | M | 待办 | P6-46、P6-84 |
-| [P6-93](P6/P6-93-tag-permissions.md) | 访问控制：CAN_MANAGE 增加 EDIT_PROJECT_TAGS，CAN_COMMENT 增加 EDIT_ENTITY_TAGS | wp-app/access | app-security | S | 待办 | P6-46、P6-85 |
-| [P6-94](P6/P6-94-tag-api.md) | 标签 REST：项目标签目录 get/set、实体显式标签 get/update（OpenAPI） | wp-app/tag | app-service | M | 待办 | P6-46、P6-92、P6-93、P6-87 |
+| [P6-93](P6/P6-93-tag-permissions.md) | 访问控制：CAN_MANAGE 增加 EDIT_PROJECT_TAGS，CAN_COMMENT 增加 EDIT_ENTITY_TAGS | wp-app/access | app-security | S | 待办 | P6-46、P6-85、P6-86 |
+| [P6-94](P6/P6-94-tag-api.md) | 标签 REST：项目标签目录 get/set、实体显式标签 get/update（OpenAPI） | wp-app/tag | app-service | M | 待办 | P6-46、P6-92、P6-93 |
 | [P6-95](P6/P6-95-entity-node-tags.md) | EntityNode 显式标签字段与层级/搜索响应填充 | wp-app/web | app-service | M | 待办 | P6-46、P6-94 |
-| [P6-96](P6/P6-96-tag-events.md) | 标签高层事件：ProjectTagsChanged / EntityTagsChanged 进入 ProjectEventHub 与 api-types | wp-app/events | app-service | S | 待办 | P6-46、P6-87、P6-94、P6-95 |
+| [P6-96](P6/P6-96-tag-events.md) | 标签高层事件：ProjectTagsChanged / EntityTagsChanged 进入 ProjectEventHub 与 api-types | wp-app/events | app-service | S | 待办 | P6-46、P6-77、P6-94、P6-95 |
 | [P6-97](P6/P6-97-web-tags.md) | Web：项目标签设置、实体打标、chips、显示过滤与标签事件穷尽处理 | wp-web | web | M | 待办 | P6-46、P6-95、P6-96 |
 | [P6-98](P6/P6-98-tags-migrator-export.md) | 迁移工具：导出 Mongo Tags 与 EntityTags 到交换包 | wp-legacy-migrator | migrator | M | 待办 | P6-46、P6-92、P6-91 |
 | [P6-99](P6/P6-99-tags-migration-import.md) | 后端：从交换包导入 Tags 与 EntityTags | wp-app/migration | app-service | M | 待办 | P6-46、P6-92、P6-98 |
