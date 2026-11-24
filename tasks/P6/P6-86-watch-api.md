@@ -22,10 +22,11 @@ depends_on: [P6-45, P6-84, P6-85, P6-77]
 
 ## 产出
 - 命令与 Handler（`watch` 模块）：获取某实体关注、设置某实体关注（空=清除）、列出当前用户关注。
+- 列表响应每项含实体 IRI、实体类型、`watchType` 与**当前显示名**（从项目运行时的显示名视图读取；实体已不在本体中时显示名回退为 IRI 短名），供 P6-89 直接展示，不需要逐个再查。
 - `web` Controller：REST 路径挂到项目下；只操作**当前用户**的关注（忽略伪造他人 userId）。
-- 持久化成功后发 Spring 域事件（供 P6-87 翻译为 `ProjectEvent`）；本卡**不**修改密封 `ProjectEvent`（由 P6-87 负责）。
+- 关注增删**不**发 Spring 域事件，也**不**进 `ProjectEventHub`（BS-21）；本卡不修改 `ProjectEvent`、`EventTranslator`。
 - 更新 `docs/api/openapi.json`、`@wp/api-types`、`OpenApiResponseSchemasTest`。
-- 测试：无权限 403；设置 BRANCH 后读取正确；清除后为空；不能改他人关注；**匿名个体**作为目标 → 4xx 拒绝。
+- 测试：无权限 403；设置 BRANCH 后读取正确；清除后为空；不能改他人关注；**匿名个体**作为目标 → 4xx 拒绝；列表返回显示名与实体类型。
 
 ## 实现要点
 - **新系统修正**：所有写接口声明 `WATCH_CHANGES`（旧 `SetEntityWatches` 未声明）。
@@ -52,4 +53,4 @@ depends_on: [P6-45, P6-84, P6-85, P6-77]
 - [ ] 执行记录已填写
 
 ## 不在本卡范围
-- SSE 翻译、邮件匹配、Web UI、迁移
+- 项目事件（关注不发事件）、邮件匹配、Web UI、迁移

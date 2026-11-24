@@ -358,46 +358,84 @@ P6-42 的评估已经完成（`docs/03-plan/typescript-7-evaluation.md`，结论
 | # | 议题 | 决定 |
 |---|---|---|
 | 1 | 首期目标 | **实体关注运行时** + **按修订的邮件通知**：设置 ENTITY/BRANCH；列出我的关注；Web 关注入口；修订提交后匹配关注并发邮件。 |
-| 2 | 邮件发送能力 | **独立首卡**（P6-83）：新增 `spring-boot-starter-mail`；`mail_deliveries` 表（V12）+ 认领/重试投递线程，放在 `integration` 模块，供关注与**日后**讨论邮件共用。未配置 SMTP 或 `wp.mail.enabled=false` 时不阻塞 outbox。 |
-| 3 | 通知触发源 | **outbox 消费者**（非写路径进程内 Frame 事件）：按修订求受影响实体 → BS-21 匹配；模型未应用该修订时 `OutboxRetryLater`（同 P6-12）。 |
+| 2 | 邮件发送能力 | **独立两卡**，放在 `integration` 模块，供关注与**日后**讨论邮件共用：P6-83 登记队列（`mail_deliveries` V12 + `MailEnqueue` + `MailProperties`，不引入新依赖）；P6-87 投递线程（新增 `spring-boot-starter-mail`，认领/重试发送）。未配置 SMTP 主机或 `wp.mail.enabled=false` 时登记为 `SKIPPED`，不阻塞 outbox。 |
+| 3 | 通知触发源 | **outbox 消费者**（非写路径进程内 Frame 事件）：按修订求受影响实体 → BS-21 匹配；模型未应用该修订时 `OutboxRetryLater`（同 P6-12）。受影响实体 = **公理主语**（与 `EntityFrameChanged` 同规则，也与旧系统一致），**不用** `revision_subjects` 全签名索引；大修订超过主语阈值时只做直接匹配。 |
 | 4 | 同一修订多次命中 | **每用户每修订一封**，正文列全部命中实体（旧系统按实体多次发送）。 |
 | 5 | 是否排除修改者 | **排除**本修订作者（**新系统修正**；旧关注通知不排除）。仍要求收件人有 `VIEW_PROJECT` 与邮箱。 |
 | 6 | 退订与频率 | 退订 = 清除关注；不做全局退订表、不做跨修订摘要/限频。 |
-| 7 | 站内通知 | **首期不做**通知中心；已有 SSE `EntityFrameChanged` 等实时事件即可。 |
+| 7 | 站内通知与关注事件 | **首期不做**通知中心；已有 SSE `EntityFrameChanged` 等实时事件即可。关注增删**不发**项目事件：`ProjectEventHub` 向项目全部订阅者广播，`WatchAdded{userId,…}` 会暴露个人关注；Web 写成功后自行刷新。 |
 | 8 | 权限 | `WATCH_CHANGES` 归入 `CAN_VIEW`；所有关注读写 API 必须声明该动作。 |
-| 9 | 模块 | 新 Modulith 模块 **`watch`**：deps `bus, access, shared, revision, ontology, integration`（读运行时/层级做匹配，并登记邮件；对齐 `projection` + 邮件）；`web` / `migration` / `events` → `watch`。 |
+| 9 | 模块 | 新 Modulith 模块 **`watch`**：deps `bus, access, shared, project, revision, ontology, integration`（读运行时/层级做匹配、读修订内容、取项目显示名、登记邮件）；`web` / `migration` → `watch`（`events` 不依赖 `watch`）。 |
 | 10 | 迁移 | **纳入**导出/导入 Mongo `Watches`；`formatVersion` 仍为 1。 |
-| 11 | 不做 | 关注变更历史全表扫描 API、合并时转移关注、移动推送、讨论评论邮件、站内收件箱、把多收件人放同一 TO。 |
+| 11 | 不做 | 关注变更历史全表扫描 API、合并时转移关注、移动推送、讨论评论邮件、站内收件箱、把多收件人放同一 TO、关注项目事件与多标签页同步、`mail_deliveries` 历史清理。 |
 
 ### 展开卡片
 
 | 卡片 | 内容 | 模块 |
 |---|---|---|
-| P6-83 | 邮件：`spring-boot-starter-mail` + `mail_deliveries` V12 + 投递线程（登记/认领/重试） | wp-app/integration |
-| P6-84 | 关注表结构 V13 + JDBC 仓储 + Modulith `watch` 壳 | wp-app/watch |
+| P6-83 | 邮件登记：`mail_deliveries` V12 + `MailEnqueue` + `MailProperties`（`enabled`/`host`/`from`/`link-base-url`；关闭时 `SKIPPED`） | wp-app/integration |
+| P6-84 | 关注表结构 V13（外键、非空实体列）+ JDBC 仓储 + Modulith `watch` 壳 + `WatchSubjects`（公理主语规则） | wp-app/watch |
 | P6-85 | `WATCH_CHANGES` 动作与 `CAN_VIEW` 映射 | wp-app/access |
-| P6-86 | 关注 REST：按实体 get/set、列出我的关注（Controller 在 web；OpenAPI） | wp-app/watch |
-| P6-87 | 关注 → `ProjectEvent`（WatchAdded/Removed）+ hub + OpenAPI / `@wp/api-types` | wp-app/events |
-| P6-88 | outbox 消费者：按修订匹配关注并登记邮件投递（`OutboxRetryLater`） | wp-app/watch |
-| P6-89 | Web：实体关注控件 + 我的关注列表 + `applyProjectEvent` 穷尽分支 | wp-web |
+| P6-86 | 关注 REST：按实体 get/set、列出我的关注（含显示名；Controller 在 web；OpenAPI） | wp-app/watch |
+| P6-87 | 邮件投递线程：`spring-boot-starter-mail` + SMTP 配置 + 认领/重试发送（**审查修订后改作此用途**） | wp-app/integration |
+| P6-88 | outbox 消费者：用 `WatchSubjects` 求主语、匹配关注并登记邮件（部分确认 / `OutboxRetryLater`、主语阈值） | wp-app/watch |
+| P6-89 | Web：实体右键菜单关注对话框 + 「我的关注」项目子路由 | wp-web |
 | P6-90 | 迁移工具：导出 Watches | wp-legacy-migrator |
 | P6-91 | 后端：导入交换包中的 Watches | wp-app/migration |
 
-依赖（`A → B` 表示 B 依赖 A）：P6-74 → P6-83（**仅** Flyway V11→V12）；P6-83 → P6-84（**仅** V12→V13）；P6-84 → P6-86；P6-85 → P6-86；P6-77 → P6-86（**仅** OpenAPI 串行）；P6-86 → P6-87 → P6-89；{P6-84、P6-83、P6-21} → P6-88；P6-84 → P6-90；{P6-84、P6-90} → P6-91。P6-85 与 P6-84 可并行；P6-90 可与 P6-86 并行（不共享 OpenAPI 时）。P6-87 另硬依赖 P6-77 对 `ProjectEvent` / `EventTranslator` / `takeWaiters` 的改动（同 head 非修订事件唤醒须覆盖 WatchAdded/Removed）。
+依赖（`A → B` 表示 B 依赖 A）：P6-74 → P6-83（**仅** Flyway V11→V12）；P6-83 → P6-84（**仅** V12→V13）；P6-83 → P6-87；P6-84 → P6-86；P6-77 → P6-85 → P6-86（P6-77 → P6-85 **仅** OpenAPI 串行：`permissions/me` 的动作枚举已发布）；P6-86 → P6-89；{P6-84、P6-83、P6-21} → P6-88；{P6-84、P6-81} → P6-90（P6-81 **仅**为迁移包文件串行）；{P6-84、P6-90} → P6-91。P6-85 与 P6-84 可并行；P6-87 与 P6-84 / P6-88 可并行（P6-88 只登记，不依赖投递线程）；P6-90 可与 P6-86 并行（不共享 OpenAPI 时）。端到端发信需要 P6-87 与 P6-88 都合并。
 
 ### 共享文件与迁移号（关注）
 
 - 编辑器 Flyway：P6-83 用 **V12**，P6-84 用 **V13**（**P6-74 V11 进 main 后方可开工 P6-83**）。已分配 V6…V11 不变。
-- `backend/wp-app/pom.xml`：只有 **P6-83** 增加 `spring-boot-starter-mail`（理由：JDK 无内置 SMTP 客户端；与 Spring Boot 4.1.1 对齐的官方 starter；讨论邮件日后复用同一依赖）。
-- `docs/02-architecture/overview.md` 第 2 节、`ModularityTest`：只有 **P6-84**（登记 `watch`，deps 含 `revision, ontology, integration`；`web|migration|events → watch`；`integration` 职责注明含邮件投递）。
+- `backend/wp-app/pom.xml`：只有 **P6-87** 增加 `spring-boot-starter-mail`（理由：JDK 无内置 SMTP 客户端；与 Spring Boot 4.1.1 对齐的官方 starter；讨论邮件日后复用同一依赖）。
+- `integration/MailProperties`、`MailDeliveryRepository`：P6-83 新建 → P6-87 增补（串行）。
+- `docs/02-architecture/overview.md` 第 2 节、`ModularityTest`：只有 **P6-84**（登记 `watch`，deps 含 `project, revision, ontology, integration`；`web|migration → watch`；`integration` 职责注明含邮件投递）。
 - `access/Action.java`、`ProjectRole.java`、`BS10_AccessServiceTest`：只有 **P6-85**（与 P6-75 串行：P6-75 → P6-85）。
-- `docs/api/openapi.json`、`@wp/api-types`、`OpenApiResponseSchemasTest`：串行 **… → P6-77 → P6-86 → P6-87**（同时只许一个写者；无“改挂链尾”回退）。
-- `ProjectEvent` 密封接口、`EventTranslator`、`ProjectEventHub.takeWaiters`、`applyProjectEvent`：P6-87（后端，含同 head 唤醒覆盖 Watch 事件）与 P6-89（前端）分工；这些文件不随 OpenAPI 链尾放行，默认写者链承接 P6-77。
-- `docs/api/README.md` 邮件小节：只由 **P6-83** 追加。
-- `docs/02-architecture/interchange-format.md`：串行 **P6-90 → P6-91**（不升 `formatVersion`）。
-- `docs/01-rea/behavior-specs.md` BS-21~22 / `watches.md`：本规划卡已写；实现卡只引用不改规格语义。
+- `docs/api/openapi.json`、`@wp/api-types`、`OpenApiResponseSchemasTest`：串行 **… → P6-77 → P6-85 → P6-86**（同时只许一个写者；P6-85 给 `permissions/me` 的 `actions` 枚举加 `WATCH_CHANGES`，P6-86 加关注接口；之后接标签 P6-93）。
+- `ProjectEvent` 密封接口、`EventTranslator`、`ProjectEventHub.takeWaiters`、`applyProjectEvent`：关注卡**都不改**（关注不发项目事件）；写者链由 P6-77 直接交给标签 P6-96 / P6-97。
+- `docs/api/README.md` 邮件小节：只由 **P6-87** 追加。
+- `docs/02-architecture/interchange-format.md` 与迁移包文件清单（`wp-legacy-migrator` 的 `export/PackageFiles`、`PackageVerifier`；`migration/MigrationPackageReader`）：串行 **P6-80 → P6-81 → P6-90 → P6-91 → P6-98 → P6-99**（不升 `formatVersion`）。
+- `docs/01-rea/behavior-specs.md` BS-21~22 / `watches.md`：本规划卡已写（2026-11-24 审查修订见下）；实现卡只引用不改规格语义。
 
 本次拆卡用掉 P6-83 ~ P6-91 九个编号。
+
+### 审查修订（2026-11-24）
+
+P6-45 合并后复核拆卡，按以下问题修订（分支 `docs/p6-watches-review-fix-cards`）。依据：新工程 `ProjectEventHub.publish`、`EventTranslator.frameSubjects`、`OntologyChange.signature()`、`OutboxRelay`（单线程）、`ProjectExistenceCheck`、`application.yaml`；旧工程 `HighLevelEventGenerator`、`AbstractHierarchyProvider.getAncestors`。
+
+| # | 问题 | 修订 |
+|---|---|---|
+| 1 | 原 P6-87 的 `WatchAdded{userId, entity, watchType}` 经 `ProjectEventHub` 广播给项目全部订阅者并进入重放窗口，暴露个人关注；唯一受益方是同一用户的其它标签页 | 关注不发项目事件（BS-11、BS-21）；P6-86 不发域事件；P6-89 写成功后自行刷新；原 P6-87 撤销，编号改作邮件投递线程；P6-94 / P6-96 的依赖由 P6-87 改为 P6-86 / P6-77 |
+| 2 | BS-22 用 `revision_subjects`（公理全签名）作受影响实体，与旧系统“公理主语”不同且未标明；又称与 `AffectedSubjects` 同集合，实际 `revision_subjects` 还含本体注解里的注解属性 | 受影响实体改为与 `EntityFrameChanged` 同一“公理主语”规则；P6-88 用 `RevisionLog.read` 读修订，不再增补 `RevisionHistoryQueries` |
+| 3 | P6-88 要写项目名，`watch` 依赖里没有 `project`；要放链接，应用里没有站点对外地址配置 | P6-84 给 `watch` 增加 `project` 依赖；P6-83 的 `MailProperties` 增加 `link-base-url`（可空，未配置时不含链接） |
+| 4 | 原 P6-83 含迁移、仓储、投递线程、SMTP 配置与文档，参照 P6-21（`WebhookDispatcher` 354 行）明显超过 400 行 | 拆为 P6-83（登记队列，S，不引入新依赖）与 P6-87（投递线程 + 新依赖，M） |
+| 5 | 迁移包链只串了 P6-90 → P6-91，与讨论 P6-80 / P6-81 会同时改 `interchange-format.md`、`PackageFiles`、`MigrationPackageReader` | P6-90 增加依赖 P6-81 |
+| 6 | `revision_subjects` 只有 IRI 没有类型；删除实体在 head 中查不到 | 由第 2 条解决（主语带类型，IRI 主语可按变更签名解析）；BS-21 写明祖先按匹配时模型计算的近似 |
+| 7 | outbox 中继单线程，大修订的祖先展开会拖住投影、webhook、搜索 | BS-22 / P6-88：先读关注、无关注直接确认；锁外读 DB；主语阈值 `wp.watch.max-subjects-per-revision`（默认 5000） |
+| 8 | BS-21 称“个体含类型类自身”与旧系统一致，实际旧 `getAncestors` 不含自身 | 改标为“新系统修正”，并提示不要移植相反的旧断言 |
+| 9 | `watches.md` 漏记旧 Frame 事件去重写反（单条公理变更不发关注邮件） | `watches.md` §3.2、§6 补记 |
+| 10 | P6-91 未处理用户不存在；P6-84 未写外键 | P6-84 写明外键；P6-91 跳过不在 `users` 表中的用户 |
+| 11 | P6-86 列表未给显示名；P6-89 入口有歧义 | P6-86 列表返回显示名与类型；P6-89 入口定为 `EntityContextMenu` 与 `/projects/:projectId/watches` 子路由 |
+| 12 | P6-88 含邮件 HTML 与主题拼装，未配安全审查 | P6-88 `ecc_extra` 增加 `security` |
+
+修订后按 P6-45 的审查要求复审（planner、architect，均为 APPROVE WITH CHANGES），再按以下意见修订：
+
+| # | 问题 | 修订 |
+|---|---|---|
+| 13 | `MailEnqueue` 若靠捕获 `DuplicateKeyException` 实现幂等，PostgreSQL 会让整个中继事务失效 | P6-83 规定 `on conflict (idempotency_key) do nothing`，并加“同一外层事务内重复登记后仍能提交”的测试 |
+| 14 | P6-88 在批中途抛 `OutboxRetryLater` 会让整批回滚、反复重匹配 | P6-88 改为部分确认：滞后修订不是本批第一条时返回其前一条 id |
+| 15 | `entity_watch` 实体列可空，唯一约束挡不住重复；时间列无类型 | P6-84 实体列 `not null`，`entity_type` 加取值 check，时间列 `timestamptz not null default now()` |
+| 16 | `permissions/me` 的 `actions` 枚举已发布在 `openapi.json`，P6-85 / P6-93 改动作却不在 OpenAPI 串行链上 | 链改为 `… → P6-77 → P6-85 → P6-86 → P6-93 → P6-94`；两卡产出与验收加 OpenAPI |
+| 17 | P6-88 规模接近上限，且卡号已满无法再拆 | `WatchSubjects` 及其测试移到 P6-84 |
+| 18 | 导出格式未定、导入“无法解析”有歧义、链接未要求 URL 编码、项目状态检查未点名 API | P6-90 定为 `watches.jsonl` 与字段；P6-91 定义解析失败、点名 `MigrationPackageReader` 并要求在用户与项目之后导入；P6-88 / BS-22 要求 IRI URL 编码与属性转义；P6-88 用 `ProjectExistenceCheck.state()` |
+
+architect 另提“引入 Actuator 后邮件健康检查会受 SMTP 影响”：`wp-app` 目前没有 Actuator，不适用，未改。
+
+**未改动、待人决定**：
+- **P6 卡号已用到 P6-99**。`plan_lint.py` 的 `ID_RE`（`^P\d-\d{2}$`）与分支名正则只接受两位卡号，本次只能复用 P6-87；为控制 P6-88 规模，把 `WatchSubjects` 移进了 P6-84，而不是新开卡。P6-47、P6-48 等规划卡拆卡前，需要人决定放宽编号规则（`tools/` 属开发标准文件）或另开阶段。
+- 表单 P6-71 / P6-72 与讨论 P6-80 / P6-81 两条迁移链之间同样没有串行（P6-44 遗留），本次未改 P6-44 的卡。
+- 表单 P6-67（`EDIT_FORMS`）与讨论 P6-75（评论动作）同样修改已发布的 `actions` 枚举，却不在 OpenAPI 串行链上（P6-43 / P6-44 遗留），本次未改。
 
 ## 标签（P6-46，2026-11-23）
 
@@ -432,16 +470,16 @@ P6-42 的评估已经完成（`docs/03-plan/typescript-7-evaluation.md`，结论
 | P6-98 | 迁移工具：导出 Tags / EntityTags | wp-legacy-migrator |
 | P6-99 | 后端：导入交换包中的 Tags / EntityTags | wp-app/migration |
 
-依赖（`A → B` 表示 B 依赖 A）：P6-84 → P6-92（**仅** Flyway V13→V14）；P6-92 → P6-94；P6-93 → P6-94；P6-87 → P6-94（**仅** OpenAPI 串行）；P6-94 → P6-95 → P6-96 → P6-97；P6-95 → P6-97；P6-91 → P6-98（**仅** interchange-format 串行）；P6-92 → P6-98；{P6-92、P6-98} → P6-99。P6-93 与 P6-92 可并行；P6-98 可与 P6-94 并行（不共享 OpenAPI 时）。P6-96 另硬依赖 P6-87 对同 head 非修订事件唤醒的覆盖（须纳入 Tag 事件）；P6-96 扩展 `ProjectEvent` 联合类型后须与 P6-97 紧邻合并以免打断 Web 穷尽检查。
+依赖（`A → B` 表示 B 依赖 A）：P6-84 → P6-92（**仅** Flyway V13→V14）；P6-92 → P6-94；P6-86 → P6-93 → P6-94（OpenAPI 串行：动作枚举已发布；2026-11-24 关注审查修订前为 P6-87 → P6-94）；P6-94 → P6-95 → P6-96 → P6-97；P6-95 → P6-97；P6-91 → P6-98（**仅** interchange-format 串行）；P6-92 → P6-98；{P6-92、P6-98} → P6-99。P6-93 与 P6-92 可并行；P6-98 可与 P6-94 并行（不共享 OpenAPI 时）。P6-96 另硬依赖 P6-77 对同 head 非修订事件唤醒的改动（须纳入 Tag 事件；关注不再发项目事件）；P6-96 扩展 `ProjectEvent` 联合类型后须与 P6-97 紧邻合并以免打断 Web 穷尽检查。
 
 ### 共享文件与迁移号（标签）
 
 - 编辑器 Flyway：P6-92 用 **V14**（**P6-84 V13 进 main 后方可开工**）。已分配 V6…V13 不变。
 - `docs/02-architecture/overview.md` 第 2 节、`ModularityTest`：只有 **P6-92**（登记 `tag`，deps `bus, access, shared`；`web|migration|events → tag`）。
 - `access/Action.java`、`ProjectRole.java`、`BS10_AccessServiceTest`：只有 **P6-93**（与 P6-85 串行：P6-85 → P6-93）。
-- `docs/api/openapi.json`、`@wp/api-types`、`OpenApiResponseSchemasTest`：串行 **… → P6-87 → P6-94 → P6-95 → P6-96**（同时只许一个写者）。
+- `docs/api/openapi.json`、`@wp/api-types`、`OpenApiResponseSchemasTest`：串行 **… → P6-86 → P6-93 → P6-94 → P6-95 → P6-96**（同时只许一个写者）。
 - `EntityNode`（ontology dto）与 `ResponseSchemasCustomizer`：由 **P6-95** 扩展 tags 字段（默认空）；**web Controller** 在 `bus.execute` 之后批量填充（禁止 `ontology`/`search`→`tag`）。
-- `ProjectEvent` 密封接口、`EventTranslator`、`ProjectEventHub.takeWaiters`、`applyProjectEvent`：P6-96（后端）与 P6-97（前端）分工；承接 P6-87。
+- `ProjectEvent` 密封接口、`EventTranslator`、`ProjectEventHub.takeWaiters`、`applyProjectEvent`：P6-96（后端）与 P6-97（前端）分工；承接 P6-77。
 - `docs/02-architecture/interchange-format.md`：串行 **P6-91 → P6-98 → P6-99**（不升 `formatVersion`）。
 - `docs/01-rea/behavior-specs.md` BS-23~24 / `tags.md`：本规划卡已写；实现卡只引用不改规格语义。
 

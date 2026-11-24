@@ -8,7 +8,7 @@ size: M
 work_type: app-service
 ecc_extra: []
 status: todo
-depends_on: [P6-46, P6-92, P6-93, P6-87]
+depends_on: [P6-46, P6-92, P6-93]
 ---
 
 # P6-94 标签 REST API
@@ -18,7 +18,7 @@ depends_on: [P6-46, P6-92, P6-93, P6-87]
 
 ## 参考
 - BS-23；旧 `GetProjectTags` / `SetProjectTags` / `GetEntityTags` / `UpdateEntityTags`
-- EPIC「标签（P6-46）」；OpenAPI 串行接在 P6-87 之后
+- EPIC「标签（P6-46）」；OpenAPI 串行接在 P6-93 之后（`… → P6-86 → P6-93 → P6-94`；2026-11-24 关注审查修订后 P6-87 改为邮件投递线程，不改 OpenAPI）
 
 ## 产出
 - 命令与 Handler（`tag` 模块）：获取/设置项目标签目录；获取/更新实体显式标签（from/to 差分）。
@@ -31,7 +31,7 @@ depends_on: [P6-46, P6-92, P6-93, P6-87]
 ## 实现要点
 - **新系统修正**：实体标签写接口声明 `EDIT_ENTITY_TAGS`（旧未声明）。
 - 首期不跑 MatchingEngine；`criteria` 可读写 jsonb。
-- 依赖 P6-87 **只为** OpenAPI 串行。
+- 依赖 P6-93 同时为权限动作与 OpenAPI 串行。
 - 标签**不**产生修订。
 
 ## ECC 技能

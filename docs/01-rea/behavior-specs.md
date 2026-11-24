@@ -169,11 +169,11 @@ MVP 需要的事件（其余见 P6）：
 | PermissionsChanged | 项目角色分配变化 | 项目 |
 | CommentPosted / CommentUpdated / CommentDeleted | 讨论评论增删改（BS-20） | 见 BS-20 |
 | DiscussionThreadCreated / DiscussionThreadStatusChanged | 讨论线程创建或状态变化（BS-20） | 见 BS-20 |
-| WatchAdded / WatchRemoved | 用户增删实体关注（BS-21） | userId、实体、watchType；`revNo` = head |
 | ProjectTagsChanged / EntityTagsChanged | 项目标签目录或实体显式标签变更（BS-24） | 见 BS-24 |
 
 - 事件从**已提交的修订**派生，修订号作为事件流的游标，客户端断线后可以凭修订号补齐。
-- **非修订事件**（`PermissionsChanged`、讨论事件、关注增删事件、标签事件）：仍带当前项目 head 作为 `revNo` 游标（与角色变更同一模式），不产生新修订。
+- **非修订事件**（`PermissionsChanged`、讨论事件、标签事件）：仍带当前项目 head 作为 `revNo` 游标（与角色变更同一模式），不产生新修订。
+- 关注增删**不**发项目事件（BS-21）：`ProjectEventHub` 向项目全部订阅者广播，载荷若含 userId 会暴露个人关注。
 - 静默生成器（旧系统的 `SilentChangeListGenerator`）产生的修订只发 ProjectChanged。
 
 ## BS-12 支持的格式
@@ -296,11 +296,12 @@ MVP 需要的事件（其余见 P6）：
 - **匹配**（给定一次修订中“受影响”的实体集合；该集合**不**预扩展子孙）：
   - `ENTITY`：仅当变更实体等于关注实体时命中；
   - `BRANCH`：当关注实体等于变更实体，或关注实体属于变更实体的“相关祖先集合”时命中；
-  - 类 / 对象属性 / 数据属性 / 注解属性的相关祖先 = 对应层级祖先（是否含自身以实现为准，但 **BRANCH 关注实体自身被改时必须命中**）；
-  - 命名个体的相关集合 = 其**命名类断言**上的类 **以及**这些类的祖先（**含这些类自身**；与旧 `IndirectlyWatchedEntitiesFinder` 对个体走 `getAncestors(cls)` 且匹配阶段把实体自身并入查询集合的效果一致：关注某类的 BRANCH 会命中该类的实例）；
-  - Datatype：只匹配自身；匿名个体首期不作为关注目标（API 拒绝）。
+  - 类 / 对象属性 / 数据属性 / 注解属性的相关祖先 = 对应层级的祖先（不含自身）；匹配时把变更实体自身并入查询集合，所以 **BRANCH 关注实体自身被改时命中**（与旧系统一致）；
+  - 命名个体的相关集合 = 其**命名类断言**上的类 **以及**这些类的祖先（**含这些类自身**）。**新系统修正**：旧 `IndirectlyWatchedEntitiesFinder` 对个体只取 `getAncestors(cls)`，而旧 `AbstractHierarchyProvider.getAncestors` 不含自身，结果是类 C 的**直接实例**变更不命中 C 上的 BRANCH 关注（只命中 C 的上位类）；新系统纳入 C 自身。移植旧测试断言时不要照搬这一点；
+  - Datatype：只匹配自身；匿名个体首期不作为关注目标（API 拒绝）；
+  - 祖先与类断言按**匹配时**的内存模型计算（模型 head ≥ 该修订，可能已含之后的修订）。同一修订里被删除或移出分支的实体，按删除 / 移动之后的层级求祖先；这是接受的近似，与旧系统“变更应用后再求祖先”一致。
 - 读写关注需要 `WATCH_CHANGES`（归入 `CAN_VIEW`，见 BS-10）。**新系统修正**：设置 / 清除关注的接口必须声明该动作（旧 `SetEntityWatches` / `RemoveWatches` 未声明）。
-- 关注写路径**不**产生修订。成功增删后发 `WatchAdded` / `WatchRemoved`（见 BS-11；载荷含 userId、实体、watchType；`revNo` = 当前 head）。
+- 关注写路径**不**产生修订，**也不发项目事件**（新系统取舍）：`ProjectEventHub.publish` 向项目全部订阅者广播并进入重放窗口，载荷含 userId 会把个人关注暴露给其他成员，而唯一受益方是同一用户的其它标签页。Web 在自身写成功后刷新本地查询即可。旧 `WatchAddedEvent` / `WatchRemovedEvent` 不移植。
 - **首期不做**：按关注扫描全部修订的变更列表 API（旧 `GetWatchedEntityChanges` 全表扫描）；合并实体时转移或清理关注（旧系统也不做）。
 
 ## BS-22 关注变更邮件通知
@@ -308,12 +309,17 @@ MVP 需要的事件（其余见 P6）：
 旧出处：`LEG/watches/WatchManagerImpl.java`（Frame 事件入口）、`WatchTriggeredHandlerImpl.java`、`templates/watch-notification-email-template.html`；邮件 API `LEG/mail/SendMailImpl.java`。详解见 `watches.md`。
 
 - **触发源（新系统）**：outbox 消费者在修订已提交且内存模型已应用到该修订后，求出受影响实体，再按 BS-21 匹配关注。模型尚未应用到该修订时抛 `OutboxRetryLater`，中继**不**前进该消费者进度（同投影表 P6-12）。**不**在写路径进程内按 Frame 事件直接发邮件。
-- **受影响实体（新系统钉死）**：与写入 `revision_subjects` / `projection.AffectedSubjects` **同一主语集合**——公理 `getSignature()` 中的实体 IRI，外加 `OWLAnnotationAssertion` 的 **IRI 主体**（因此改 `rdfs:label` 等会触发）。**不**包括导入声明、本体注解、前缀；匿名个体注解主体不纳入；**不**在此步预扩展子孙或祖先。P6-88 **优先**按 `project_id+rev_no` 读 `revision_subjects`（若 `RevisionHistoryQueries` 尚无按修订列主语的方法，本卡在 revision 模块**最小增补**只读查询；避免依赖 `projection`）；禁止为本功能改 ontology 公共接口。
+- **受影响实体（与旧系统同语义：公理主语）**：与 BS-11 `EntityFrameChanged` **同一主语规则**（现有实现 `events/EventTranslator.frameSubjects`）——对本修订每条 `AddAxiom` / `RemoveAxiom` 取 `AxiomSubjectProviderEx.getSubject(axiom)`：主语是命名实体时取该实体；主语是 IRI（注解断言）时，取匹配时的内存本体（head ≥ 该修订，见 BS-21 的近似说明）或本修订变更签名中同 IRI 的命名实体（因此改 `rdfs:label` 会触发，已删实体也能取到类型）；主语是匿名类表达式（GCI）或匿名个体时忽略。**不**包括导入、本体注解、前缀；**不**在此步预扩展子孙或祖先。
+  - 旧系统同样只取公理主语（`HighLevelEventGenerator` 用 `AxiomSubjectProvider`），所以 `SubClassOf(A, partOf some B)` 只算 A 变了，不通知 B 的关注者。
+  - **不用** `revision_subjects`：它是“修订里**提到**的实体”的索引（公理全签名，且含本体注解里的注解属性），用于实体历史查询，比“Frame 变了”宽得多。
+  - 修订内容按 P6-12 投影消费者的做法用 `RevisionLog.read(projectId, rev, rev)` 读出（同时得到作者），在 `watch` 模块内按上述规则求主语，语义与 `EventTranslator.frameSubjects` 一致，以测试锚定；不修改 `events`、`revision`、`ontology` 模块的公共接口。
+- **大修订的上限（新系统）**：outbox 中继单线程依次执行全部消费者，匹配不得拖住投影、webhook、搜索。先读本项目的全部关注，**没有关注时直接确认**；求祖先时带缓存，查询集合只对“已被关注的实体”求交。本修订主语数超过阈值（配置项，默认 5000）时，只做“关注实体 = 主语”的直接匹配（ENTITY 与 BRANCH 自身），跳过祖先展开并记 WARN。
 - **合并粒度（新系统）**：同一修订、同一收件用户至多一封邮件，正文列出全部命中的实体（旧系统按 Frame 事件逐实体发送）；列表过长时可截断并附剩余条数（实现卡设上限，例如 50）。
 - **收件人**：匹配到的关注用户，去掉**本修订的作者**（**新系统修正**：旧关注通知不排除修改者；对齐讨论邮件排除作者的做法）；再过滤无 `VIEW_PROJECT` 或无邮箱的用户。邮箱来自 `access` 模块 `UserService.findById` → `UserAccount.email()`（可空）。**每个收件人单独一封**（单 `To`），**不**把多位用户放在同一封的 TO 里互见地址。
-- **投递**：登记到邮件投递表后由独立投递线程发送（登记 + 认领 + 指数退避重试，对齐 BS-15 / P6-21）。`wp.mail.enabled=false` 或未配置 SMTP 时：消费者仍完成 outbox 进度，投递记为 `SKIPPED`（或明确不登记并记日志，二选一由 P6-83 钉死为 **SKIPPED**），**不得**用 `OutboxRetryLater` 表示邮件关闭，也不得阻塞中继。
-- **退订与频率（首期）**：退订 = 用户清除对应关注；不做全局退订表、不做跨修订摘要/限频。邮件脚注说明“因你关注了…收到此信”，并链到项目。
-- **首期不做**：站内通知中心、移动推送、讨论评论邮件（可日后复用同一投递队列）。
+- **投递**：登记到邮件投递表（P6-83）后由独立投递线程发送（P6-87；登记 + 认领 + 指数退避重试，对齐 BS-15 / P6-21）。`wp.mail.enabled=false` 或未配置 SMTP 主机时：消费者仍完成 outbox 进度，投递登记为 **`SKIPPED`**；**不得**用 `OutboxRetryLater` 表示邮件关闭，也不得阻塞中继。
+- **邮件内容**：主题与正文含项目显示名（`project` 模块 `ProjectRepository.find` → `ProjectDetails.displayName()`）、作者显示名、命中实体的显示名列表。链接基址取配置 `wp.mail.link-base-url`：已配置时附项目链接 `<base>/projects/<projectId>` 与实体链接（路径与 `?entity=<IRI>` 参数和 Web `features/workspace` 的路由一致；IRI 按查询参数 URL 编码，`href` 属性值再做 HTML 属性转义）；未配置时正文不含链接，不报错。显示名写入主题前去掉 CR/LF，写入 HTML 前转义。
+- **退订与频率（首期）**：退订 = 用户清除对应关注；不做全局退订表、不做跨修订摘要/限频。邮件脚注说明“因你关注了…收到此信”，配置了链接基址时附项目链接。
+- **首期不做**：站内通知中心、移动推送、讨论评论邮件（可日后复用同一投递队列）；`mail_deliveries` 历史行（含 `SKIPPED`）的清理与保留策略（与 `webhook_deliveries` 一并另议）。
 
 ## BS-23 项目标签与实体显式标签
 

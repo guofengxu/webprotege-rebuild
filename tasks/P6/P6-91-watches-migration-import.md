@@ -20,8 +20,8 @@ depends_on: [P6-45, P6-84, P6-90]
 - BS-21；P6-90 文件格式；`interchange-format.md`；对齐讨论导入卡 P6-81 的模式
 
 ## 产出
-- `migration` 模块读取 watches 文件并调用 `WatchRepository` upsert。
-- 非法 `watchType` / 缺字段 / **匿名个体** / 无法解析的实体：记录警告、跳过该行并计数；**整文件不失败**；空文件成功。
+- `MigrationPackageReader` 读取 `projects/<projectId>/watches.jsonl`（格式见 P6-90）；`ProjectMigrator` 在用户与项目导入**之后**调用 `WatchRepository` upsert。
+- 非法 `watchType` / 缺字段 / **匿名个体** / 实体无法解析（IRI 非法，或 `entityType` 不在 P6-90 列出的取值内；**不**检查实体是否存在于本体中）/ **用户不在 `users` 表中**（`entity_watch.user_id` 有外键，见 P6-84）：记录警告、跳过该行并计数；**整文件不失败**；空文件成功。
 - 更新 `interchange-format.md` 导入侧说明（若 P6-90 未写全）。
 - 测试：导出样例往返；空文件成功；幂等二次导入。
 
