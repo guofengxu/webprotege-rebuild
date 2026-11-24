@@ -16,7 +16,7 @@ fi
 V=".cursor/skills/git-naming-conventions/scripts/validate_names.py"
 branch=$(git branch --show-current 2>/dev/null)
 case "$branch" in
-  */p[0-9]-[0-9][0-9]-*)
+  */p[0-9]-[0-9][0-9]-*|*/p[1-9][0-9]-[0-9][0-9]-*)
     "$PY" "$V" --branch "$branch" --message-file "$1" --require-trailers || {
       echo "" >&2
       echo "提交被拒绝。任务分支上的提交请由人运行：python tools/task.py commit <卡号>" >&2

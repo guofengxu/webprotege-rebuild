@@ -31,9 +31,11 @@ BRANCH_RE = re.compile(
     r"[a-z0-9]+(-[a-z0-9]+)*$"
 )
 
-# Task-card branch created by tools/task.py start
+# Task-card branch created by tools/task.py start.
+# Phase 0-99 without a leading zero, two-digit card number: p1-03, p10-01
+# (same rule as ID_RE in tools/plan_lint.py).
 TASK_BRANCH_RE = re.compile(
-    r"^(feature|fix|test|refactor|docs|chore)/(p[0-9]-[0-9]{2})-[a-z0-9]+(-[a-z0-9]+)*$"
+    r"^(feature|fix|test|refactor|docs|chore)/(p(?:[0-9]|[1-9][0-9])-[0-9]{2})-[a-z0-9]+(-[a-z0-9]+)*$"
 )
 
 COMMIT_HEADER_RE = re.compile(
@@ -50,7 +52,7 @@ COMMENT_HEADER_RE = re.compile(
     r".{3,120}$"
 )
 
-TASK_TRAILER_RE = re.compile(r"^Task: (P[0-9]-[0-9]{2})$", re.M)
+TASK_TRAILER_RE = re.compile(r"^Task: (P(?:[0-9]|[1-9][0-9])-[0-9]{2})$", re.M)
 CONFIRMED_TRAILER_RE = re.compile(r"^Confirmed-by: \S.* <[^<>\s@]+@[^<>\s]+>$", re.M)
 
 # Scopes used in webprotege-rebuild (unknown scopes only produce a warning)

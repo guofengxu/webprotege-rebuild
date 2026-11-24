@@ -159,15 +159,15 @@ flowchart LR
         P6_37["P6-37"]:::todo
         P6_38["P6-38"]:::todo
         P6_39["P6-39"]:::blocked
-        P6_40["P6-40"]:::todo
+        P6_40["P6-40"]:::blocked
         P6_41["P6-41"]:::blocked
         P6_42["P6-42"]:::todo
         P6_43["P6-43"]:::done
         P6_44["P6-44"]:::done
         P6_45["P6-45"]:::done
         P6_46["P6-46"]:::done
-        P6_47["P6-47"]:::todo
-        P6_48["P6-48"]:::todo
+        P6_47["P6-47"]:::blocked
+        P6_48["P6-48"]:::blocked
         P6_49["P6-49"]:::done
         P6_50["P6-50"]:::todo
         P6_51["P6-51"]:::todo
@@ -182,7 +182,7 @@ flowchart LR
         P6_60["P6-60"]:::todo
         P6_61["P6-61"]:::todo
         P6_62["P6-62"]:::todo
-        P6_63["P6-63"]:::todo
+        P6_63["P6-63"]:::blocked
         P6_64["P6-64"]:::todo
         P6_65["P6-65"]:::todo
         P6_66["P6-66"]:::todo

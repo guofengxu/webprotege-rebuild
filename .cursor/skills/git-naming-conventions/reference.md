@@ -6,10 +6,10 @@
 
 | 对象 | 正则 |
 |---|---|
-| 任务卡分支 | `^(feature\|fix\|test\|refactor\|docs\|chore)/(p[0-9]-[0-9]{2})-[a-z0-9]+(-[a-z0-9]+)*$` |
+| 任务卡分支 | `^(feature\|fix\|test\|refactor\|docs\|chore)/(p(?:[0-9]\|[1-9][0-9])-[0-9]{2})-[a-z0-9]+(-[a-z0-9]+)*$` |
 | 其它分支 | `^(feature\|fix\|hotfix\|test\|refactor\|docs\|chore\|release)/(([A-Za-z]+-[0-9]+\|[0-9]+)-)?[a-z0-9]+(-[a-z0-9]+)*$` |
 | 提交 header | `^(feat\|fix\|docs\|style\|refactor\|perf\|test\|chore\|ci\|build\|revert)(\([a-z0-9][a-z0-9./-]*\))?(!)?: [a-z].{0,71}$` |
-| 尾注 Task | `^Task: (P[0-9]-[0-9]{2})$`，且必须与分支中的卡号一致 |
+| 尾注 Task | `^Task: (P(?:[0-9]\|[1-9][0-9])-[0-9]{2})$`，且必须与分支中的卡号一致 |
 | 尾注 Confirmed-by | `^Confirmed-by: \S.* <[^<>\s@]+@[^<>\s]+>$` |
 | 评论 header | `^(praise\|nitpick\|suggestion\|issue\|todo\|question\|thought\|chore\|note)( \([a-z0-9-]+\))*: .{3,120}$` |
 

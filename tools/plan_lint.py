@@ -25,7 +25,10 @@ GRAPH = ROOT / "docs" / "03-plan" / "dependency-graph.md"
 LEGACY = ROOT.parent / "webprotege"
 ROUTING = ROOT / "tools" / "ecc-routing.json"
 
-ID_RE = re.compile(r"^P\d-\d{2}$")
+# 阶段号 0 ~ 99（不带前导零），卡号两位：P1-03、P10-01。
+# 与 .cursor/skills/git-naming-conventions/scripts/validate_names.py 的 TASK_BRANCH_RE 保持一致。
+ID_RE = re.compile(r"^P(?:[0-9]|[1-9][0-9])-[0-9]{2}$")
+PHASE_RE = re.compile(r"^P(?:[0-9]|[1-9][0-9])$")
 REQUIRED_FIELDS = ["id", "title", "phase", "module", "type", "size", "work_type", "status", "depends_on"]
 REQUIRED_SECTIONS = ["目标", "参考", "产出", "验收", "完成判据", "不在本卡范围"]
 STATUSES = {"todo", "in_progress", "blocked", "done"}
@@ -76,6 +79,24 @@ class Card:
                 if line and not line.startswith("#"):
                     cmds.append(line)
         return cmds
+
+
+def phase_sort_key(phase: str) -> tuple[int, str]:
+    """阶段按数字排序（P2 在 P10 之前）；格式不对的排在最后。"""
+    m = re.fullmatch(r"P(\d+)", phase)
+    return (int(m.group(1)), "") if m else (sys.maxsize, phase)
+
+
+def id_sort_key(card_id: str) -> tuple[int, int, str]:
+    """卡号先按阶段、再按编号排序（P6-99 → P7-01 → P10-01）；格式不对的排在最后。"""
+    m = re.fullmatch(r"P(\d+)-(\d+)", card_id)
+    return (int(m.group(1)), int(m.group(2)), "") if m else (sys.maxsize, sys.maxsize, card_id)
+
+
+def epic_phases() -> list[str]:
+    """tasks/ 下有 EPIC.md 的阶段，包括还没有卡片、由规划卡预留的阶段。"""
+    names = (p.parent.name for p in TASKS.glob("P*/EPIC.md"))
+    return sorted((n for n in names if PHASE_RE.match(n)), key=phase_sort_key)
 
 
 def is_superseded(text: str) -> bool:
@@ -145,7 +166,7 @@ def validate(cards: list[Card]) -> tuple[list[str], list[str]]:
             if f not in c.meta:
                 errors.append(f"{rel}: 缺少字段 {f}")
         if not ID_RE.match(c.id):
-            errors.append(f"{rel}: id 格式应为 PX-NN，实际为 {c.id!r}")
+            errors.append(f"{rel}: id 格式应为 PX-NN（阶段号 X 为 0 ~ 99、不带前导零，编号 NN 为两位），实际为 {c.id!r}")
         if not c.path.name.startswith(c.id + "-"):
             errors.append(f"{rel}: 文件名应以 {c.id}- 开头")
         if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", c.slug):
@@ -221,10 +242,11 @@ def ready(card: Card, by_id: dict[str, Card]) -> bool:
     return card.status == "todo" and all(by_id[d].status == "done" for d in card.deps if d in by_id)
 
 
-def render_index(cards: list[Card]) -> str:
+def render_index(cards: list[Card], epics: list[str] | None = None) -> str:
     by_id = {c.id: c for c in cards}
-    phases = sorted({c.meta["phase"] for c in cards})
-    counts = {s: sum(1 for c in cards if c.status == s) for s in STATUSES}
+    epics = epic_phases() if epics is None else epics
+    phases = sorted({c.meta["phase"] for c in cards} | set(epics), key=phase_sort_key)
+    counts ={s: sum(1 for c in cards if c.status == s) for s in STATUSES}
     lines = [
         "# 任务索引",
         "",
@@ -247,8 +269,20 @@ def render_index(cards: list[Card]) -> str:
         lines += ["", "## 阻塞中", ""]
         lines += [f"- [{c.id}]({c.path.relative_to(TASKS).as_posix()}) {c.meta['title']}" for c in blocked]
     for ph in phases:
+        in_phase = [c for c in cards if c.meta["phase"] == ph]
+        if not in_phase:
+            # 只有 EPIC.md 的阶段：注明由哪张规划卡拆卡（规划卡的 module 指向 tasks/<阶段>）
+            note = f"暂无卡片。候选清单见 [{ph}/EPIC.md]({ph}/EPIC.md)"
+            planners = [c for c in cards
+                        if c.meta.get("type") == "planning" and c.meta.get("module") == f"tasks/{ph}"]
+            if planners:
+                note += "；拆卡的规划卡：" + "、".join(
+                    f"[{c.id}]({c.path.relative_to(TASKS).as_posix()})（{STATUS_LABEL.get(c.status, c.status)}）"
+                    for c in planners)
+            lines += ["", f"## {ph}", "", note + "。"]
+            continue
         lines += ["", f"## {ph}", "", "| ID | 标题 | 模块 | 类型 | 规模 | 状态 | 依赖 |", "|---|---|---|---|---|---|---|"]
-        for c in [c for c in cards if c.meta["phase"] == ph]:
+        for c in in_phase:
             deps = "、".join(c.deps) if c.deps else "—"
             st = STATUS_LABEL.get(c.status, c.status)
             if ready(c, by_id):
@@ -257,12 +291,14 @@ def render_index(cards: list[Card]) -> str:
                 f"| [{c.id}]({c.path.relative_to(TASKS).as_posix()}) | {c.meta['title']} | {c.meta['module']} "
                 f"| {c.meta.get('work_type', '')} | {c.meta['size']} | {st} | {deps} |"
             )
-    lines += ["", "各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`。", ""]
+    if epics:
+        lines += ["", "各阶段的候选清单见 " + "、".join(f"`{e}/EPIC.md`" for e in epics) + "。"]
+    lines.append("")
     return "\n".join(lines)
 
 
 def render_graph(cards: list[Card]) -> str:
-    phases = sorted({c.meta["phase"] for c in cards})
+    phases = sorted({c.meta["phase"] for c in cards}, key=phase_sort_key)
     out = [
         "# 任务依赖图",
         "",
@@ -303,7 +339,7 @@ def main() -> int:
             print(f"错误：{e}")
         print(f"\n共 {len(errors)} 个错误。")
         return 1
-    cards.sort(key=lambda c: c.id)
+    cards.sort(key=lambda c: id_sort_key(c.id))
     outputs = ((INDEX, render_index(cards)), (GRAPH, render_graph(cards)))
     if check_only:
         if "--check-index" in sys.argv[1:]:

@@ -33,10 +33,10 @@ description: >-
 
 ### 任务卡分支（本项目的全部日常分支）
 
-格式：`<type>/<卡号小写>-<卡片文件名中的短描述>`，例如 `feature/p1-03-change-minimiser`。由 `task.py start` 生成，正则：
+格式：`<type>/<卡号小写>-<卡片文件名中的短描述>`，例如 `feature/p1-03-change-minimiser`、`docs/p10-01-multi-instance-poc`（阶段号 0 ~ 99，不带前导零；编号两位，与 `tools/plan_lint.py` 的 `ID_RE` 一致）。由 `task.py start` 生成，正则：
 
 ```
-^(feature|fix|test|refactor|docs|chore)/(p[0-9]-[0-9]{2})-[a-z0-9]+(-[a-z0-9]+)*$
+^(feature|fix|test|refactor|docs|chore)/(p(?:[0-9]|[1-9][0-9])-[0-9]{2})-[a-z0-9]+(-[a-z0-9]+)*$
 ```
 
 | 卡片 | 分支 type |
