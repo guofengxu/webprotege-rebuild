@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P6-29]
 ---
 
@@ -51,11 +51,19 @@ depends_on: [P6-29]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - OIDC 登录流程、登录方式列表接口（P6-51）；企业微信（P6-39）；登录页（P6-38）
 - 查看或解绑外部身份的管理界面
+
+## 执行记录
+- 日期：2026-11-25
+- 分支：feature/p6-37-external-identities
+- 测试：2026-11-25T17:35:38+08:00 通过（3 项）
+- 实际改动：Added user_identities (V8), ExternalIdentityService resolve rules (binding / verified-email link / auto-provision), JDBC repository with conflict re-read, and Testcontainers coverage including concurrent first login.
+- 偏差：无
+- 审查：security-reviewer, java-reviewer

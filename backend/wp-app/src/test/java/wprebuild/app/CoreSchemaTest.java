@@ -28,7 +28,8 @@ class CoreSchemaTest {
             Map.entry("outbox", List.of("id")),
             Map.entry("outbox_consumers", List.of("consumer")),
             Map.entry("project_webhooks", List.of("webhook_id")),
-            Map.entry("webhook_deliveries", List.of("delivery_id")));
+            Map.entry("webhook_deliveries", List.of("delivery_id")),
+            Map.entry("user_identities", List.of("issuer", "subject")));
 
     private final JdbcClient jdbcClient;
 
