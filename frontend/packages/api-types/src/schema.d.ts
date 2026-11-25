@@ -627,6 +627,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects/{id}/merge-uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview merging an uploaded ontology into a project */
+        post: operations["previewUploadMerge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{id}/merge-uploads/{uploadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Discard a staged upload merge */
+        delete: operations["discardUploadMerge"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{id}/merge-uploads/{uploadId}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply a staged upload merge */
+        post: operations["applyUploadMerge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/projects/{id}/ontologies": {
         parameters: {
             query?: never;
@@ -900,6 +951,15 @@ export interface components {
             /** Format: date-time */
             lastUsedAt?: string;
             name?: string;
+        };
+        ApplyUploadMergeRequest: {
+            /** Format: int64 */
+            baseRevision?: number;
+            description?: string;
+        };
+        ApplyUploadMergeResult: {
+            /** Format: int64 */
+            revision?: number | null;
         };
         AuthUserResponse: {
             appRoles?: string[];
@@ -1190,6 +1250,20 @@ export interface components {
             start: number;
             userId: string;
         };
+        OntologyPatchSummary: {
+            /** Format: int64 */
+            addedAnnotationCount?: number;
+            /** Format: int64 */
+            addedAxiomCount?: number;
+            addedAxioms?: string[];
+            key?: string;
+            ontologyIri?: string;
+            /** Format: int64 */
+            removedAnnotationCount?: number;
+            /** Format: int64 */
+            removedAxiomCount?: number;
+            removedAxioms?: string[];
+        };
         PermissionsChanged: {
             projectId: string;
             /** Format: int64 */
@@ -1367,6 +1441,20 @@ export interface components {
             payloadUrl?: string;
             secret?: string;
             secretChange?: string;
+        };
+        UploadMergePreview: {
+            /** Format: int64 */
+            baseRevision?: number;
+            /** @enum {string} */
+            mode?: "NEW_VERSION" | "ADDITIONS";
+            ontologies?: components["schemas"]["OntologyPatchSummary"][];
+            /** Format: int64 */
+            totalAdded?: number;
+            /** Format: int64 */
+            totalRemoved?: number;
+            unmatchedUploads?: string[];
+            /** Format: uuid */
+            uploadId?: string;
         };
         UserSummaryResponse: {
             displayName?: string;
@@ -4604,6 +4692,223 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    previewUploadMerge: {
+        parameters: {
+            query: {
+                mode: string;
+                targetOntology?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadMergePreview"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    discardUploadMerge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                uploadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": Record<string, never>;
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    applyUploadMerge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                uploadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyUploadMergeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplyUploadMergeResult"];
+                };
             };
             /** @description Bad request */
             400: {

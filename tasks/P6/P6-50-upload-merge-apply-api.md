@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P6-27, P6-26]
 ---
 
@@ -64,12 +64,20 @@ pnpm -C frontend --filter wp-web run typecheck
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - Web 端（P6-28）
 - 多实例下的暂存共享（P6-40）
 - 逐条勾选要应用的公理（旧系统也不支持）
+
+## 执行记录
+- 日期：2026-11-24
+- 分支：feature/p6-50-upload-merge-apply-api
+- 测试：2026-11-24T18:09:24+08:00 通过（6 项）
+- 实际改动：Added Preview/Apply/Discard upload-merge commands and handlers (BS-14), ProjectController merge-uploads endpoints, OpenAPI/api-types, and UploadMergeTest covering new-version, additions, stale head 409, ownership 404, permissions, trash, and zip traversal.
+- 偏差：Production LOC (~650) exceeds size M 400 estimate (three handlers+controller+DTOs for the card's full 产出; no extra scope). Apply/discard authorize both UPLOAD_AND_MERGE actions because mode is only on staged meta and CommandBus has no user in requiredAction.
+- 审查：java-reviewer, code-reviewer, security-reviewer

@@ -2,11 +2,12 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 198 张卡：完成 137，进行中 0，阻塞 7，待办 54。
+共 198 张卡：完成 138，进行中 0，阻塞 7，待办 53。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-50](P6/P6-50-upload-merge-apply-api.md) 后端：上传并合并到已有项目的预览、应用与放弃接口（在生成锁内校验预览时的修订号）
+- [P6-28](P6/P6-28-web-upload-merge.md) Web 端：上传并合并到已有项目（工作台工具栏入口，选择方式、预览差异、确认应用）
+- [P6-29](P6/P6-29-admin-delete-user.md) 后端：系统管理员删除用户（停用并清除个人信息，账户 ID 保留在历史中）
 - [P6-57](P6/P6-57-instances-app-poc.md) PoC：新建 wp-instances-app Spring Boot 服务骨架（双数据源、Flyway、健康检查）
 - [P6-65](P6/P6-65-web-workspace-spec-isolation.md) Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败
 - [P6-68](P6/P6-68-form-change-generator.md) 内核：实体表单数据转公理变更生成器（BS-18 首期子集 TEXT/NUMBER）
@@ -181,8 +182,8 @@
 | [P6-25](P6/P6-25-web-merge-entities.md) | Web 端：合并实体对话框（层级工具栏入口，选择目标与处理方式，按权限显示） | wp-web | web | M | 完成 | P6-24 |
 | [P6-26](P6/P6-26-upload-merge-diff.md) | 内核：上传本体与项目的合并计划（新版本差异 / 只追加两种方式，BS-14）及合并生成器 | wp-kernel | kernel | M | 完成 | P1-21 |
 | [P6-27](P6/P6-27-upload-merge-api.md) | 后端：上传合并的准备——新增两个动作、带归属与过期时间的上传暂存、列出项目本体的接口 | wp-app | app-service | M | 完成 | P6-24 |
-| [P6-28](P6/P6-28-web-upload-merge.md) | Web 端：上传并合并到已有项目（工作台工具栏入口，选择方式、预览差异、确认应用） | wp-web | web | M | 待办 | P6-50、P6-22 |
-| [P6-29](P6/P6-29-admin-delete-user.md) | 后端：系统管理员删除用户（停用并清除个人信息，账户 ID 保留在历史中） | wp-app | app-security | M | 待办 | P6-50 |
+| [P6-28](P6/P6-28-web-upload-merge.md) | Web 端：上传并合并到已有项目（工作台工具栏入口，选择方式、预览差异、确认应用） | wp-web | web | M | 待办（可开工） | P6-50、P6-22 |
+| [P6-29](P6/P6-29-admin-delete-user.md) | 后端：系统管理员删除用户（停用并清除个人信息，账户 ID 保留在历史中） | wp-app | app-security | M | 待办（可开工） | P6-50 |
 | [P6-30](P6/P6-30-web-delete-user.md) | Web 端：用户管理页删除用户，并标出已删除的用户 | wp-web | web | S | 待办 | P6-29 |
 | [P6-31](P6/P6-31-instance-store-schema.md) | 实例库 PoC（一）：新建 wp-instances 模块，instances / links 表结构、带有效期的写入与追溯查询 | wp-instances | db | M | 完成 | P6-11 |
 | [P6-32](P6/P6-32-instance-store-benchmark.md) | 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续 | wp-instances | benchmark | S | 完成 | P6-31、P6-53、P6-54 |
@@ -203,7 +204,7 @@
 | [P6-47](P6/P6-47-manchester-rea-planning.md) | 规划卡：Manchester 语法编辑逆向分析，确定首期范围并拆卡 | tasks/P7 | planning | S | 阻塞 | P4-09 |
 | [P6-48](P6/P6-48-mcp-write-tools-planning.md) | 规划卡：MCP 写工具与人工确认机制（设计、ADR 草案与拆卡） | tasks/P8 | planning | S | 阻塞 | P6-16、P6-24 |
 | [P6-49](P6/P6-49-webhook-management-api.md) | 后端：项目 webhook 的管理接口（增删改查、停用时取消待投递记录、最近投递记录） | wp-app | app-security | M | 完成 | P6-20 |
-| [P6-50](P6/P6-50-upload-merge-apply-api.md) | 后端：上传并合并到已有项目的预览、应用与放弃接口（在生成锁内校验预览时的修订号） | wp-app | app-service | M | 待办（可开工） | P6-27、P6-26 |
+| [P6-50](P6/P6-50-upload-merge-apply-api.md) | 后端：上传并合并到已有项目的预览、应用与放弃接口（在生成锁内校验预览时的修订号） | wp-app | app-service | M | 完成 | P6-27、P6-26 |
 | [P6-51](P6/P6-51-oidc-login-flow.md) | 后端：通用 OpenID Connect 登录（授权码流程、与账号密码登录相同的会话、登录方式列表接口） | wp-app | app-security | M | 待办 | P6-37、P6-52 |
 | [P6-52](P6/P6-52-deleted-user-session-revocation.md) | 后端：已删除用户的已登录会话立即失效（会话注册表 + 按请求检查） | wp-app | app-security | M | 待办 | P6-29 |
 | [P6-53](P6/P6-53-trace-follow-batched.md) | TraceQueries.follow 改为每一跳一条 SQL，消除逐节点查询（N+1） | wp-instances | db | S | 完成 | P6-31 |

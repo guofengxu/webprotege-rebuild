@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.semanticweb.owlapi.model.IRI;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -39,9 +40,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import wprebuild.app.access.ProjectAccess;
 import wprebuild.app.bus.CommandBus;
+import wprebuild.app.ontology.ApplyUploadMerge;
 import wprebuild.app.ontology.CreateEmptyProject;
 import wprebuild.app.ontology.CreateEntities;
 import wprebuild.app.ontology.DeleteEntities;
+import wprebuild.app.ontology.DiscardUploadMerge;
 import wprebuild.app.ontology.DownloadFormat;
 import wprebuild.app.ontology.EntityActions;
 import wprebuild.app.ontology.GetAnnotationPropertyFrame;
@@ -62,6 +65,7 @@ import wprebuild.app.ontology.ListIndividualsByType;
 import wprebuild.app.ontology.ListProjectOntologies;
 import wprebuild.app.ontology.ListRevisions;
 import wprebuild.app.ontology.MergeEntities;
+import wprebuild.app.ontology.PreviewUploadMerge;
 import wprebuild.app.ontology.ProjectDownload;
 import wprebuild.app.ontology.ProjectOntologySummary;
 import wprebuild.app.ontology.RevertRevision;
@@ -71,6 +75,7 @@ import wprebuild.app.ontology.UpdateClassFrame;
 import wprebuild.app.ontology.UpdateDataPropertyFrame;
 import wprebuild.app.ontology.UpdateNamedIndividualFrame;
 import wprebuild.app.ontology.UpdateObjectPropertyFrame;
+import wprebuild.app.ontology.UploadMergePreview;
 import wprebuild.app.ontology.UploadProperties;
 import wprebuild.app.project.GetMyProjectPermissions;
 import wprebuild.app.project.GetProjectDetails;
@@ -84,7 +89,9 @@ import wprebuild.app.project.UpdateProjectDetails;
 import wprebuild.app.revision.RevisionPage;
 import wprebuild.app.search.SearchEntities;
 import wprebuild.app.search.SearchTypes;
+import wprebuild.kernel.change.OntologyKey;
 import wprebuild.kernel.generator.MergedEntityTreatment;
+import wprebuild.kernel.generator.UploadMergeMode;
 import wprebuild.kernel.id.ProjectId;
 import wprebuild.kernel.id.RevisionNumber;
 import wprebuild.kernel.id.UserId;
@@ -220,6 +227,87 @@ public class ProjectController {
     public ResponseEntity<?> ontologies(@PathVariable String id) {
         return withProject(
                 id, (user, projectId) -> ResponseEntity.ok(bus.execute(user, new ListProjectOntologies(projectId))));
+    }
+
+    @Operation(summary = "Preview merging an uploaded ontology into a project", operationId = "previewUploadMerge")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UploadMergePreview.class)))
+    @PostMapping(path = "/{id}/merge-uploads", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> previewUploadMerge(
+            @PathVariable String id,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("mode") String mode,
+            @RequestParam(value = "targetOntology", required = false) String targetOntology)
+            throws IOException {
+        UserId user = currentUser();
+        if (user == null) {
+            return ApiProblems.of(ApiProblems.authenticationRequired());
+        }
+        final ProjectId projectId;
+        try {
+            projectId = ProjectId.of(id);
+        } catch (IllegalArgumentException ex) {
+            return invalid("project id is not a UUID");
+        }
+        if (file == null || file.isEmpty() || file.getSize() < 0) {
+            return invalid("upload file is empty");
+        }
+        if (file.getSize() > uploads.maxSize().toBytes()) {
+            return ApiProblems.of(ApiProblems.payloadTooLarge());
+        }
+        final UploadMergeMode parsedMode;
+        final Optional<OntologyKey> target;
+        try {
+            parsedMode = mergeMode(mode);
+            target = mergeTarget(parsedMode, targetOntology);
+        } catch (IllegalArgumentException ex) {
+            return invalid(ex.getMessage());
+        }
+        Path stored = Files.createTempFile("wp-merge-upload-", ".bin");
+        try {
+            file.transferTo(stored);
+            UploadMergePreview preview =
+                    bus.execute(user, new PreviewUploadMerge(projectId, stored, parsedMode, target));
+            return ResponseEntity.ok(preview);
+        } catch (IllegalArgumentException ex) {
+            return invalid(ex.getMessage());
+        } finally {
+            Files.deleteIfExists(stored);
+        }
+    }
+
+    @Operation(summary = "Apply a staged upload merge", operationId = "applyUploadMerge")
+    @ApiResponse(
+            responseCode = "200",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApplyUploadMerge.Body.class)))
+    @PostMapping(path = "/{id}/merge-uploads/{uploadId}/apply", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> applyUploadMerge(
+            @PathVariable String id, @PathVariable UUID uploadId, @RequestBody ApplyUploadMergeRequest body) {
+        if (body == null) {
+            return invalid("request body is required");
+        }
+        return withProject(id, (user, projectId) -> {
+            ApplyUploadMerge.Result applied = bus.execute(
+                    user, new ApplyUploadMerge(projectId, uploadId, body.baseRevision(), body.description()));
+            return ResponseEntity.ok(applied.body());
+        });
+    }
+
+    @Operation(summary = "Discard a staged upload merge", operationId = "discardUploadMerge")
+    @ApiResponse(responseCode = "204")
+    @DeleteMapping("/{id}/merge-uploads/{uploadId}")
+    public ResponseEntity<?> discardUploadMerge(@PathVariable String id, @PathVariable UUID uploadId) {
+        return withProject(id, (user, projectId) -> {
+            bus.execute(user, new DiscardUploadMerge(projectId, uploadId));
+            return ResponseEntity.noContent().build();
+        });
     }
 
     @Operation(summary = "Download a project ontology", operationId = "downloadProject")
@@ -787,8 +875,34 @@ public class ProjectController {
 
     public record MergeEntitiesRequest(List<String> sources, String target, String treatment, String description) {}
 
+    public record ApplyUploadMergeRequest(long baseRevision, String description) {}
+
     @Schema(name = "RevisionResponse")
     public record RevisionResponse(long revision) {}
+
+    private static UploadMergeMode mergeMode(String raw) {
+        if (raw == null || raw.isBlank()) {
+            throw new IllegalArgumentException("mode is required");
+        }
+        try {
+            return UploadMergeMode.valueOf(raw.strip());
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("mode must be NEW_VERSION or ADDITIONS");
+        }
+    }
+
+    private static Optional<OntologyKey> mergeTarget(UploadMergeMode mode, String raw) {
+        if (mode == UploadMergeMode.ADDITIONS) {
+            if (raw == null || raw.isBlank()) {
+                throw new IllegalArgumentException("targetOntology is required for ADDITIONS");
+            }
+            return Optional.of(new OntologyKey(raw.strip()));
+        }
+        if (raw != null && !raw.isBlank()) {
+            throw new IllegalArgumentException("targetOntology is only used with ADDITIONS");
+        }
+        return Optional.empty();
+    }
 
     private static MergedEntityTreatment treatment(String raw) {
         if (raw == null || raw.isBlank()) {
