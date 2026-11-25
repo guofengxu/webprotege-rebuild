@@ -170,7 +170,7 @@ flowchart LR
         P6_48["P6-48"]:::blocked
         P6_49["P6-49"]:::done
         P6_50["P6-50"]:::done
-        P6_51["P6-51"]:::todo
+        P6_51["P6-51"]:::done
         P6_52["P6-52"]:::done
         P6_53["P6-53"]:::done
         P6_54["P6-54"]:::done

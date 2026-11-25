@@ -77,7 +77,9 @@ class OpenApiResponseSchemasTest {
             new Success("listWebhooks", "200", JSON),
             new Success("createWebhook", "201", JSON),
             new Success("updateWebhook", "200", JSON),
-            new Success("listWebhookDeliveries", "200", JSON));
+            new Success("listWebhookDeliveries", "200", JSON),
+            // P6-51 OIDC login providers
+            new Success("listLoginProviders", "200", JSON));
 
     private final MockMvc mockMvc;
 

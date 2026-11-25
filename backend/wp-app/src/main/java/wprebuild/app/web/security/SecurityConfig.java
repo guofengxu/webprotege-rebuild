@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -44,7 +45,7 @@ import wprebuild.app.web.ApiProblems;
  */
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties({CorsProperties.class, SecurityProperties.class})
+@EnableConfigurationProperties({CorsProperties.class, SecurityProperties.class, OidcProperties.class})
 public class SecurityConfig {
 
     @Bean
@@ -101,6 +102,8 @@ public class SecurityConfig {
                 .cors(config -> config.configurationSource(corsConfiguration(cors)))
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
                                 HttpMethod.POST, "/api/auth/login", "/api/auth/tokens", "/api/auth/tokens/refresh")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/providers")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
@@ -164,13 +167,37 @@ public class SecurityConfig {
     }
 
     /**
-     * Pages outside {@code /api/**} are static GET. They stay anonymous, but they still need the default
-     * clickjacking and content-type headers. Cache-Control is left to the resource handler so {@code index.html}
-     * can be revalidated and hashed {@code assets/*} can be cached. Ordered after {@link #mcpSecurity} so
-     * {@code /mcp} is not treated as anonymous static content.
+     * OIDC authorization-code endpoints. Registered only when {@code wp.oidc.enabled=true}; client
+     * registrations come from {@code spring.security.oauth2.client.*}. Success replaces the OAuth2
+     * token with the same session shape as password login.
      */
     @Bean
     @Order(2)
+    @ConditionalOnProperty(prefix = "wp.oidc", name = "enabled", havingValue = "true")
+    SecurityFilterChain oidcLogin(
+            HttpSecurity http, OidcLoginSuccessHandler successHandler, OidcLoginFailureHandler failureHandler)
+            throws Exception {
+        http.securityMatcher("/oauth2/**", "/login/oauth2/**")
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .csrf(AbstractHttpConfigurer::disable)
+                .oauth2Login(oauth2 -> oauth2.successHandler(successHandler).failureHandler(failureHandler))
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .requestCache(cache -> cache.disable());
+        return http.build();
+    }
+
+    /**
+     * Pages outside {@code /api/**} are static GET. They stay anonymous, but they still need the default
+     * clickjacking and content-type headers. Cache-Control is left to the resource handler so {@code index.html}
+     * can be revalidated and hashed {@code assets/*} can be cached. Ordered after {@link #oidcLogin} (when
+     * present) and {@link #mcpSecurity} so {@code /oauth2/**} and {@code /mcp} are not treated as anonymous
+     * static content.
+     */
+    @Bean
+    @Order(3)
     SecurityFilterChain staticContent(HttpSecurity http) throws Exception {
         http.securityMatcher("/**")
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())

@@ -2,11 +2,11 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 198 张卡：完成 141，进行中 0，阻塞 9，待办 48。
+共 198 张卡：完成 142，进行中 0，阻塞 9，待办 47。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-51](P6/P6-51-oidc-login-flow.md) 后端：通用 OpenID Connect 登录（授权码流程、与账号密码登录相同的会话、登录方式列表接口）
+- [P6-35](P6/P6-35-outbox-kafka-publisher.md) outbox 发布器 → Kafka：把每个修订事件按项目分区、按提交顺序发布到 Kafka 主题（默认关闭）
 - [P6-55](P6/P6-55-projection-contract-version.md) 编辑器：投影 project_state 增加 contract_version（V9），作为实例库读取投影表的契约版本
 - [P6-57](P6/P6-57-instances-app-poc.md) PoC：新建 wp-instances-app Spring Boot 服务骨架（双数据源、Flyway、健康检查）
 - [P6-65](P6/P6-65-web-workspace-spec-isolation.md) Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败
@@ -191,7 +191,7 @@
 | [P6-32](P6/P6-32-instance-store-benchmark.md) | 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续 | wp-instances | benchmark | S | 完成 | P6-31、P6-53、P6-54 |
 | [P6-33](P6/P6-33-instance-store-validation.md) | 实例库 PoC（三）：从本体投影表生成定义域 / 值域校验规则，写入实例时校验 | wp-instances | db | M | 完成 | P6-32、P6-13 |
 | [P6-34](P6/P6-34-instance-service-planning.md) | 规划卡：依据实例库 PoC 结论，规划实例库服务化 | tasks/P6 | planning | S | 完成 | P6-33 |
-| [P6-35](P6/P6-35-outbox-kafka-publisher.md) | outbox 发布器 → Kafka：把每个修订事件按项目分区、按提交顺序发布到 Kafka 主题（默认关闭） | wp-app | app-service | M | 待办 | P6-21、P6-51 |
+| [P6-35](P6/P6-35-outbox-kafka-publisher.md) | outbox 发布器 → Kafka：把每个修订事件按项目分区、按提交顺序发布到 Kafka 主题（默认关闭） | wp-app | app-service | M | 待办（可开工） | P6-21、P6-51 |
 | [P6-36](P6/P6-36-graph-publisher-evaluation.md) | 规划卡：评估 outbox → 图数据库 / RDF 三元组库发布器（按 ADR-013 第 5 节的条件，产出 ADR 草案或“暂不做”的结论） | tasks/P6 | planning | S | 完成 | P6-32 |
 | [P6-37](P6/P6-37-external-identities.md) | 后端：外部身份绑定（user_identities 表，按 issuer + subject 解析本地账户的规则），供 OIDC 与企业微信登录使用 | wp-app | app-security | M | 完成 | P6-29 |
 | [P6-38](P6/P6-38-web-oidc-login.md) | Web 端：登录页显示“企业账号登录”入口，并提示外部账号未绑定等错误 | wp-web | web | S | 待办 | P6-51、P6-28 |
@@ -207,7 +207,7 @@
 | [P6-48](P6/P6-48-mcp-write-tools-planning.md) | 规划卡：MCP 写工具与人工确认机制（设计、ADR 草案与拆卡） | tasks/P8 | planning | S | 阻塞 | P6-16、P6-24 |
 | [P6-49](P6/P6-49-webhook-management-api.md) | 后端：项目 webhook 的管理接口（增删改查、停用时取消待投递记录、最近投递记录） | wp-app | app-security | M | 完成 | P6-20 |
 | [P6-50](P6/P6-50-upload-merge-apply-api.md) | 后端：上传并合并到已有项目的预览、应用与放弃接口（在生成锁内校验预览时的修订号） | wp-app | app-service | M | 完成 | P6-27、P6-26 |
-| [P6-51](P6/P6-51-oidc-login-flow.md) | 后端：通用 OpenID Connect 登录（授权码流程、与账号密码登录相同的会话、登录方式列表接口） | wp-app | app-security | M | 待办（可开工） | P6-37、P6-52 |
+| [P6-51](P6/P6-51-oidc-login-flow.md) | 后端：通用 OpenID Connect 登录（授权码流程、与账号密码登录相同的会话、登录方式列表接口） | wp-app | app-security | M | 完成 | P6-37、P6-52 |
 | [P6-52](P6/P6-52-deleted-user-session-revocation.md) | 后端：已删除用户的已登录会话立即失效（会话注册表 + 按请求检查） | wp-app | app-security | M | 完成 | P6-29 |
 | [P6-53](P6/P6-53-trace-follow-batched.md) | TraceQueries.follow 改为每一跳一条 SQL，消除逐节点查询（N+1） | wp-instances | db | S | 完成 | P6-31 |
 | [P6-54](P6/P6-54-instance-benchmark-method.md) | 实例库基准测法修订：改用连接池，记录连接开销基线与 W1 失败次数 | wp-instances | benchmark | S | 完成 | P6-31 |

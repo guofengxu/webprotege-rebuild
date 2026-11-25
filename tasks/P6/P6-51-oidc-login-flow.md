@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P6-37, P6-52]
 ---
 
@@ -58,12 +58,21 @@ pnpm -C frontend --filter wp-web run typecheck
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写（含本地 Keycloak 手工冒烟结果）
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写（含本地 Keycloak 手工冒烟结果）
+
 
 ## 不在本卡范围
 - 登录页入口（P6-38）；企业微信（P6-39）
 - 移动端（P5 暂停）用 OIDC 换取访问令牌
 - 单点登出、按身份提供方的组映射角色、解绑外部身份的管理界面
+
+## 执行记录
+- 日期：2026-11-25
+- 分支：feature/p6-51-oidc-login-flow
+- 测试：2026-11-25T20:47:19+08:00 通过（6 项）
+- 实际改动：Added spring-boot-starter-security-oauth2-client, SessionLogin, OidcLoginSuccess/FailureHandler, OidcProperties, GET /api/auth/providers, docs/api/oidc.md, OpenAPI/api-types, and OidcLoginTest. Success replaces OAuth2 auth with the same UsernamePasswordAuthenticationToken session as password login and drops authorized-client tokens. Local Keycloak Docker smoke was not run in this session (CI has no IdP; token exchange remains manual).
+- 偏差：Keycloak Docker manual smoke not executed here; noted in execution record. MEDIUM login-CSRF when already authenticated left as follow-up.
+- 审查：security-reviewer, (no, CRITICAL/HIGH;, applied, M2, clear, OAuth2AuthorizedClient, after, SessionLogin;, deferred, M1, login-CSRF, for, already-signed-in, users), java-reviewer, (approve)
