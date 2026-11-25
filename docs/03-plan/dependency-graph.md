@@ -147,7 +147,7 @@ flowchart LR
         P6_25["P6-25"]:::done
         P6_26["P6-26"]:::done
         P6_27["P6-27"]:::done
-        P6_28["P6-28"]:::todo
+        P6_28["P6-28"]:::blocked
         P6_29["P6-29"]:::todo
         P6_30["P6-30"]:::todo
         P6_31["P6-31"]:::done
