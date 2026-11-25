@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.http.MediaType;
@@ -18,6 +19,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -42,13 +44,16 @@ public class AuthController {
 
     private final CsrfTokenRepository csrfTokens;
 
+    private final SessionRegistry sessions;
+
     private final SecurityContextRepository securityContexts = new HttpSessionSecurityContextRepository();
 
     private final SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
 
-    public AuthController(UserService users, CsrfTokenRepository csrfTokens) {
+    public AuthController(UserService users, CsrfTokenRepository csrfTokens, SessionRegistry sessions) {
         this.users = Objects.requireNonNull(users, "users");
         this.csrfTokens = Objects.requireNonNull(csrfTokens, "csrf tokens");
+        this.sessions = Objects.requireNonNull(sessions, "sessions");
     }
 
     @Operation(summary = "Sign in and start a session", operationId = "login")
@@ -115,6 +120,12 @@ public class AuthController {
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
         securityContexts.saveContext(context, request, response);
+        // Session exists only after saveContext; register so UserDeleted can expire it in-process.
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            throw new IllegalStateException("session missing after saveContext");
+        }
+        sessions.registerNewSession(session.getId(), account.userId().value());
     }
 
     public record LoginRequest(String username, String password) {

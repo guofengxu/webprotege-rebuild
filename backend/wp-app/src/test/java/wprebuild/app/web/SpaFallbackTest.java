@@ -7,7 +7,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -18,7 +20,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import wprebuild.app.access.UserService;
 import wprebuild.app.support.DatabaseTest;
+import wprebuild.kernel.id.UserId;
 
 /**
  * SPA routes serve the packaged index page. Unknown API paths stay ProblemDetail responses.
@@ -35,8 +39,19 @@ class SpaFallbackTest {
 
     private final MockMvc mockMvc;
 
-    SpaFallbackTest(MockMvc mockMvc) {
+    private final UserService users;
+
+    SpaFallbackTest(MockMvc mockMvc, UserService users) {
         this.mockMvc = mockMvc;
+        this.users = users;
+    }
+
+    @BeforeEach
+    void ensureMockUserExists() {
+        // @WithMockUser defaults to "user"; DeletedAccountFilter treats a missing row as deleted.
+        if (users.findById(new UserId("user")).isEmpty()) {
+            users.create("user", "User", "user@example.com", "password-12chars", List.of());
+        }
     }
 
     @Test
