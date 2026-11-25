@@ -55,6 +55,33 @@ final class RevisionDiffRenderer {
 
     private RevisionDiffRenderer() {}
 
+    /**
+     * Renders OWL objects (axioms or annotations) with the same Manchester short-form provider as
+     * revision diffs (P3-20 / P6-50 preview).
+     */
+    static List<String> renderObjects(ProjectRuntime runtime, List<? extends OWLObject> objects, int limit) {
+        Objects.requireNonNull(runtime, "runtime");
+        Objects.requireNonNull(objects, "objects");
+        if (limit < 1) {
+            throw new IllegalArgumentException("limit must be at least 1");
+        }
+        int end = Math.min(limit, objects.size());
+        if (end == 0) {
+            return List.of();
+        }
+        ManchesterOWLSyntaxOWLObjectRendererImpl manchester = manchester(runtime);
+        List<String> texts = new ArrayList<>(end);
+        for (int index = 0; index < end; index++) {
+            String rendered = Objects.requireNonNull(manchester.render(objects.get(index)), "rendered object")
+                    .strip();
+            if (rendered.isBlank()) {
+                throw new IllegalStateException("Manchester rendering was blank");
+            }
+            texts.add(rendered);
+        }
+        return List.copyOf(texts);
+    }
+
     static Prepared prepare(List<OntologyChange> changes) {
         List<OntologyChange> source = List.copyOf(Objects.requireNonNull(changes, "changes"));
         Map<String, List<Line>> groups = new LinkedHashMap<>();

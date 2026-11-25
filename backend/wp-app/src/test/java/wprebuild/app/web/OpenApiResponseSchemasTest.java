@@ -68,6 +68,8 @@ class OpenApiResponseSchemasTest {
             new Success("streamProjectEvents", "200", "text/event-stream"),
             new Success("getMyProjectPermissions", "200", JSON),
             new Success("listProjectOntologies", "200", JSON),
+            new Success("previewUploadMerge", "200", JSON),
+            new Success("applyUploadMerge", "200", JSON),
             new Success("searchMemberCandidates", "200", JSON),
             new Success("getProjectionStatus", "200", JSON),
             new Success("rebuildProjection", "200", JSON),

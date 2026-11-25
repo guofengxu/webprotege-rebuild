@@ -237,6 +237,8 @@ class BS10_AccessServiceTest {
     @Test
     void shared_exceptions_expose_stable_codes() {
         assertThat(new NotFoundException("missing project").code()).isEqualTo(NotFoundException.CODE);
+        assertThat(new NotFoundException(NotFoundException.UPLOAD_NOT_FOUND, "upload missing").code())
+                .isEqualTo(NotFoundException.UPLOAD_NOT_FOUND);
         ConflictException conflict = new ConflictException("FRAME_CHANGED", "frame changed");
         assertThat(conflict.code()).isEqualTo("FRAME_CHANGED");
         assertThat(conflict).hasMessage("frame changed");

@@ -136,6 +136,27 @@
         },
         "type" : "object"
       },
+      "ApplyUploadMergeRequest" : {
+        "properties" : {
+          "baseRevision" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "description" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ApplyUploadMergeResult" : {
+        "properties" : {
+          "revision" : {
+            "format" : "int64",
+            "type" : [ "integer", "null" ]
+          }
+        },
+        "type" : "object"
+      },
       "AuthUserResponse" : {
         "properties" : {
           "appRoles" : {
@@ -956,6 +977,45 @@
         "required" : [ "end", "start", "userId" ],
         "type" : "object"
       },
+      "OntologyPatchSummary" : {
+        "properties" : {
+          "addedAnnotationCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "addedAxiomCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "addedAxioms" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "key" : {
+            "type" : "string"
+          },
+          "ontologyIri" : {
+            "type" : "string"
+          },
+          "removedAnnotationCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "removedAxiomCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "removedAxioms" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "PermissionsChanged" : {
         "properties" : {
           "projectId" : {
@@ -1379,6 +1439,43 @@
           }
         },
         "required" : [ "enabled" ],
+        "type" : "object"
+      },
+      "UploadMergePreview" : {
+        "properties" : {
+          "baseRevision" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "mode" : {
+            "enum" : [ "NEW_VERSION", "ADDITIONS" ],
+            "type" : "string"
+          },
+          "ontologies" : {
+            "items" : {
+              "$ref" : "#/components/schemas/OntologyPatchSummary"
+            },
+            "type" : "array"
+          },
+          "totalAdded" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalRemoved" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "unmatchedUploads" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "uploadId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
         "type" : "object"
       },
       "UserSummaryResponse" : {
@@ -5440,6 +5537,293 @@
         },
         "summary" : "Set a project member's role",
         "tags" : [ "Project settings" ]
+      }
+    },
+    "/api/projects/{id}/merge-uploads" : {
+      "post" : {
+        "operationId" : "previewUploadMerge",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "mode",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "targetOntology",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "properties" : {
+                  "file" : {
+                    "format" : "binary",
+                    "type" : "string"
+                  }
+                },
+                "required" : [ "file" ],
+                "type" : "object"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UploadMergePreview"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          }
+        },
+        "summary" : "Preview merging an uploaded ontology into a project",
+        "tags" : [ "Projects" ]
+      }
+    },
+    "/api/projects/{id}/merge-uploads/{uploadId}" : {
+      "delete" : {
+        "operationId" : "discardUploadMerge",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "uploadId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "No Content"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          }
+        },
+        "summary" : "Discard a staged upload merge",
+        "tags" : [ "Projects" ]
+      }
+    },
+    "/api/projects/{id}/merge-uploads/{uploadId}/apply" : {
+      "post" : {
+        "operationId" : "applyUploadMerge",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "uploadId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ApplyUploadMergeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApplyUploadMergeResult"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          }
+        },
+        "summary" : "Apply a staged upload merge",
+        "tags" : [ "Projects" ]
       }
     },
     "/api/projects/{id}/ontologies" : {
