@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: todo
+status: blocked
 depends_on: [P6-50, P6-22]
 ---
 
@@ -62,3 +62,7 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/upload-merge src/f
 ## 不在本卡范围
 - 后端（P6-27、P6-50）
 - 逐条勾选公理、在预览中搜索
+
+## 阻塞
+- 日期：2026-11-25
+- 原因：依赖 P6-27 产出与本卡假设不符：后端 Action 已有 UPLOAD_AND_MERGE / UPLOAD_AND_MERGE_ADDITIONS，且 GET /permissions/me 运行时会返回它们，但 MyProjectPermissionsResponse 的 @Schema allowableValues、docs/api/openapi.json 与 @wp/api-types 的 ProjectAction 联合类型都未列入这两项。本卡 UploadMergeButton 要用 useProjectPermissions('UPLOAD_AND_MERGE'|'UPLOAD_AND_MERGE_ADDITIONS')，类型对不上。建议：补一张小卡（或回修 P6-27）更新 allowableValues → 重生成 openapi.json / schema.d.ts；本卡再开工。不在本卡范围的后端改动我未做。
