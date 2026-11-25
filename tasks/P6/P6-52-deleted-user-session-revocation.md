@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P6-29]
 ---
 
@@ -51,11 +51,19 @@ depends_on: [P6-29]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 删除用户的接口与数据（P6-29）
 - 多实例之间的立即失效、Spring Session（P6-40）
+
+## 执行记录
+- 日期：2026-11-25
+- 分支：feature/p6-52-deleted-user-session-revocation
+- 测试：2026-11-25T19:02:43+08:00 通过（3 项）
+- 实际改动：SessionRegistry + ConcurrentSessionFilter expire sessions on UserDeleted; DeletedAccountFilter covers orphan sessions with a Caffeine TTL cache; SpaFallbackTest seeds the default @WithMockUser account.
+- 偏差：Orphan-session test relies on markDeleted after UserDeleted rather than setting deleted-check-ttl=0; behavior still covered.
+- 审查：security-reviewer, (PASS;, addressed, MEDIUM:, markDeleted, +, cache, max, size);, java-reviewer, (addressed, HIGH:, FilterRegistrationBean, disabled, no, @Component)

@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -16,13 +17,17 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.session.SessionManagementFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -39,7 +44,7 @@ import wprebuild.app.web.ApiProblems;
  */
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties(CorsProperties.class)
+@EnableConfigurationProperties({CorsProperties.class, SecurityProperties.class})
 public class SecurityConfig {
 
     @Bean
@@ -47,6 +52,36 @@ public class SecurityConfig {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         repository.setCookiePath("/");
         return repository;
+    }
+
+    @Bean
+    SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    /** Keeps {@link SessionRegistry} in sync when servlet sessions are created or destroyed. */
+    @Bean
+    HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    @Bean
+    DeletedAccountFilter deletedAccountFilter(UserService users, JsonMapper json, SecurityProperties properties) {
+        return new DeletedAccountFilter(users, json, properties);
+    }
+
+    /** Keeps the filter off the servlet chain; {@link #apiSecurity} installs it in the security chain only. */
+    @Bean
+    FilterRegistrationBean<DeletedAccountFilter> deletedAccountFilterRegistration(DeletedAccountFilter filter) {
+        FilterRegistrationBean<DeletedAccountFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
+    DeletedUserSessionListener deletedUserSessionListener(
+            SessionRegistry sessionRegistry, DeletedAccountFilter deletedAccounts) {
+        return new DeletedUserSessionListener(sessionRegistry, deletedAccounts);
     }
 
     @Bean
@@ -58,7 +93,9 @@ public class SecurityConfig {
             JsonMapper json,
             ApiKeyService apiKeys,
             AccessTokenService accessTokens,
-            UserService users)
+            UserService users,
+            SessionRegistry sessionRegistry,
+            DeletedAccountFilter deletedAccounts)
             throws Exception {
         http.securityMatcher("/api/**")
                 .cors(config -> config.configurationSource(corsConfiguration(cors)))
@@ -67,7 +104,14 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                .sessionManagement(session -> session.sessionFixation().changeSessionId())
+                .sessionManagement(session -> session.sessionFixation(fixation -> fixation.changeSessionId())
+                        // Unlimited: concurrency control is only enabled so ConcurrentSessionFilter honours
+                        // expireNow().
+                        .sessionConcurrency(concurrency -> concurrency
+                                .maximumSessions(-1)
+                                .sessionRegistry(sessionRegistry)
+                                .expiredSessionStrategy(event -> ApiProblems.write(
+                                        event.getResponse(), ApiProblems.authenticationRequired(), json))))
                 // ADR-010: a bearer token or API key is not a browser form field. The token posts carry the secret
                 // in JSON, so a mobile client can call them without a CSRF cookie.
                 .csrf(csrf -> csrf.spa()
@@ -78,6 +122,7 @@ public class SecurityConfig {
                         .ignoringRequestMatchers(
                                 PathPatternRequestMatcher.pathPattern(HttpMethod.POST, "/api/auth/tokens"),
                                 PathPatternRequestMatcher.pathPattern(HttpMethod.POST, "/api/auth/tokens/refresh")))
+                .addFilterAfter(deletedAccounts, SecurityContextHolderFilter.class)
                 // After session management: a non-transient token here would be saved and outlive revoke.
                 // Bearer runs last so an Authorization header is not replaced by a session or an API key.
                 .addFilterAfter(new ApiKeyAuthenticationFilter(apiKeys, users), SessionManagementFilter.class)
