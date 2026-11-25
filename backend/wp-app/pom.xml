@@ -100,6 +100,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+        <!-- P6-51: OIDC authorization-code login (optional; gated by wp.oidc.enabled). -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-oauth2-client</artifactId>
+        </dependency>
         <!-- P6-14: MCP Streamable HTTP server (stateless servlet transport). -->
         <dependency>
             <groupId>io.modelcontextprotocol.sdk</groupId>
