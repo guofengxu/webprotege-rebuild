@@ -4,6 +4,8 @@ import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,7 +31,7 @@ public class JdbcUserRepository {
     public Optional<UserAccount> findById(UserId userId) {
         Objects.requireNonNull(userId, "user id");
         return jdbc.sql("""
-                        select user_id, display_name, email, password_hash, app_roles
+                        select user_id, display_name, email, password_hash, app_roles, deleted_at
                         from users
                         where user_id = ?
                         """).param(userId.value()).query((rs, row) -> map(rs)).optional();
@@ -82,10 +84,10 @@ public class JdbcUserRepository {
         return jdbcTemplate.query(
                 """
                 select page.user_id, page.display_name, page.email, page.password_hash, page.app_roles,
-                       counted.total
+                       page.deleted_at, counted.total
                 from (select count(*) as total from users) counted
                 left join lateral (
-                    select user_id, display_name, email, password_hash, app_roles
+                    select user_id, display_name, email, password_hash, app_roles, deleted_at
                     from users
                     order by user_id
                     limit ? offset ?
@@ -100,7 +102,7 @@ public class JdbcUserRepository {
 
     int countWithRole(String role) {
         Objects.requireNonNull(role, "role");
-        return jdbc.sql("select count(*) from users where ? = any (app_roles)")
+        return jdbc.sql("select count(*) from users where deleted_at is null and ? = any (app_roles)")
                 .param(role)
                 .query((rs, row) -> rs.getInt(1))
                 .single();
@@ -131,8 +133,9 @@ public class JdbcUserRepository {
         return jdbc.sql("""
                         select user_id, display_name
                         from users
-                        where user_id ilike ? escape '\\'
-                           or display_name ilike ? escape '\\'
+                        where deleted_at is null
+                          and (user_id ilike ? escape '\\'
+                           or display_name ilike ? escape '\\')
                         order by
                           case
                             when lower(user_id) = lower(?) then 0
@@ -156,6 +159,19 @@ public class JdbcUserRepository {
         return raw.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 
+    int softDelete(UserId userId, Instant deletedAt) {
+        Objects.requireNonNull(userId, "user id");
+        Objects.requireNonNull(deletedAt, "deleted at");
+        return jdbcTemplate.update("""
+                update users
+                set deleted_at = ?, email = null, password_hash = null, app_roles = '{}'
+                where user_id = ? and deleted_at is null
+                """, ps -> {
+            ps.setTimestamp(1, Timestamp.from(deletedAt));
+            ps.setString(2, userId.value());
+        });
+    }
+
     private static void bind(PreparedStatement ps, UserAccount account) throws SQLException {
         ps.setString(1, account.userId().value());
         ps.setString(2, account.displayName());
@@ -171,17 +187,26 @@ public class JdbcUserRepository {
                 rs.getString("display_name"),
                 rs.getString("email"),
                 rs.getString("password_hash"),
-                readRoles(rs));
+                readRoles(rs),
+                deletedAt(rs));
     }
 
     private static UserProfile profile(ResultSet rs) throws SQLException {
+        Instant deletedAt = deletedAt(rs);
         String passwordHash = rs.getString("password_hash");
+        boolean resetRequired = deletedAt == null && (passwordHash == null || passwordHash.isBlank());
         return new UserProfile(
                 new UserId(rs.getString("user_id")),
                 rs.getString("display_name"),
                 rs.getString("email"),
-                passwordHash == null || passwordHash.isBlank(),
-                readRoles(rs));
+                resetRequired,
+                readRoles(rs),
+                deletedAt);
+    }
+
+    private static Instant deletedAt(ResultSet rs) throws SQLException {
+        Timestamp value = rs.getTimestamp("deleted_at");
+        return value == null ? null : value.toInstant();
     }
 
     private UserSlice readSlice(ResultSet rs) throws SQLException {

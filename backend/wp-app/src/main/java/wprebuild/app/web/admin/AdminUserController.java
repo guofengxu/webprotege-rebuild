@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import java.time.Instant;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -134,6 +136,22 @@ public class AdminUserController {
         }
     }
 
+    @Operation(summary = "Delete a user account", operationId = "deleteUser")
+    @ApiResponse(responseCode = "204", description = "User deleted", content = @Content)
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<?> delete(@PathVariable String userId) {
+        UserId caller = currentUser();
+        if (caller == null) {
+            return ApiProblems.of(ApiProblems.authenticationRequired());
+        }
+        try {
+            bus.execute(caller, new DeleteUser(new UserId(userId)));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException ex) {
+            return invalid(ex.getMessage());
+        }
+    }
+
     private static Set<AppRole> roles(List<String> raw) {
         if (raw == null) {
             throw new IllegalArgumentException("app roles must not be null");
@@ -192,7 +210,12 @@ public class AdminUserController {
     public record SetAppRolesRequest(List<String> appRoles) {}
 
     public record AdminUserResponse(
-            String userId, String displayName, String email, List<String> appRoles, boolean passwordResetRequired) {
+            String userId,
+            String displayName,
+            String email,
+            List<String> appRoles,
+            boolean passwordResetRequired,
+            Instant deletedAt) {
 
         public AdminUserResponse {
             Objects.requireNonNull(userId, "user id");
@@ -206,7 +229,8 @@ public class AdminUserController {
                     profile.displayName(),
                     profile.email(),
                     profile.appRoles(),
-                    profile.passwordResetRequired());
+                    profile.passwordResetRequired(),
+                    profile.deletedAt());
         }
     }
 

@@ -249,6 +249,18 @@ class OpenApiResponseSchemasTest {
                 .contains("userId", "start", "end");
     }
 
+    @Test
+    void admin_user_delete_documents_deleted_at() throws Exception {
+        JsonNode spec = fetchLiveSpec();
+        assertThat(schema(spec, "AdminUserResponse").path("properties").propertyNames())
+                .contains("userId", "displayName", "email", "appRoles", "passwordResetRequired", "deletedAt");
+        JsonNode deletedAt =
+                schema(spec, "AdminUserResponse").path("properties").path("deletedAt");
+        assertThat(deletedAt.path("format").asString()).isEqualTo("date-time");
+        assertThat(operation(spec, "deleteUser").path("responses").path("204").isMissingNode())
+                .isFalse();
+    }
+
     private JsonNode fetchLiveSpec() throws Exception {
         MvcResult result =
                 mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk()).andReturn();

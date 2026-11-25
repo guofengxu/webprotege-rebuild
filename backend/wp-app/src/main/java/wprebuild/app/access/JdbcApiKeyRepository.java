@@ -72,6 +72,12 @@ class JdbcApiKeyRepository {
                 .update();
     }
 
+    int deleteAll(UserId userId) {
+        return jdbc.sql("delete from api_keys where user_id = ?")
+                .param(userId.value())
+                .update();
+    }
+
     private static Instant instant(ResultSet rs, String column) throws SQLException {
         OffsetDateTime value = rs.getObject(column, OffsetDateTime.class);
         return value == null ? null : value.toInstant();

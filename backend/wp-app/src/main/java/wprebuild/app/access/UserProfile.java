@@ -1,12 +1,18 @@
 package wprebuild.app.access;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import wprebuild.kernel.id.UserId;
 
 /** A user as shown to an administrator. The password hash is not part of this view. */
 public record UserProfile(
-        UserId userId, String displayName, String email, boolean passwordResetRequired, List<String> appRoles) {
+        UserId userId,
+        String displayName,
+        String email,
+        boolean passwordResetRequired,
+        List<String> appRoles,
+        Instant deletedAt) {
 
     public UserProfile {
         Objects.requireNonNull(userId, "user id");
@@ -29,6 +35,7 @@ public record UserProfile(
                 account.displayName(),
                 account.email(),
                 account.passwordResetRequired(),
-                account.appRoles());
+                account.appRoles(),
+                account.deletedAt());
     }
 }

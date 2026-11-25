@@ -72,6 +72,16 @@ public class ApiKeyService {
         log.info("revoked api key {} for {}", keyId, userId.value());
     }
 
+    @Transactional
+    public int revokeAll(UserId userId) {
+        Objects.requireNonNull(userId, "user id");
+        int removed = keys.deleteAll(userId);
+        if (removed > 0) {
+            log.info("revoked {} api keys for {}", removed, userId.value());
+        }
+        return removed;
+    }
+
     private static String normalizeName(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("name must not be blank");
