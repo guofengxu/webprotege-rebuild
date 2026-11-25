@@ -152,6 +152,250 @@ test("action buttons open role and reset dialogs for the row user", async () => 
   wrapper.unmount();
 });
 
+const USER_DELETED: AdminUserResponse = {
+  userId: "carol",
+  displayName: "Carol",
+  email: undefined,
+  appRoles: [],
+  passwordResetRequired: false,
+  deletedAt: "2026-03-01T12:00:00Z",
+};
+
+test("deleted rows show a badge and hide all row actions", async () => {
+  const { wrapper } = await mountPage({
+    "GET /api/admin/users": () => ({
+      json: {
+        page: 0,
+        size: 50,
+        total: 1,
+        users: [USER_DELETED],
+      } satisfies AdminUserPage,
+    }),
+    "GET /api/auth/me": () => ({
+      json: {
+        userId: "viewer",
+        displayName: "Viewer",
+        email: "viewer@example.org",
+        appRoles: ["SYSTEM_ADMIN"],
+      },
+    }),
+  });
+  await flushPromises();
+
+  expect(wrapper.text()).toContain("已删除");
+  expect(
+    wrapper.findAll("button").some((button) => button.text().includes("修改角色")),
+  ).toBe(false);
+  expect(
+    wrapper.findAll("button").some((button) => button.text().includes("重置密码")),
+  ).toBe(false);
+  expect(
+    wrapper.findAll("button").some((button) => button.text() === "删除"),
+  ).toBe(false);
+  wrapper.unmount();
+});
+
+test("current administrator row has no delete action", async () => {
+  const { wrapper } = await mountPage({
+    "GET /api/admin/users": () => ({
+      json: {
+        page: 0,
+        size: 50,
+        total: 2,
+        users: [USER_READY, USER_RESET],
+      } satisfies AdminUserPage,
+    }),
+    "GET /api/auth/me": () => ({
+      json: {
+        userId: "ada",
+        displayName: "Ada",
+        email: "ada@example.org",
+        appRoles: ["SYSTEM_ADMIN"],
+      },
+    }),
+  });
+  await flushPromises();
+
+  const deleteButtons = wrapper
+    .findAll("button")
+    .filter((button) => button.text() === "删除");
+  expect(deleteButtons).toHaveLength(1);
+  expect(deleteButtons[0]!.attributes("aria-label")).toMatch(/bob/);
+  wrapper.unmount();
+});
+
+test("409 CANNOT_DELETE_SELF shows a dedicated tip", async () => {
+  document.cookie = "XSRF-TOKEN=csrf-token";
+  const { wrapper } = await mountPage({
+    "GET /api/admin/users": () => ({
+      json: {
+        page: 0,
+        size: 50,
+        total: 1,
+        users: [USER_RESET],
+      } satisfies AdminUserPage,
+    }),
+    "GET /api/auth/me": () => ({
+      json: {
+        userId: "viewer",
+        displayName: "Viewer",
+        email: "viewer@example.org",
+        appRoles: ["SYSTEM_ADMIN"],
+      },
+    }),
+    "DELETE /api/admin/users/{userId}": () => ({
+      status: 409,
+      problem: {
+        status: 409,
+        title: "Conflict",
+        code: "CANNOT_DELETE_SELF",
+        detail: "an administrator cannot delete their own account",
+      },
+    }),
+  });
+  await flushPromises();
+
+  await openDeleteAndConfirm(wrapper, "bob");
+  expect(wrapper.text()).toMatch(/不能删除.*自己|不能删除当前/);
+  wrapper.unmount();
+});
+
+test("409 LAST_SYSTEM_ADMIN shows a dedicated tip", async () => {
+  document.cookie = "XSRF-TOKEN=csrf-token";
+  const { wrapper } = await mountPage({
+    "GET /api/admin/users": () => ({
+      json: {
+        page: 0,
+        size: 50,
+        total: 1,
+        users: [USER_READY],
+      } satisfies AdminUserPage,
+    }),
+    "GET /api/auth/me": () => ({
+      json: {
+        userId: "viewer",
+        displayName: "Viewer",
+        email: "viewer@example.org",
+        appRoles: ["SYSTEM_ADMIN"],
+      },
+    }),
+    "DELETE /api/admin/users/{userId}": () => ({
+      status: 409,
+      problem: {
+        status: 409,
+        title: "Conflict",
+        code: "LAST_SYSTEM_ADMIN",
+        detail: "Cannot delete the last system admin",
+      },
+    }),
+  });
+  await flushPromises();
+
+  await openDeleteAndConfirm(wrapper, "ada");
+  expect(wrapper.text()).toMatch(/最后一位系统管理员|最后.*系统管理员/);
+  wrapper.unmount();
+});
+
+test("409 LAST_MANAGER lists projectIds in the tip", async () => {
+  document.cookie = "XSRF-TOKEN=csrf-token";
+  const { wrapper } = await mountPage({
+    "GET /api/admin/users": () => ({
+      json: {
+        page: 0,
+        size: 50,
+        total: 1,
+        users: [USER_RESET],
+      } satisfies AdminUserPage,
+    }),
+    "GET /api/auth/me": () => ({
+      json: {
+        userId: "viewer",
+        displayName: "Viewer",
+        email: "viewer@example.org",
+        appRoles: ["SYSTEM_ADMIN"],
+      },
+    }),
+    "DELETE /api/admin/users/{userId}": () => ({
+      status: 409,
+      problem: {
+        status: 409,
+        title: "Conflict",
+        code: "LAST_MANAGER",
+        detail: "last manager of one or more projects",
+        projectIds: ["proj-alpha", "proj-beta"],
+      },
+    }),
+  });
+  await flushPromises();
+
+  await openDeleteAndConfirm(wrapper, "bob");
+  expect(wrapper.text()).toMatch(/管理者|manager/i);
+  expect(wrapper.text()).toContain("proj-alpha");
+  expect(wrapper.text()).toContain("proj-beta");
+  wrapper.unmount();
+});
+
+test("successful delete refetches the user list", async () => {
+  document.cookie = "XSRF-TOKEN=csrf-token";
+  let listCalls = 0;
+  const { wrapper, requests } = await mountPage({
+    "GET /api/admin/users": () => {
+      listCalls += 1;
+      return {
+        json: {
+          page: 0,
+          size: 50,
+          total: 1,
+          users: [USER_RESET],
+        } satisfies AdminUserPage,
+      };
+    },
+    "GET /api/auth/me": () => ({
+      json: {
+        userId: "viewer",
+        displayName: "Viewer",
+        email: "viewer@example.org",
+        appRoles: ["SYSTEM_ADMIN"],
+      },
+    }),
+    "DELETE /api/admin/users/{userId}": () => ({ status: 204 }),
+  });
+  await flushPromises();
+  expect(listCalls).toBe(1);
+
+  await openDeleteAndConfirm(wrapper, "bob");
+  expect(
+    requests.some(
+      (entry) =>
+        entry.method === "DELETE" && entry.path === "/api/admin/users/bob",
+    ),
+  ).toBe(true);
+  expect(listCalls).toBeGreaterThan(1);
+  wrapper.unmount();
+});
+
+async function openDeleteAndConfirm(
+  wrapper: VueWrapper,
+  userId: string,
+): Promise<void> {
+  const deleteBtn = wrapper
+    .findAll("button")
+    .find(
+      (button) =>
+        button.text() === "删除" &&
+        (button.attributes("aria-label") ?? "").includes(userId),
+    );
+  expect(deleteBtn).toBeDefined();
+  await deleteBtn!.trigger("click");
+  await flushPromises();
+
+  const input = wrapper.find('input[name="confirmUserId"]');
+  expect(input.exists()).toBe(true);
+  await input.setValue(userId);
+  await wrapper.get("form").trigger("submit");
+  await flushPromises();
+}
+
 async function mountPage(
   handlers: NonNullable<
     Parameters<typeof renderWithProviders>[1]

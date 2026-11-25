@@ -55,6 +55,19 @@ const enUS = {
     newPassword: "New password",
     resetPasswordSuccess:
       "Password reset. Share the new password with the user now; it cannot be shown again after closing.",
+    deleteUser: "Delete",
+    deleteUserFor: "Delete {userId}",
+    deleteUserTitle: "Delete user {userId}",
+    deleteUserConsequences:
+      "The user will be signed out immediately, removed from all projects, and cannot be restored. Their account ID remains in revision history.",
+    deleteUserConfirmHint: "Type the user ID “{userId}” to confirm deletion",
+    deleteUserConfirmPlaceholder: "Enter user ID",
+    deleteUserConfirm: "Delete",
+    deleteUserSuccess: "User deleted",
+    deletedBadge: "Deleted",
+    cannotDeleteSelf: "You cannot delete the account you are signed in as",
+    deleteLastManager:
+      "This user is the only manager of these projects; assign another manager first: {projectIds}",
   },
 };
 

@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: todo
+status: blocked
 depends_on: [P6-29]
 ---
 
@@ -62,3 +62,7 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/admin/DeleteUserDi
 - 后端接口（P6-29）
 - 恢复已删除的用户、批量删除
 - 修订历史中显示用户的显示名称
+
+## 阻塞
+- 日期：2026-11-25
+- 原因：本卡验收命令已通过（DeleteUserDialog + AdminUsersPage 共 12 测）。全量检查 pnpm -C frontend --filter wp-web run verify 失败于既有问题：src/features/workspace/WorkspacePage.spec.ts「opening with ?entity= shows the same IRI…」期望页面含实体 IRI，实际显示「未知错误」。已用 stash 验证去掉本卡全部改动后该用例仍失败，与 admin 删除用户无关。INDEX 中对应修复卡为 P6-65（WorkspacePage 测试与真实注册表隔离）。建议：先完成/合并 P6-65，再对本卡重新运行 test 与 finish；本卡产出已齐，勿在本分支改 workspace。

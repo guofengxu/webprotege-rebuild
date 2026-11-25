@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 198 张卡：完成 139，进行中 0，阻塞 8，待办 51。
+共 198 张卡：完成 139，进行中 0，阻塞 9，待办 50。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-30](P6/P6-30-web-delete-user.md) Web 端：用户管理页删除用户，并标出已删除的用户
 - [P6-37](P6/P6-37-external-identities.md) 后端：外部身份绑定（user_identities 表，按 issuer + subject 解析本地账户的规则），供 OIDC 与企业微信登录使用
 - [P6-52](P6/P6-52-deleted-user-session-revocation.md) 后端：已删除用户的已登录会话立即失效（会话注册表 + 按请求检查）
 - [P6-57](P6/P6-57-instances-app-poc.md) PoC：新建 wp-instances-app Spring Boot 服务骨架（双数据源、Flyway、健康检查）
@@ -17,6 +16,7 @@
 
 - [P5-00](P5/P5-00-mobile-planning.md) 规划卡：细化移动端（uni-app）MVP 任务卡
 - [P6-28](P6/P6-28-web-upload-merge.md) Web 端：上传并合并到已有项目（工作台工具栏入口，选择方式、预览差异、确认应用）
+- [P6-30](P6/P6-30-web-delete-user.md) Web 端：用户管理页删除用户，并标出已删除的用户
 - [P6-39](P6/P6-39-wecom-login.md) 后端：企业微信扫码登录（复用 P6-37 的外部身份绑定与会话建立）
 - [P6-40](P6/P6-40-multi-instance-planning.md) 规划卡：多实例部署（按项目路由），产出 ADR 草案与拆卡
 - [P6-41](P6/P6-41-web-vue-3-6-upgrade.md) Web 端：升级到 Vue 3.6 正式版（不启用 Vapor 模式），验证生态库兼容
@@ -186,7 +186,7 @@
 | [P6-27](P6/P6-27-upload-merge-api.md) | 后端：上传合并的准备——新增两个动作、带归属与过期时间的上传暂存、列出项目本体的接口 | wp-app | app-service | M | 完成 | P6-24 |
 | [P6-28](P6/P6-28-web-upload-merge.md) | Web 端：上传并合并到已有项目（工作台工具栏入口，选择方式、预览差异、确认应用） | wp-web | web | M | 阻塞 | P6-50、P6-22 |
 | [P6-29](P6/P6-29-admin-delete-user.md) | 后端：系统管理员删除用户（停用并清除个人信息，账户 ID 保留在历史中） | wp-app | app-security | M | 完成 | P6-50 |
-| [P6-30](P6/P6-30-web-delete-user.md) | Web 端：用户管理页删除用户，并标出已删除的用户 | wp-web | web | S | 待办（可开工） | P6-29 |
+| [P6-30](P6/P6-30-web-delete-user.md) | Web 端：用户管理页删除用户，并标出已删除的用户 | wp-web | web | S | 阻塞 | P6-29 |
 | [P6-31](P6/P6-31-instance-store-schema.md) | 实例库 PoC（一）：新建 wp-instances 模块，instances / links 表结构、带有效期的写入与追溯查询 | wp-instances | db | M | 完成 | P6-11 |
 | [P6-32](P6/P6-32-instance-store-benchmark.md) | 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续 | wp-instances | benchmark | S | 完成 | P6-31、P6-53、P6-54 |
 | [P6-33](P6/P6-33-instance-store-validation.md) | 实例库 PoC（三）：从本体投影表生成定义域 / 值域校验规则，写入实例时校验 | wp-instances | db | M | 完成 | P6-32、P6-13 |
