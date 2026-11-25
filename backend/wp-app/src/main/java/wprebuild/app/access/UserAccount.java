@@ -1,12 +1,19 @@
 package wprebuild.app.access;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import wprebuild.kernel.id.UserId;
 
 /** A row of {@code users}. {@code passwordHash} is absent when the account must reset its password. */
-public record UserAccount(UserId userId, String displayName, String email, String passwordHash, List<String> appRoles) {
+public record UserAccount(
+        UserId userId,
+        String displayName,
+        String email,
+        String passwordHash,
+        List<String> appRoles,
+        Instant deletedAt) {
 
     public UserAccount {
         Objects.requireNonNull(userId, "user id");
@@ -28,13 +35,20 @@ public record UserAccount(UserId userId, String displayName, String email, Strin
 
     /** {@code password_hash} null or blank: migrated accounts cannot sign in until a password is set. */
     public boolean passwordResetRequired() {
+        if (deletedAt != null) {
+            return false;
+        }
         return passwordHash == null || passwordHash.isBlank();
+    }
+
+    public boolean deleted() {
+        return deletedAt != null;
     }
 
     @Override
     public String toString() {
         return "UserAccount[userId=" + userId.value() + ", displayName=" + displayName + ", passwordResetRequired="
-                + passwordResetRequired() + ", appRoles=" + appRoles + "]";
+                + passwordResetRequired() + ", deleted=" + deleted() + ", appRoles=" + appRoles + "]";
     }
 
     private static List<String> normalize(List<String> appRoles) {

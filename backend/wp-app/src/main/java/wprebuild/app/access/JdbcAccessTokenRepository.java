@@ -147,6 +147,15 @@ class JdbcAccessTokenRepository {
                 .update();
     }
 
+    int revokeAll(UserId userId, Instant now) {
+        return jdbc.sql("""
+                        update access_tokens
+                        set revoked_at = ?
+                        where user_id = ?
+                          and revoked_at is null
+                        """).param(stored(now)).param(userId.value()).update();
+    }
+
     List<DeviceSession> listActive(UserId userId) {
         return List.copyOf(
                 jdbc.sql("""

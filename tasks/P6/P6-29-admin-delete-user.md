@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P6-50]
 ---
 
@@ -70,10 +70,10 @@ pnpm -C frontend --filter wp-web run typecheck
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 已登录会话的立即失效（P6-52）
@@ -81,3 +81,11 @@ pnpm -C frontend --filter wp-web run typecheck
 - 硬删除、把历史修订改写为其他作者、恢复已删除的用户
 - 多实例之间的会话失效（P6-40）
 - 修订历史中显示用户的显示名称（目前历史只显示账户 ID，本卡不改）
+
+## 执行记录
+- 日期：2026-11-25
+- 分支：feature/p6-29-admin-delete-user
+- 测试：2026-11-25T09:52:01+08:00 通过（6 项）
+- 实际改动：Added V7 deleted_at, UserService.delete with LAST_MANAGER project locks, DELETE /api/admin/users/{userId}, auth paths reject deleted users, OpenAPI/api-types updated; AdminDeleteUserTest covers happy path and guards.
+- 偏差：无
+- 审查：security-reviewer, (no, CRITICAL/HIGH);, java-reviewer, (HIGH, LAST_MANAGER, race, fixed, with, per-project, locks;, MEDIUM, countWithRole/soleManager, deleted, filters, applied)

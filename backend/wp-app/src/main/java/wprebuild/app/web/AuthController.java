@@ -96,6 +96,7 @@ public class AuthController {
             return ApiProblems.of(ApiProblems.authenticationRequired());
         }
         return users.findById(new UserId(authentication.getName()))
+                .filter(account -> !account.deleted())
                 .<ResponseEntity<?>>map(account -> ResponseEntity.ok(AuthUserResponse.from(account)))
                 .orElseGet(() -> ApiProblems.of(ApiProblems.authenticationRequired()));
     }

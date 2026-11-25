@@ -98,6 +98,9 @@ public class AccessTokenService {
         Instant now = now();
         Optional<UserId> owner = tokens.currentOwner(digest, now);
         if (owner.isPresent()) {
+            if (deleted(owner.get())) {
+                throw new InvalidRefreshTokenException();
+            }
             if (passwordResetRequired(owner.get())) {
                 throw new PasswordResetRequiredException();
             }
@@ -129,6 +132,16 @@ public class AccessTokenService {
         log.info("revoked access token {} for {}", tokenId, userId.value());
     }
 
+    @Transactional
+    public int revokeAll(UserId userId) {
+        Objects.requireNonNull(userId, "user id");
+        int revoked = tokens.revokeAll(userId, now());
+        if (revoked > 0) {
+            log.info("revoked {} access tokens for {}", revoked, userId.value());
+        }
+        return revoked;
+    }
+
     private Optional<IssuedTokens> rotate(byte[] previousRefreshDigest, Instant now) {
         String accessToken = newSecret(AccessTokenTokens.ACCESS_PREFIX);
         String refreshToken = newSecret(AccessTokenTokens.REFRESH_PREFIX);
@@ -151,6 +164,10 @@ public class AccessTokenService {
                 session.userId().value());
         return Optional.of(
                 new IssuedTokens(session.tokenId(), accessToken, accessExpiresAt, refreshToken, refreshExpiresAt));
+    }
+
+    private boolean deleted(UserId userId) {
+        return users.findById(userId).map(UserAccount::deleted).orElse(true);
     }
 
     private boolean passwordResetRequired(UserId userId) {

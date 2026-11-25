@@ -63,7 +63,12 @@ public class ProblemDetailsAdvice {
 
     @ExceptionHandler(ConflictException.class)
     ResponseEntity<ProblemDetail> conflict(ConflictException exception) {
-        return problem(HttpStatus.CONFLICT, exception.code(), exception.getMessage());
+        ProblemDetail body = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
+        body.setProperty("code", exception.code());
+        exception.properties().forEach(body::setProperty);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(body);
     }
 
     @ExceptionHandler(WebhookRejectedException.class)

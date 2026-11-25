@@ -87,6 +87,68 @@ public class JdbcRoleAssignmentRepository {
                 .toList();
     }
 
+    /** Projects where {@code userId} holds {@link ProjectRole#CAN_MANAGE}. */
+    public List<ProjectId> managedProjects(UserId userId) {
+        Objects.requireNonNull(userId, "user id");
+        return jdbc.sql("""
+                        select project_id
+                        from role_assignments
+                        where user_id = ?
+                          and role = ?
+                        order by project_id
+                        """)
+                .param(userId.value())
+                .param(ProjectRole.CAN_MANAGE.name())
+                .query((rs, row) -> new ProjectId(rs.getObject("project_id", java.util.UUID.class)))
+                .list();
+    }
+
+    /** Projects where {@code userId} is the only non-deleted {@link ProjectRole#CAN_MANAGE} member. */
+    public List<ProjectId> soleManagerProjects(UserId userId) {
+        Objects.requireNonNull(userId, "user id");
+        return jdbc.sql("""
+                        select ra.project_id
+                        from role_assignments ra
+                        where ra.user_id = ?
+                          and ra.role = ?
+                          and not exists (
+                            select 1
+                            from role_assignments other
+                            join users u on u.user_id = other.user_id
+                            where other.project_id = ra.project_id
+                              and other.role = ?
+                              and other.user_id <> ra.user_id
+                              and u.deleted_at is null
+                          )
+                        order by ra.project_id
+                        """)
+                .param(userId.value())
+                .param(ProjectRole.CAN_MANAGE.name())
+                .param(ProjectRole.CAN_MANAGE.name())
+                .query((rs, row) -> new ProjectId(rs.getObject("project_id", java.util.UUID.class)))
+                .list();
+    }
+
+    public List<ProjectId> projectsForUser(UserId userId) {
+        Objects.requireNonNull(userId, "user id");
+        return jdbc.sql("""
+                        select project_id
+                        from role_assignments
+                        where user_id = ?
+                        order by project_id
+                        """)
+                .param(userId.value())
+                .query((rs, row) -> new ProjectId(rs.getObject("project_id", java.util.UUID.class)))
+                .list();
+    }
+
+    public int removeAllForUser(UserId userId) {
+        Objects.requireNonNull(userId, "user id");
+        return jdbc.sql("delete from role_assignments where user_id = ?")
+                .param(userId.value())
+                .update();
+    }
+
     private static Optional<RoleAssignment> assignment(ProjectId projectId, ResultSet rs) throws SQLException {
         UserId userId = new UserId(rs.getString("user_id"));
         return parse(rs.getString("role")).map(role -> new RoleAssignment(projectId, userId, role));

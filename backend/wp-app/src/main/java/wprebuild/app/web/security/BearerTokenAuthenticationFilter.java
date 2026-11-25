@@ -68,7 +68,7 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         tokens.authenticate(presentedToken(request))
                 .flatMap(users::findById)
-                .filter(account -> !account.passwordResetRequired())
+                .filter(account -> !account.deleted() && !account.passwordResetRequired())
                 .map(BearerTokenAuthenticationFilter::authentication)
                 .ifPresent(context::setAuthentication);
         SecurityContextHolder.setContext(context);

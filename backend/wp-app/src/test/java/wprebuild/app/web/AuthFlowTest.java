@@ -257,6 +257,8 @@ class AuthFlowTest {
         jdbc.sql("delete from outbox").update();
         jdbc.sql("delete from projects").update();
         jdbc.sql("delete from api_keys").update();
+        jdbc.sql("delete from rotated_refresh_tokens").update();
+        jdbc.sql("delete from access_tokens").update();
         jdbc.sql("delete from users").update();
     }
 

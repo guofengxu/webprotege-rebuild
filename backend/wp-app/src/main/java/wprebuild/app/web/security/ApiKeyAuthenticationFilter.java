@@ -61,7 +61,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         apiKeys.authenticate(request.getHeader(HEADER))
                 .flatMap(users::findById)
-                .filter(account -> !account.passwordResetRequired())
+                .filter(account -> !account.deleted() && !account.passwordResetRequired())
                 .map(ApiKeyAuthenticationFilter::authentication)
                 .ifPresent(context::setAuthentication);
         SecurityContextHolder.setContext(context);
