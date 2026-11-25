@@ -37,6 +37,19 @@ public class JdbcUserRepository {
                         """).param(userId.value()).query((rs, row) -> map(rs)).optional();
     }
 
+    /** Active accounts whose {@code email} equals {@code email} ignoring case. */
+    List<UserAccount> findActiveByEmailIgnoreCase(String email) {
+        Objects.requireNonNull(email, "email");
+        return jdbc.sql("""
+                        select user_id, display_name, email, password_hash, app_roles, deleted_at
+                        from users
+                        where deleted_at is null
+                          and email is not null
+                          and lower(email) = lower(?)
+                        order by user_id
+                        """).param(email).query((rs, row) -> map(rs)).list();
+    }
+
     /** Role names only. Permission checks must not load {@code password_hash}. */
     List<String> appRoles(UserId userId) {
         Objects.requireNonNull(userId, "user id");
