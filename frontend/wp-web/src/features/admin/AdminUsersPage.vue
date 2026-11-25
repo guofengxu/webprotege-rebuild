@@ -2,13 +2,16 @@
 import type { AdminUserResponse } from "@wp/api-types";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useCurrentUser } from "@/features/auth/useAuth";
 import { ApiError, problemMessage } from "@/shared/api/problem";
 import { ADMIN_USERS_PAGE_SIZE, useAdminUsers } from "./api";
 import AppRolesDialog from "./AppRolesDialog.vue";
 import CreateUserDialog from "./CreateUserDialog.vue";
+import DeleteUserDialog from "./DeleteUserDialog.vue";
 import ResetPasswordDialog from "./ResetPasswordDialog.vue";
 
 const { t } = useI18n();
+const currentUser = useCurrentUser();
 
 const currentPage = ref(1);
 const backendPage = computed(() => Math.max(0, currentPage.value - 1));
@@ -16,6 +19,7 @@ const pageSize = ADMIN_USERS_PAGE_SIZE;
 const createOpen = ref(false);
 const rolesOpen = ref(false);
 const resetOpen = ref(false);
+const deleteOpen = ref(false);
 const selectedUser = ref<AdminUserResponse | null>(null);
 
 const query = useAdminUsers(backendPage, pageSize);
@@ -24,6 +28,9 @@ const total = computed(() => query.data.value?.total ?? 0);
 const selectedUserId = computed(() => selectedUser.value?.userId ?? "");
 const selectedAppRoles = computed(
   () => [...(selectedUser.value?.appRoles ?? [])] as readonly string[],
+);
+const currentUserId = computed(
+  () => currentUser.data.value?.userId?.trim() ?? "",
 );
 
 const forbidden = computed(
@@ -48,34 +55,61 @@ function roleLabels(user: AdminUserResponse): string[] {
   return user.appRoles ?? [];
 }
 
-function openRoles(user: AdminUserResponse): void {
+function isDeleted(user: AdminUserResponse): boolean {
+  return (user.deletedAt?.trim() ?? "").length > 0;
+}
+
+function canDelete(user: AdminUserResponse): boolean {
+  const userId = user.userId?.trim() ?? "";
+  if (userId.length === 0 || isDeleted(user)) {
+    return false;
+  }
+  return userId !== currentUserId.value;
+}
+
+function selectUser(user: AdminUserResponse): AdminUserResponse | null {
   const userId = user.userId?.trim() ?? "";
   if (userId.length === 0) {
-    return;
+    return null;
   }
-  selectedUser.value = {
+  return {
     userId,
     displayName: user.displayName,
     email: user.email,
     appRoles: [...(user.appRoles ?? [])],
     passwordResetRequired: user.passwordResetRequired,
+    deletedAt: user.deletedAt,
   };
+}
+
+function openRoles(user: AdminUserResponse): void {
+  const selected = selectUser(user);
+  if (selected === null) {
+    return;
+  }
+  selectedUser.value = selected;
   rolesOpen.value = true;
 }
 
 function openResetPassword(user: AdminUserResponse): void {
-  const userId = user.userId?.trim() ?? "";
-  if (userId.length === 0) {
+  const selected = selectUser(user);
+  if (selected === null) {
     return;
   }
-  selectedUser.value = {
-    userId,
-    displayName: user.displayName,
-    email: user.email,
-    appRoles: [...(user.appRoles ?? [])],
-    passwordResetRequired: user.passwordResetRequired,
-  };
+  selectedUser.value = selected;
   resetOpen.value = true;
+}
+
+function openDelete(user: AdminUserResponse): void {
+  if (!canDelete(user)) {
+    return;
+  }
+  const selected = selectUser(user);
+  if (selected === null) {
+    return;
+  }
+  selectedUser.value = selected;
+  deleteOpen.value = true;
 }
 </script>
 
@@ -145,10 +179,20 @@ function openResetPassword(user: AdminUserResponse): void {
         >
           <el-table-column
             :label="t('admin.userId')"
-            min-width="120"
+            min-width="160"
           >
             <template #default="{ row }">
-              {{ row.userId ?? "" }}
+              <span class="admin-users__user-id">
+                {{ row.userId ?? "" }}
+                <el-tag
+                  v-if="isDeleted(row)"
+                  class="admin-users__deleted"
+                  type="info"
+                  size="small"
+                >
+                  {{ t("admin.deletedBadge") }}
+                </el-tag>
+              </span>
             </template>
           </el-table-column>
           <el-table-column
@@ -201,10 +245,13 @@ function openResetPassword(user: AdminUserResponse): void {
           </el-table-column>
           <el-table-column
             :label="t('admin.actions')"
-            min-width="200"
+            min-width="240"
           >
             <template #default="{ row }">
-              <div class="admin-users__actions">
+              <div
+                v-if="!isDeleted(row)"
+                class="admin-users__actions"
+              >
                 <el-button
                   link
                   type="primary"
@@ -224,6 +271,17 @@ function openResetPassword(user: AdminUserResponse): void {
                   @click="openResetPassword(row)"
                 >
                   {{ t("admin.resetPassword") }}
+                </el-button>
+                <el-button
+                  v-if="canDelete(row)"
+                  link
+                  type="danger"
+                  :aria-label="
+                    t('admin.deleteUserFor', { userId: row.userId ?? '' })
+                  "
+                  @click="openDelete(row)"
+                >
+                  {{ t("admin.deleteUser") }}
                 </el-button>
               </div>
             </template>
@@ -253,6 +311,10 @@ function openResetPassword(user: AdminUserResponse): void {
       v-model="resetOpen"
       :user-id="selectedUserId"
     />
+    <DeleteUserDialog
+      v-model="deleteOpen"
+      :user-id="selectedUserId"
+    />
   </div>
 </template>
 
@@ -275,6 +337,17 @@ function openResetPassword(user: AdminUserResponse): void {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
+}
+
+.admin-users__user-id {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-users__deleted {
+  margin: 0;
 }
 
 .admin-users__role {

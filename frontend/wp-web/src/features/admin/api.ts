@@ -64,6 +64,17 @@ export function useResetUserPassword() {
   });
 }
 
+export function useDeleteUser() {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => deleteUser(client, userId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.adminUsersAll() });
+    },
+  });
+}
+
 async function listUsers(
   client: ApiClient,
   page: number,
@@ -104,6 +115,15 @@ async function resetUserPassword(
   const result = await client.PUT("/api/admin/users/{userId}/password", {
     params: { path: { userId } },
     body,
+  });
+  if (!result.response.ok) {
+    unwrap(result);
+  }
+}
+
+async function deleteUser(client: ApiClient, userId: string): Promise<void> {
+  const result = await client.DELETE("/api/admin/users/{userId}", {
+    params: { path: { userId } },
   });
   if (!result.response.ok) {
     unwrap(result);

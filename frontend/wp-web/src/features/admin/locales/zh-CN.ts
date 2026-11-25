@@ -54,6 +54,19 @@ const zhCN = {
     newPassword: "新密码",
     resetPasswordSuccess:
       "密码已重置。请立即将新密码告知用户；关闭对话框后无法再次查看。",
+    deleteUser: "删除",
+    deleteUserFor: "删除 {userId}",
+    deleteUserTitle: "删除用户 {userId}",
+    deleteUserConsequences:
+      "删除后该用户将立即退出所有会话、移出全部项目，且不可恢复。修订历史中仍会保留其账户 ID。",
+    deleteUserConfirmHint: "请输入用户 ID「{userId}」以确认删除",
+    deleteUserConfirmPlaceholder: "输入用户 ID",
+    deleteUserConfirm: "删除",
+    deleteUserSuccess: "用户已删除",
+    deletedBadge: "已删除",
+    cannotDeleteSelf: "不能删除当前登录的账户",
+    deleteLastManager:
+      "该用户是下列项目的唯一管理者，请先在这些项目中指定其他管理者：{projectIds}",
   },
 };
 
