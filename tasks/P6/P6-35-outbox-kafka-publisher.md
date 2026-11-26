@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [concurrency]
-status: todo
+status: done
 depends_on: [P6-21, P6-51]
 ---
 
@@ -57,13 +57,21 @@ depends_on: [P6-21, P6-51]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - Kafka 消费端（实例库或其它系统订阅，见 P6-34）
 - 修订内容（公理变更）随消息发布：消息只携带 outbox 载荷，下游需要变更明细时调用修订差异接口
 - 图数据库发布器（P6-36）、Schema Registry / Avro
 - 中继按消费者分线程（属于 `revision` 模块，需要时另开卡）
+
+## 执行记录
+- 日期：2026-11-25
+- 分支：feature/p6-35-outbox-kafka-publisher
+- 测试：2026-11-25T23:25:42+08:00 通过（3 项）
+- 实际改动：Added optional outbox→Kafka publisher (KafkaOutboxConsumer/Config/Properties), docs/api/kafka.md, Testcontainers KafkaPublisherTest; bumped commons-io to 2.16.1 for Testcontainers FileTimes.
+- 偏差：Batch accept uses a single send-timeout wall-clock deadline across send+flush+await (review fix). Test image apache/kafka:3.9.1 via Testcontainers KafkaContainer (static, DynamicPropertySource).
+- 审查：java-reviewer, code-reviewer, silent-failure-hunter
