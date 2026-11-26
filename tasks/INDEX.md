@@ -2,11 +2,10 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 198 张卡：完成 142，进行中 0，阻塞 9，待办 47。
+共 198 张卡：完成 143，进行中 0，阻塞 9，待办 46。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-35](P6/P6-35-outbox-kafka-publisher.md) outbox 发布器 → Kafka：把每个修订事件按项目分区、按提交顺序发布到 Kafka 主题（默认关闭）
 - [P6-55](P6/P6-55-projection-contract-version.md) 编辑器：投影 project_state 增加 contract_version（V9），作为实例库读取投影表的契约版本
 - [P6-57](P6/P6-57-instances-app-poc.md) PoC：新建 wp-instances-app Spring Boot 服务骨架（双数据源、Flyway、健康检查）
 - [P6-65](P6/P6-65-web-workspace-spec-isolation.md) Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败
@@ -191,7 +190,7 @@
 | [P6-32](P6/P6-32-instance-store-benchmark.md) | 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续 | wp-instances | benchmark | S | 完成 | P6-31、P6-53、P6-54 |
 | [P6-33](P6/P6-33-instance-store-validation.md) | 实例库 PoC（三）：从本体投影表生成定义域 / 值域校验规则，写入实例时校验 | wp-instances | db | M | 完成 | P6-32、P6-13 |
 | [P6-34](P6/P6-34-instance-service-planning.md) | 规划卡：依据实例库 PoC 结论，规划实例库服务化 | tasks/P6 | planning | S | 完成 | P6-33 |
-| [P6-35](P6/P6-35-outbox-kafka-publisher.md) | outbox 发布器 → Kafka：把每个修订事件按项目分区、按提交顺序发布到 Kafka 主题（默认关闭） | wp-app | app-service | M | 待办（可开工） | P6-21、P6-51 |
+| [P6-35](P6/P6-35-outbox-kafka-publisher.md) | outbox 发布器 → Kafka：把每个修订事件按项目分区、按提交顺序发布到 Kafka 主题（默认关闭） | wp-app | app-service | M | 完成 | P6-21、P6-51 |
 | [P6-36](P6/P6-36-graph-publisher-evaluation.md) | 规划卡：评估 outbox → 图数据库 / RDF 三元组库发布器（按 ADR-013 第 5 节的条件，产出 ADR 草案或“暂不做”的结论） | tasks/P6 | planning | S | 完成 | P6-32 |
 | [P6-37](P6/P6-37-external-identities.md) | 后端：外部身份绑定（user_identities 表，按 issuer + subject 解析本地账户的规则），供 OIDC 与企业微信登录使用 | wp-app | app-security | M | 完成 | P6-29 |
 | [P6-38](P6/P6-38-web-oidc-login.md) | Web 端：登录页显示“企业账号登录”入口，并提示外部账号未绑定等错误 | wp-web | web | S | 待办 | P6-51、P6-28 |

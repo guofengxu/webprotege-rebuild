@@ -8,6 +8,8 @@ Ontology projection tables for external SQL (BI / agents) are documented in [`pr
 
 Project webhook delivery (payload, headers, signatures, retries) is documented in [`webhook.md`](webhook.md).
 
+Outbox → Kafka revision publishing (topic, message format, at-least-once) is documented in [`kafka.md`](kafka.md).
+
 ## Generate TypeScript types
 
 Frontend packages must not hand-write request or response types (ADR-008). Point `openapi-typescript` 7.x at this snapshot:
