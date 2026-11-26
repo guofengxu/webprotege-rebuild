@@ -360,24 +360,36 @@ public class ProjectionWriter {
 
     private void upsertProjectState(ProjectId projectId, long revNo) {
         jdbc.sql("""
-                        insert into projection.project_state (project_id, rev_no, rebuilt_at, updated_at)
-                        values (?, ?, now(), now())
+                        insert into projection.project_state
+                            (project_id, rev_no, rebuilt_at, updated_at, contract_version)
+                        values (?, ?, now(), now(), ?)
                         on conflict (project_id) do update set
                             rev_no = excluded.rev_no,
                             rebuilt_at = excluded.rebuilt_at,
-                            updated_at = excluded.updated_at
-                        """).param(projectId.value()).param(revNo).update();
+                            updated_at = excluded.updated_at,
+                            contract_version = excluded.contract_version
+                        """)
+                .param(projectId.value())
+                .param(revNo)
+                .param(ProjectionContract.VERSION)
+                .update();
     }
 
     /** Advances {@code rev_no} / {@code updated_at} without touching {@code rebuilt_at}. */
     private void advanceProjectState(ProjectId projectId, long revNo) {
         jdbc.sql("""
-                        insert into projection.project_state (project_id, rev_no, rebuilt_at, updated_at)
-                        values (?, ?, now(), now())
+                        insert into projection.project_state
+                            (project_id, rev_no, rebuilt_at, updated_at, contract_version)
+                        values (?, ?, now(), now(), ?)
                         on conflict (project_id) do update set
                             rev_no = excluded.rev_no,
-                            updated_at = excluded.updated_at
-                        """).param(projectId.value()).param(revNo).update();
+                            updated_at = excluded.updated_at,
+                            contract_version = excluded.contract_version
+                        """)
+                .param(projectId.value())
+                .param(revNo)
+                .param(ProjectionContract.VERSION)
+                .update();
     }
 
     @SuppressWarnings("unchecked")

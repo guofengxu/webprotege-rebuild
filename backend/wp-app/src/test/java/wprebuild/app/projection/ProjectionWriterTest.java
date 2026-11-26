@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
+import org.semanticweb.owlapi.model.IRI;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -45,6 +47,60 @@ class ProjectionWriterTest {
                           and table_type = 'BASE TABLE'
                         """).query(String.class).list();
         assertThat(tables).containsExactlyInAnyOrderElementsOf(TABLES);
+    }
+
+    @Test
+    void project_state_has_contract_version_column_defaulting_to_one() {
+        List<ColumnMeta> columns = jdbc.sql("""
+                        select column_name, data_type, column_default, is_nullable
+                        from information_schema.columns
+                        where table_schema = 'projection'
+                          and table_name = 'project_state'
+                          and column_name = 'contract_version'
+                        """)
+                .query((rs, rowNum) -> new ColumnMeta(
+                        rs.getString("column_name"),
+                        rs.getString("data_type"),
+                        rs.getString("column_default"),
+                        rs.getString("is_nullable")))
+                .list();
+        assertThat(columns).hasSize(1);
+        ColumnMeta column = columns.getFirst();
+        assertThat(column.dataType()).isEqualTo("integer");
+        assertThat(column.isNullable()).isEqualTo("NO");
+        assertThat(column.columnDefault()).contains("1");
+
+        ProjectId projectId = ProjectId.random();
+        jdbc.sql("""
+                        insert into projection.project_state (project_id, rev_no, rebuilt_at, updated_at)
+                        values (?, 1, now(), now())
+                        """).param(projectId.value()).update();
+        assertThat(contractVersion(projectId)).isEqualTo(1);
+    }
+
+    @Test
+    void replace_and_incremental_write_contract_version_one() {
+        ProjectId projectId = ProjectId.random();
+        ProjectionSnapshot first = snapshot(
+                List.of(new EntityRow("http://ex/A", "CLASS", false)), List.of(), List.of(), List.of(), List.of());
+
+        runInTx(() -> {
+            writer.lockProject(projectId);
+            assertThat(writer.replaceProject(projectId, first, 1L)).isTrue();
+        });
+        assertThat(contractVersion(projectId)).isEqualTo(ProjectionContract.VERSION);
+
+        runInTx(() -> {
+            writer.lockProject(projectId);
+            assertThat(writer.replaceSubjects(
+                            projectId,
+                            Set.of(IRI.create("http://ex/A")),
+                            snapshot(List.of(), List.of(), List.of(), List.of(), List.of()),
+                            2L))
+                    .isTrue();
+        });
+        assertThat(contractVersion(projectId)).isEqualTo(ProjectionContract.VERSION);
+        assertThat(revNo(projectId)).isEqualTo(2L);
     }
 
     @Test
@@ -253,6 +309,15 @@ class ProjectionWriterTest {
                 .query(Long.class)
                 .single();
     }
+
+    private int contractVersion(ProjectId projectId) {
+        return jdbc.sql("select contract_version from projection.project_state where project_id = ?")
+                .param(projectId.value())
+                .query(Integer.class)
+                .single();
+    }
+
+    private record ColumnMeta(String columnName, String dataType, String columnDefault, String isNullable) {}
 
     private List<String> entityIris(ProjectId projectId) {
         return jdbc.sql("select iri from projection.entities where project_id = ? order by iri")

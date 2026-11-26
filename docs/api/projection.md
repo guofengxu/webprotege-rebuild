@@ -12,7 +12,7 @@ Set `wp.projection.enabled=true` (default `false`). When enabled, the outbox con
 - Tables are **read-only** for external clients. The application writes under a per-project advisory lock; revision numbers only move forward.
 - A full rebuild may replace every row for a project at any time. Do not rely on physical row order, and do not hold long-running transactions against these tables.
 
-## Schema (`V5__projection_schema.sql`)
+## Schema (`V5__projection_schema.sql`, `V9__projection_contract_version.sql`)
 
 Schema name: `projection`.
 
@@ -24,6 +24,20 @@ Schema name: `projection`.
 | `rev_no` | `bigint` | Last applied revision number |
 | `rebuilt_at` | `timestamptz` | Last full rebuild time |
 | `updated_at` | `timestamptz` | Last write (full or incremental) |
+| `contract_version` | `integer` not null | Projection contract version for consumers (see below); default / current value `1` |
+
+### Contract version
+
+`project_state.contract_version` is the version of the column set that the instance store (and other projection consumers) depend on. The editor writes the current value from `ProjectionContract.VERSION` on every full rebuild and incremental update; existing rows receive `1` via the V9 column default.
+
+**Current value:** `1`.
+
+**When to bump:**
+
+- Must increment (and update `wp-instances` expected version in lockstep) for breaking changes: dropped columns, changed column meaning, changed `entity_type` / `hierarchy` / `range_kind` enum values, or other shape changes that make old readers wrong.
+- Need not increment for non-breaking additive columns that older readers can ignore.
+
+Consumers should refuse to load rules when the stored version does not match their expected version, rather than silently reading an incompatible projection shape.
 
 ### `entities`
 
@@ -164,7 +178,7 @@ The instance-store PoC (`wp-instances`, package `wprebuild.instances.rules`) rea
 
 | Table | Columns read | Purpose |
 |---|---|---|
-| `projection.project_state` | `project_id`, `rev_no` | Stamp successful writes with `ontology_rev`; missing row means projection is not enabled for the project |
+| `projection.project_state` | `project_id`, `rev_no`, `contract_version` | Stamp successful writes with `ontology_rev`; check `contract_version` before loading rules; missing row means projection is not enabled for the project |
 | `projection.entities` | `project_id`, `iri`, `entity_type`, `deprecated` | Class / object-property / data-property existence; deprecated classes |
 | `projection.hierarchy_edges` | `project_id`, `hierarchy`, `child_iri`, `parent_iri` (only `hierarchy = 'CLASS'`) | Subclass ancestor closure for domain / range checks |
 | `projection.property_domains` | `project_id`, `property_iri`, `class_iri` | Declared named-class domains |

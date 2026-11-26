@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: db
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-37]
 ---
 
@@ -48,12 +48,20 @@ depends_on: [P6-37]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - `wp-instances` 侧的期望版本校验（P6-56）
 - 扩展必填 / 基数 / 枚举投影列（P6-63）
 - 修改 OpenAPI / `@wp/api-types`
+
+## 执行记录
+- 日期：2026-11-26
+- 分支：feature/p6-55-projection-contract-version
+- 测试：2026-11-26T08:54:21+08:00 通过（3 项）
+- 实际改动：V9 为 projection.project_state 增加 contract_version（默认/当前值 1）；ProjectionWriter 全量与增量写入均打上 ProjectionContract.VERSION；更新 docs/api/projection.md 与 ProjectionWriterTest。
+- 偏差：无
+- 审查：database-reviewer, java-reviewer
