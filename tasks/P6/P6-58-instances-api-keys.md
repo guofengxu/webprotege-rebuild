@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P6-57]
 ---
 
@@ -48,11 +48,19 @@ depends_on: [P6-57]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 批量写入 / 读取业务 API（P6-59、P6-60）
 - 按项目的细粒度授权、管理端 CRUD UI
+
+## 执行记录
+- 日期：2026-11-27
+- 分支：feature/p6-58-instances-api-keys
+- 测试：2026-11-27T13:36:13+08:00 通过（3 项）
+- 实际改动：wp-instances-app: V1 api_keys Flyway, InstancesApiKeyService (HMAC+pepper), bootstrap, Security filter for X-API-Key, ping placeholder with single-tenant 403, docs/api/instances.md; tests cover 401/403/revoke/no-plaintext.
+- 偏差：无
+- 审查：security-reviewer, (no, CRITICAL/HIGH, blockers);, java-reviewer, (fixed, bootstrap, atomicity, +, @Transient/async, filter)

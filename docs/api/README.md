@@ -10,6 +10,8 @@ Project webhook delivery (payload, headers, signatures, retries) is documented i
 
 Outbox → Kafka revision publishing (topic, message format, at-least-once) is documented in [`kafka.md`](kafka.md).
 
+Instance-store HTTP service (`wp-instances-app`) authentication and ops notes are in [`instances.md`](instances.md).
+
 ## Generate TypeScript types
 
 Frontend packages must not hand-write request or response types (ADR-008). Point `openapi-typescript` 7.x at this snapshot:
