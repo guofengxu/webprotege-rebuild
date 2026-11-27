@@ -15,6 +15,7 @@
         <module>backend/wp-app</module>
         <module>backend/wp-legacy-migrator</module>
         <module>backend/wp-instances</module>
+        <module>backend/wp-instances-app</module>
     </modules>
 
     <properties>
@@ -75,6 +76,11 @@
             <dependency>
                 <groupId>wprebuild</groupId>
                 <artifactId>wp-kernel</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>wprebuild</groupId>
+                <artifactId>wp-instances</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

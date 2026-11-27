@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-31]
 ---
 
@@ -63,11 +63,22 @@ depends_on: [P6-31]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 通过标准 1 ~ 4 的结果已写入执行记录
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 通过标准 1 ~ 4 的结果已写入执行记录
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - API Key、写入 / 读取 REST、幂等键、Compose、OpenAPI
+
+## 执行记录
+- starter：spring-boot-starter-web / jdbc / actuator；flyway-core、flyway-database-postgresql、postgresql
+- 默认端口：8082
+- Flyway：classpath:db/instances（InstanceSchema）→ classpath:db/instances-app（flyway_schema_history_app）
+- 日期：2026-11-27
+- 分支：feature/p6-57-instances-app-poc
+- 测试：2026-11-27T12:23:26+08:00 通过（4 项）
+- 实际改动：新增 backend/wp-instances-app（Spring Boot 4.1.1）：starter 为 web、jdbc、actuator（另显式 flyway-core / flyway-database-postgresql、postgresql）；默认端口 8082；启动先 InstanceSchema.migrate（classpath:db/instances）再 app Flyway（classpath:db/instances-app，历史表 flyway_schema_history_app）；liveness 仅进程、readiness 要求 instancesDb+projectionDb；根 pom 与 overview §1 已登记。通过标准：1) :wp-instances-app -am test 与 :wp-instances verify 通过；2) InstancesAppSmokeTest 覆盖启动、双 Flyway 历史表、readiness UP/非 UP 与投影故障时 liveness 仍 UP；3) 依赖树无 wp-app/wp-kernel；4) 本 summary 已记 starter/端口/Flyway locations。
+- 偏差：无
+- 审查：java-reviewer, code-reviewer

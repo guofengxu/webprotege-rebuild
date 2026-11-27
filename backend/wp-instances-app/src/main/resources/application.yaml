@@ -1,0 +1,41 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: wp-instances-app
+  flyway:
+    enabled: false
+  threads:
+    virtual:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        # Process only — databases must not gate liveness (P6-57).
+        liveness:
+          include: livenessState
+        # Instance store + projection must both accept connections (SELECT 1).
+        readiness:
+          include: readinessState,instancesDb,projectionDb
+
+wp:
+  instances:
+    # project-id is required (UUID). Set wp.instances.project-id or WP_INSTANCES_PROJECT_ID.
+    datasource:
+      url: ${WP_INSTANCES_DATASOURCE_URL:jdbc:postgresql://localhost:5432/wp_instances}
+      username: ${WP_INSTANCES_DATASOURCE_USERNAME:wp}
+      password: ${WP_INSTANCES_DATASOURCE_PASSWORD:wp}
+  projection:
+    datasource:
+      url: ${WP_PROJECTION_DATASOURCE_URL:jdbc:postgresql://localhost:5432/wp}
+      username: ${WP_PROJECTION_DATASOURCE_USERNAME:wp}
+      password: ${WP_PROJECTION_DATASOURCE_PASSWORD:wp}
