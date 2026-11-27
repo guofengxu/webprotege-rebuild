@@ -65,6 +65,7 @@ class InstancesAppSmokeTest {
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
         registry.add("wp.instances.project-id", PROJECT_ID::toString);
+        registry.add("wp.instances.api-key-pepper", () -> "smoke-test-pepper");
         registry.add("wp.instances.datasource.url", () -> jdbcUrl(INSTANCES_DB));
         registry.add("wp.instances.datasource.username", postgres::getUsername);
         registry.add("wp.instances.datasource.password", postgres::getPassword);
@@ -80,6 +81,7 @@ class InstancesAppSmokeTest {
         assertThat(tableExists(instancesDataSource, "flyway_schema_history")).isTrue();
         assertThat(tableExists(instancesDataSource, "flyway_schema_history_app"))
                 .isTrue();
+        assertThat(tableExists(instancesDataSource, "api_keys")).isTrue();
 
         ResponseEntity<java.util.Map<String, Object>> readiness = getHealth(port, "readiness");
         assertThat(readiness.getStatusCode().is2xxSuccessful()).isTrue();
@@ -98,6 +100,7 @@ class InstancesAppSmokeTest {
         try (ConfigurableApplicationContext context = application.run(
                 "--server.port=0",
                 "--wp.instances.project-id=" + PROJECT_ID,
+                "--wp.instances.api-key-pepper=smoke-test-pepper",
                 "--wp.instances.datasource.url=" + jdbcUrl(INSTANCES_DB),
                 "--wp.instances.datasource.username=" + postgres.getUsername(),
                 "--wp.instances.datasource.password=" + postgres.getPassword(),

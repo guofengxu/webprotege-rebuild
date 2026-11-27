@@ -57,7 +57,7 @@ class InstancesDataSourceConfig {
                 .table("flyway_schema_history_app")
                 .baselineOnMigrate(true)
                 .baselineVersion("0")
-                .failOnMissingLocations(false)
+                .failOnMissingLocations(true)
                 .load();
         flyway.migrate();
         return flyway;

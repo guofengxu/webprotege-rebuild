@@ -30,6 +30,10 @@ management:
 wp:
   instances:
     # project-id is required (UUID). Set wp.instances.project-id or WP_INSTANCES_PROJECT_ID.
+    # api-key-pepper is required (HMAC key for hashing API keys). Never commit a real value.
+    # bootstrap-api-key is optional: inserts one key when no active key exists; clear after first use.
+    api-key-pepper: ${WP_INSTANCES_API_KEY_PEPPER:}
+    bootstrap-api-key: ${WP_INSTANCES_BOOTSTRAP_API_KEY:}
     datasource:
       url: ${WP_INSTANCES_DATASOURCE_URL:jdbc:postgresql://localhost:5432/wp_instances}
       username: ${WP_INSTANCES_DATASOURCE_USERNAME:wp}
