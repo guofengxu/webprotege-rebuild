@@ -13,6 +13,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import wprebuild.instances.rules.PropertyRange.RangeKind;
 
 /**
@@ -20,6 +22,8 @@ import wprebuild.instances.rules.PropertyRange.RangeKind;
  * {@code REPEATABLE READ} snapshot. Callers should use a projection-reader datasource.
  */
 public final class ProjectionRuleSource {
+
+    private static final Logger log = LoggerFactory.getLogger(ProjectionRuleSource.class);
 
     private final DataSource dataSource;
 
@@ -37,7 +41,7 @@ public final class ProjectionRuleSource {
             try {
                 connection.setReadOnly(true);
                 connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-                long revNo = readRevNo(connection, projectId);
+                long revNo = readProjectState(connection, projectId);
                 Set<String> classes = new HashSet<>();
                 Set<String> deprecatedClasses = new HashSet<>();
                 Set<String> objectProperties = new HashSet<>();
@@ -80,16 +84,29 @@ public final class ProjectionRuleSource {
         }
     }
 
-    private static long readRevNo(Connection connection, UUID projectId) throws SQLException {
-        String sql = "select rev_no from projection.project_state where project_id = ?";
+    static IllegalStateException missingProjection(UUID projectId) {
+        return new IllegalStateException(
+                "project " + projectId + " has no ontology projection; enable projection first");
+    }
+
+    private static long readProjectState(Connection connection, UUID projectId) throws SQLException {
+        String sql = "select rev_no, contract_version from projection.project_state where project_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setObject(1, projectId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
-                    throw new IllegalStateException(
-                            "project " + projectId + " has no ontology projection; enable projection first");
+                    throw missingProjection(projectId);
                 }
-                return rs.getLong(1);
+                int contractVersion = rs.getInt("contract_version");
+                if (contractVersion != ProjectionContract.EXPECTED_VERSION) {
+                    log.error(
+                            "projection contract_version mismatch for project {}: expected {}, actual {}",
+                            projectId,
+                            ProjectionContract.EXPECTED_VERSION,
+                            contractVersion);
+                    throw ProjectionContract.contractMismatch(projectId, contractVersion);
+                }
+                return rs.getLong("rev_no");
             }
         }
     }

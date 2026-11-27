@@ -196,14 +196,24 @@ class InstanceValidationTest {
     }
 
     private static void applyProjectionSchema(DataSource dataSource) throws Exception {
-        Path schema = Path.of(
-                        "..", "wp-app", "src", "main", "resources", "db", "migration", "V5__projection_schema.sql")
+        Path v5 = Path.of("..", "wp-app", "src", "main", "resources", "db", "migration", "V5__projection_schema.sql")
                 .toAbsolutePath()
                 .normalize();
-        String sql = Files.readString(schema);
+        Path v9 = Path.of(
+                        "..",
+                        "wp-app",
+                        "src",
+                        "main",
+                        "resources",
+                        "db",
+                        "migration",
+                        "V9__projection_contract_version.sql")
+                .toAbsolutePath()
+                .normalize();
         try (Connection connection = dataSource.getConnection();
                 Statement statement = connection.createStatement()) {
-            statement.execute(sql);
+            statement.execute(Files.readString(v5));
+            statement.execute(Files.readString(v9));
         }
     }
 
@@ -212,9 +222,10 @@ class InstanceValidationTest {
                 Statement statement = connection.createStatement()) {
             Timestamp now = Timestamp.from(Instant.parse("2026-03-01T09:00:00Z"));
             statement.execute("""
-                    insert into projection.project_state (project_id, rev_no, rebuilt_at, updated_at)
-                    values ('%s', %d, '%s', '%s')
-                    """.formatted(PROJECT_ID, REV_NO, now, now));
+                    insert into projection.project_state
+                        (project_id, rev_no, rebuilt_at, updated_at, contract_version)
+                    values ('%s', %d, '%s', '%s', %d)
+                    """.formatted(PROJECT_ID, REV_NO, now, now, ProjectionContract.EXPECTED_VERSION));
 
             insertEntity(statement, HANDLING_UNIT, "CLASS", false);
             insertEntity(statement, PALLET, "CLASS", false);

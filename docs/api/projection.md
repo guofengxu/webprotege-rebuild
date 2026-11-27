@@ -174,7 +174,7 @@ Both admin endpoints require application action `EDIT_APPLICATION_SETTINGS` (onl
 
 ## How the instance store uses projection tables
 
-The instance-store PoC (`wp-instances`, package `wprebuild.instances.rules`) reads these tables through a projection-reader datasource and builds closed-world write-gate rules. Changing the listed columns requires a coordinated change in `wp-instances`.
+The instance-store PoC (`wp-instances`, package `wprebuild.instances.rules`) reads these tables through a projection-reader datasource and builds closed-world write-gate rules. Changing the listed columns requires a coordinated change in `wp-instances`. After serviceization, `CachedRuleSource` refreshes rules when `project_state.rev_no` advances and refuses to serve rules when `contract_version` does not match `ProjectionContract.EXPECTED_VERSION`.
 
 | Table | Columns read | Purpose |
 |---|---|---|
