@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: db
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-33, P6-55]
 ---
 
@@ -54,12 +54,20 @@ depends_on: [P6-33, P6-55]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - HTTP 服务、认证、连接池生产配置（P6-57 起）
 - 订阅 outbox / Kafka
 - 必填 / 基数 / 枚举校验（P6-63）
+
+## 执行记录
+- 日期：2026-11-26
+- 分支：feature/p6-56-validation-rules-cache
+- 测试：2026-11-26T10:20:51+08:00 通过（3 项）
+- 实际改动：Added CachedRuleSource (per-project rev_no cache + contract_version gate), ProjectionContract.EXPECTED_VERSION=1, ProjectionRuleSource contract checks, RulesCacheTest, and projection.md note.
+- 偏差：无
+- 审查：java-reviewer, database-reviewer
