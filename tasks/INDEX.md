@@ -2,11 +2,12 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 198 张卡：完成 145，进行中 0，阻塞 9，待办 44。
+共 198 张卡：完成 146，进行中 0，阻塞 9，待办 43。
 
 ## 现在可以开工的卡（按本地文件计算）
 
-- [P6-57](P6/P6-57-instances-app-poc.md) PoC：新建 wp-instances-app Spring Boot 服务骨架（双数据源、Flyway、健康检查）
+- [P6-58](P6/P6-58-instances-api-keys.md) 实例库服务：独立 API Key 认证（存于 wp_instances，不复用编辑器密钥）
+- [P6-61](P6/P6-61-instances-compose-ops.md) 实例库服务：Compose（同实例第二库）与备份、监控、限流说明
 - [P6-65](P6/P6-65-web-workspace-spec-isolation.md) Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败
 - [P6-66](P6/P6-66-form-schema.md) 表单：project_form / project_form_selector 表结构（V10）、JDBC 仓储与 Modulith form 模块壳
 - [P6-68](P6/P6-68-form-change-generator.md) 内核：实体表单数据转公理变更生成器（BS-18 首期子集 TEXT/NUMBER）
@@ -212,11 +213,11 @@
 | [P6-54](P6/P6-54-instance-benchmark-method.md) | 实例库基准测法修订：改用连接池，记录连接开销基线与 W1 失败次数 | wp-instances | benchmark | S | 完成 | P6-31 |
 | [P6-55](P6/P6-55-projection-contract-version.md) | 编辑器：投影 project_state 增加 contract_version（V9），作为实例库读取投影表的契约版本 | wp-app/projection | db | S | 完成 | P6-37 |
 | [P6-56](P6/P6-56-validation-rules-cache.md) | 实例库内核：按 project_state.rev_no 轮询刷新的校验规则缓存，并核对 contract_version | wp-instances | db | M | 完成 | P6-33、P6-55 |
-| [P6-57](P6/P6-57-instances-app-poc.md) | PoC：新建 wp-instances-app Spring Boot 服务骨架（双数据源、Flyway、健康检查） | wp-instances-app | app-service | M | 待办（可开工） | P6-31 |
-| [P6-58](P6/P6-58-instances-api-keys.md) | 实例库服务：独立 API Key 认证（存于 wp_instances，不复用编辑器密钥） | wp-instances-app | app-security | M | 待办 | P6-57 |
+| [P6-57](P6/P6-57-instances-app-poc.md) | PoC：新建 wp-instances-app Spring Boot 服务骨架（双数据源、Flyway、健康检查） | wp-instances-app | app-service | M | 完成 | P6-31 |
+| [P6-58](P6/P6-58-instances-api-keys.md) | 实例库服务：独立 API Key 认证（存于 wp_instances，不复用编辑器密钥） | wp-instances-app | app-security | M | 待办（可开工） | P6-57 |
 | [P6-59](P6/P6-59-instances-write-api.md) | 实例库服务：REST 批量写入（调用方时间戳、规则校验、单租户） | wp-instances-app | app-service | M | 待办 | P6-56、P6-58 |
 | [P6-60](P6/P6-60-instances-read-api.md) | 实例库服务：REST 读取与多跳追溯查询 | wp-instances-app | app-service | M | 待办 | P6-59 |
-| [P6-61](P6/P6-61-instances-compose-ops.md) | 实例库服务：Compose（同实例第二库）与备份、监控、限流说明 | root | ci-devops | M | 待办 | P6-57 |
+| [P6-61](P6/P6-61-instances-compose-ops.md) | 实例库服务：Compose（同实例第二库）与备份、监控、限流说明 | root | ci-devops | M | 待办（可开工） | P6-57 |
 | [P6-62](P6/P6-62-instances-network-write-bench.md) | 实例库服务：经网络接口的端到端批量写入基准（只测量，不优化） | wp-instances-app | benchmark | S | 待办 | P6-64、P6-61 |
 | [P6-63](P6/P6-63-projection-constraints-planning.md) | 规划卡：扩展投影表以支持必填、基数、枚举取值（ADR 草案与拆卡） | tasks/P9 | planning | S | 阻塞 | P6-33 |
 | [P6-64](P6/P6-64-instances-idempotency.md) | 实例库服务：写入幂等键（Idempotency-Key）与 instances OpenAPI 初稿 | wp-instances-app | app-service | M | 待办 | P6-60 |
