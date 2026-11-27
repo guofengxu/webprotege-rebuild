@@ -49,6 +49,12 @@ public class InstancesApiKeyService {
         log.info("revoked instances api key {}", keyId);
     }
 
+    /** Active key display name for {@code source} when the batch body omits it (P6-59). */
+    public Optional<String> activeKeyName(UUID keyId) {
+        Objects.requireNonNull(keyId, "key id");
+        return keys.findActiveNameById(keyId);
+    }
+
     /**
      * Inserts one active key when the table has none. Used by bootstrap and documented for ops SQL parity.
      * The insert is conditional in SQL so concurrent bootstrap does not create two actives.

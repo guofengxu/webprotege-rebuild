@@ -42,6 +42,15 @@ class JdbcInstancesApiKeyRepository {
                 .findFirst();
     }
 
+    /** Empty when the id is unknown or the key has been revoked. */
+    Optional<String> findActiveNameById(UUID id) {
+        return jdbc.query("""
+                        select name from api_keys
+                        where id = ? and revoked_at is null
+                        """, (rs, rowNum) -> rs.getString("name"), id).stream()
+                .findFirst();
+    }
+
     /** {@code 0} when the id is unknown or already revoked. */
     int revoke(UUID id, Instant revokedAt) {
         return jdbc.update("""

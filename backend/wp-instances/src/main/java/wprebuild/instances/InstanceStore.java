@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -53,13 +54,7 @@ public final class InstanceStore {
         Objects.requireNonNull(iri, "iri");
         Objects.requireNonNull(at, "at");
         withTransaction(connection -> {
-            Optional<LockedInstance> current = lockCurrentInstance(connection, iri);
-            if (current.isPresent()) {
-                LockedInstance row = current.get();
-                requireStrictlyAfter(at, row.validFrom());
-                closeInstance(connection, iri, row.validFrom(), at);
-            }
-            closeLinksMentioning(connection, iri, at);
+            doRetire(connection, iri, at);
             return null;
         });
     }
@@ -93,14 +88,34 @@ public final class InstanceStore {
         Objects.requireNonNull(link, "link");
         Objects.requireNonNull(at, "at");
         withTransaction(connection -> {
-            Optional<LockedLink> current = lockCurrentLink(connection, link);
-            if (current.isPresent()) {
-                LockedLink row = current.get();
-                requireStrictlyAfter(at, row.validFrom());
-                closeLink(connection, link, row.validFrom(), at);
-            }
+            doUnlink(connection, link, at);
             return null;
         });
+    }
+
+    /**
+     * Apply every mutation in one JDBC transaction. Any failure rolls the whole batch back. Unique
+     * conflicts retry the entire batch once (same policy as single-op writers).
+     */
+    public void applyBatch(List<WriteOp> ops, Instant at) {
+        Objects.requireNonNull(ops, "ops");
+        Objects.requireNonNull(at, "at");
+        List<WriteOp> batch = List.copyOf(ops);
+        try {
+            withTransaction(connection -> {
+                applyAll(connection, batch, at);
+                return null;
+            });
+        } catch (UniqueConflictException first) {
+            try {
+                withTransaction(connection -> {
+                    applyAll(connection, batch, at);
+                    return null;
+                });
+            } catch (UniqueConflictException second) {
+                throw new IllegalStateException("concurrent write conflict after retry", second);
+            }
+        }
     }
 
     /** Point-in-time lookup using half-open validity {@code [valid_from, valid_to)}. */
@@ -130,6 +145,36 @@ public final class InstanceStore {
             }
         } catch (SQLException e) {
             throw new IllegalStateException("find failed for " + iri, e);
+        }
+    }
+
+    private void applyAll(Connection connection, List<WriteOp> ops, Instant at) throws SQLException {
+        for (WriteOp op : ops) {
+            switch (op) {
+                case WriteOp.Upsert(InstanceRecord record) -> doUpsert(connection, record, at);
+                case WriteOp.Retire(String iri) -> doRetire(connection, iri, at);
+                case WriteOp.Link(LinkRecord link) -> doLink(connection, link, at);
+                case WriteOp.Unlink(LinkRecord link) -> doUnlink(connection, link, at);
+            }
+        }
+    }
+
+    private void doRetire(Connection connection, String iri, Instant at) throws SQLException {
+        Optional<LockedInstance> current = lockCurrentInstance(connection, iri);
+        if (current.isPresent()) {
+            LockedInstance row = current.get();
+            requireStrictlyAfter(at, row.validFrom());
+            closeInstance(connection, iri, row.validFrom(), at);
+        }
+        closeLinksMentioning(connection, iri, at);
+    }
+
+    private void doUnlink(Connection connection, LinkRecord link, Instant at) throws SQLException {
+        Optional<LockedLink> current = lockCurrentLink(connection, link);
+        if (current.isPresent()) {
+            LockedLink row = current.get();
+            requireStrictlyAfter(at, row.validFrom());
+            closeLink(connection, link, row.validFrom(), at);
         }
     }
 

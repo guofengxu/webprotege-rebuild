@@ -34,6 +34,10 @@ wp:
     # bootstrap-api-key is optional: inserts one key when no active key exists; clear after first use.
     api-key-pepper: ${WP_INSTANCES_API_KEY_PEPPER:}
     bootstrap-api-key: ${WP_INSTANCES_BOOTSTRAP_API_KEY:}
+    # Batch write limits (P6-59). Defaults: 1000 ops, 1 MiB body, 5 minutes future-at skew.
+    max-batch-ops: ${WP_INSTANCES_MAX_BATCH_OPS:1000}
+    max-request-bytes: ${WP_INSTANCES_MAX_REQUEST_BYTES:1048576}
+    max-future-skew: ${WP_INSTANCES_MAX_FUTURE_SKEW:PT5M}
     datasource:
       url: ${WP_INSTANCES_DATASOURCE_URL:jdbc:postgresql://localhost:5432/wp_instances}
       username: ${WP_INSTANCES_DATASOURCE_USERNAME:wp}

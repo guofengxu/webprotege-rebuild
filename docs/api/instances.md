@@ -1,6 +1,6 @@
 # Instance-store HTTP API (`wp-instances-app`)
 
-Independent Spring Boot service for the ontology instance store (ADR-013 / P6-57+). Default port **8082**. This document covers authentication introduced in P6-58; write/read routes land in later cards.
+Independent Spring Boot service for the ontology instance store (ADR-013 / P6-57+). Default port **8082**. Authentication is P6-58; batch write is P6-59; read routes land in later cards.
 
 ## Authentication
 
@@ -45,6 +45,67 @@ X-API-Key: <plaintext>
 - Matching project + valid key → **200**
 - Valid key + other project id → **403**
 - No/invalid key → **401**
+
+## Batch write
+
+```http
+POST /api/v1/projects/{projectId}/batch
+X-API-Key: <plaintext>
+Content-Type: application/json
+```
+
+`{projectId}` must equal `wp.instances.project-id` (else **403** after auth). The body supplies the business clock; the server never uses `Instant.now()` as `at`.
+
+```json
+{
+  "at": "2026-03-01T10:00:00Z",
+  "source": "wcs",
+  "ops": [
+    {
+      "op": "upsert",
+      "iri": "http://example.org/p1",
+      "classIri": "http://example.org/Pallet",
+      "attributesJson": "{}"
+    },
+    {
+      "op": "link",
+      "subjectIri": "http://example.org/p1",
+      "propertyIri": "http://example.org/storedAt",
+      "objectIri": "http://example.org/loc1",
+      "subjectClassIri": "http://example.org/Pallet",
+      "objectClassIri": "http://example.org/StorageLocation"
+    },
+    {
+      "op": "unlink",
+      "subjectIri": "http://example.org/p1",
+      "propertyIri": "http://example.org/storedAt",
+      "objectIri": "http://example.org/loc1"
+    },
+    {
+      "op": "retire",
+      "iri": "http://example.org/p1"
+    }
+  ]
+}
+```
+
+| Field | Notes |
+|---|---|
+| `at` | Required ISO-8601 instant (caller-supplied). Must not be more than `wp.instances.max-future-skew` (default **PT5M**) ahead of server UTC time → **400**. Rewriting history (`at` before the current version’s `valid_from`) → **400**; nothing from the batch is kept. |
+| `source` | Optional when the API key has a non-blank `name` (used as `source`). Otherwise required and non-blank. Applied to every upsert in the batch. |
+| `ops` | Array of `upsert` / `link` / `unlink` / `retire`. Max length `wp.instances.max-batch-ops` (default **1000**) → **413**. |
+| upsert `attributesJson` | JSON object/array text; `ontology_rev` is stamped from projection rules, not from the client. |
+| link | Needs `subjectClassIri` and `objectClassIri` for closed-world validation. |
+
+Behaviour:
+
+- The whole batch is one JDBC transaction. Any rule `Violation` → **422** with `{ "violations": [ … ] }` and **no** durable writes.
+- Success → **200** with `{ "applied", "at", "ontologyRev", "source" }`.
+- Projection `contract_version` mismatch or missing projection → **503** (ERROR log from `CachedRuleSource`).
+- Request `Content-Length` above `wp.instances.max-request-bytes` (default **1048576** / 1 MiB) → **413**.
+- Missing/invalid API key → **401**. Wrong project → **403**.
+
+Idempotency keys are out of scope here (P6-64). Application-level rate limiting is out of scope (document reverse-proxy limits in P6-61).
 
 ## Creating the first key (bootstrap)
 
@@ -104,6 +165,9 @@ Revoked keys fail authentication immediately (no session cache).
 | `wp.instances.project-id` | `WP_INSTANCES_PROJECT_ID` | yes | Single allowed project UUID |
 | `wp.instances.api-key-pepper` | `WP_INSTANCES_API_KEY_PEPPER` | yes | HMAC key; changing it invalidates all hashes |
 | `wp.instances.bootstrap-api-key` | `WP_INSTANCES_BOOTSTRAP_API_KEY` | no | Inserts only when no active key |
+| `wp.instances.max-batch-ops` | `WP_INSTANCES_MAX_BATCH_OPS` | no | Default `1000`; excess → 413 |
+| `wp.instances.max-request-bytes` | `WP_INSTANCES_MAX_REQUEST_BYTES` | no | Default `1048576`; excess Content-Length → 413 |
+| `wp.instances.max-future-skew` | `WP_INSTANCES_MAX_FUTURE_SKEW` | no | Default `PT5M`; farther future `at` → 400 |
 | `wp.instances.datasource.*` | `WP_INSTANCES_DATASOURCE_*` | yes | Instance DB |
 | `wp.projection.datasource.*` | `WP_PROJECTION_DATASOURCE_*` | yes | Read-only projection DB |
 

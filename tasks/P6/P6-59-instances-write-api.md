@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [security]
-status: todo
+status: done
 depends_on: [P6-56, P6-58]
 ---
 
@@ -53,10 +53,18 @@ depends_on: [P6-56, P6-58]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - 幂等键与 OpenAPI（P6-64）、读取 API（P6-60）、Compose（P6-61）、必填/基数/枚举（P6-63）
+
+## 执行记录
+- 日期：2026-11-27
+- 分支：feature/p6-59-instances-write-api
+- 测试：2026-11-27T15:22:10+08:00 通过（3 项）
+- 实际改动：Added POST /api/v1/projects/{projectId}/batch with caller-supplied at, ValidatingInstanceWriter + CachedRuleSource (single JDBC TX), single-tenant 403, 422/413/503 mapping, request size stream limit, and docs/api/instances.md updates.
+- 偏差：无
+- 审查：java-reviewer, code-reviewer, security-reviewer
