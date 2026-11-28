@@ -126,7 +126,7 @@ class CancelledStatusTest(unittest.TestCase):
     def test_index_counts_and_labels_cancelled_cards(self) -> None:
         cards = [make_card("P6-01"), make_card("P6-02", status="blocked"), make_card("P6-47", status="cancelled")]
         text = plan_lint.render_index(cards, epics=[])
-        self.assertIn("共 3 张卡：完成 0，进行中 0，阻塞 1，取消 1，待办 1。", text)
+        self.assertIn("共 3 张卡：完成 0，进行中 0，阻塞 1，挂起 0，取消 1，待办 1。", text)
         self.assertIn("| 取消 |", text)
         self.assertNotIn("[P6-47](P6/P6-47-demo.md) 示例 P6-47", text)  # 不在可开工 / 阻塞中两个列表里
 
@@ -139,6 +139,43 @@ class CancelledStatusTest(unittest.TestCase):
         text = plan_lint.render_graph([make_card("P6-47", status="cancelled")])
         self.assertIn("classDef cancelled ", text)
         self.assertIn('P6_47["P6-47"]:::cancelled', text)
+
+
+class SuspendedStatusTest(unittest.TestCase):
+    """人决定暂停、等外部条件的卡标为 suspended（挂起）：写明恢复条件，单独列出，不进入可开工与阻塞列表。"""
+
+    SUSPEND_SECTION = "\n## 挂起\n- 恢复条件：外部凭据就绪。\n"
+
+    def status_errors(self, cards: list[plan_lint.Card]) -> list[str]:
+        errors, _ = plan_lint.validate(cards)
+        return [e for e in errors if "status" in e or "挂起" in e or "依赖" in e]
+
+    def test_suspended_card_with_section_passes(self) -> None:
+        card = make_card("P6-39", status="suspended", body=self.SUSPEND_SECTION)
+        self.assertEqual(self.status_errors([card]), [])
+
+    def test_suspended_card_requires_suspend_section(self) -> None:
+        errors = self.status_errors([make_card("P6-39", status="suspended")])
+        self.assertTrue(any("状态为 suspended，但缺少「挂起」小节" in e for e in errors), errors)
+
+    def test_open_card_may_depend_on_suspended_card(self) -> None:
+        suspended = make_card("P6-39", status="suspended", body=self.SUSPEND_SECTION)
+        dependent = make_card("P6-40", deps=["P6-39"])
+        self.assertEqual(self.status_errors([suspended, dependent]), [])
+
+    def test_index_counts_and_lists_suspended_cards_separately(self) -> None:
+        cards = [make_card("P6-01"), make_card("P6-02", status="blocked"), make_card("P6-39", status="suspended")]
+        text = plan_lint.render_index(cards, epics=[])
+        self.assertIn("共 3 张卡：完成 0，进行中 0，阻塞 1，挂起 1，取消 0，待办 1。", text)
+        suspended_list = text[text.index("\n## 挂起中\n"):text.index("\n## P6\n")]
+        self.assertIn("[P6-39](P6/P6-39-demo.md) 示例 P6-39", suspended_list)
+        self.assertNotIn("P6-39", text[:text.index("\n## 挂起中\n")])  # 不在可开工 / 阻塞中两个列表里
+        self.assertIn("| 挂起 |", text)
+
+    def test_graph_styles_suspended_cards(self) -> None:
+        text = plan_lint.render_graph([make_card("P6-39", status="suspended")])
+        self.assertIn("classDef suspended ", text)
+        self.assertIn('P6_39["P6-39"]:::suspended', text)
 
 
 if __name__ == "__main__":

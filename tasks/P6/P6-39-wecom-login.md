@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: [security]
-status: blocked
+status: suspended
 depends_on: [P6-51]
 ---
 
@@ -64,3 +64,10 @@ depends_on: [P6-51]
 - 日期：2026-11-15
 - 原因：外部条件未就绪。企业微信登录需要真实的企业 `corpid`、自建应用 `agentid` 与 `secret`，以及已备案、已在企业微信后台配置为可信域名的 HTTPS 域名；没有这些条件时只能对着本地桩开发，无法完成执行记录要求的手工冒烟。卡片内容本身完整。
 - 恢复方式：人准备好上述配置后，把本卡 `status` 改回 `todo` 并删除本节，再按 `python tools/task.py start P6-39` 开工（P6-51 须已合并）。
+
+## 挂起
+- 日期：2026-11-28
+- 决定：人决定把与微信集成相关的功能挂起（`status: suspended`）。本卡是唯一未完成的微信集成卡；上面的「阻塞」小节保留作历史记录。决定见 `tasks/P6/EPIC.md`「企业微信登录挂起与 P11 收尾目录」。
+- 恢复条件：人准备好企业微信自建应用（`corpid`、`agentid`、`secret`），以及已备案、已在企业微信后台配置为可信域名的 HTTPS 域名。
+- 恢复方式：把本卡 `status` 改回 `todo`，删除「阻塞」与「挂起」两节，合并后按 `python tools/task.py start P6-39` 开工（P6-51 已完成）。
+- 影响：没有卡依赖本卡。P6-38 的登录页按 `/api/auth/providers` 显示入口，挂起期间不会出现企业微信入口；已完成的 P6-37（外部身份绑定）与 P6-51（通用 OIDC 登录）不受影响。

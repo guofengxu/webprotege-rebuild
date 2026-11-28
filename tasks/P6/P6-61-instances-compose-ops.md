@@ -7,8 +7,8 @@ type: impl
 size: M
 work_type: ci-devops
 ecc_extra: [docker]
-status: blocked
-depends_on: [P6-57]
+status: todo
+depends_on: [P6-57, P11-01]
 ---
 
 # P6-61 实例库 Compose 与运维说明
@@ -52,6 +52,8 @@ python tools/plan_lint.py --check
 ## 不在本卡范围
 - 写入基准（P6-62）、CI 增加 instances job
 
-## 阻塞
+## 首次执行记录（2026-11-27，当时标为 blocked）
 - 日期：2026-11-27
 - 原因：本卡验收命令全部通过（docker compose config、plan_lint）。全量检查 ./mvnw -q verify 失败于 wp-app 的 WebhookDeliveryTest.five_revisions_arrive_in_order_for_same_webhook（awaitUntil:645 condition not met）；单独重跑该类仍失败。本卡只改 compose.yaml / docker/instances / docker/postgres / docs/ops，未改 wp-app。建议：另开修复卡处理 webhook 投递顺序测试，或确认 main 上该测试是否已坏，修好后对本卡重新 test。
+- 复核（2026-11-28）：`main` 上 CI 的 `java` job 自 2026-11-14 起持续失败，失败点是 `AdminUserManagementTest`（测试数据隔离问题）；`WebhookDeliveryTest` 在 CI 上通过，本地超时未复现。修复卡 P11-01 已建（`tasks/P11/`），本卡增加依赖 P11-01。
+- 重开（2026-11-28）：本卡改回 `todo`，P11-01 合并前不会出现在可以开工的卡中。本卡产出已随 PR #165 合入 `main`：开工前由人删除远端已合并的分支 `chore/p6-61-instances-compose-ops`，再按 `python tools/task.py start P6-61` 从 `main` 新建分支，运行 `test` 与 `finish`（预计不需要改代码）。如果本地 `WebhookDeliveryTest` 仍然超时，另行排查，不在本卡修改 `wp-app`。

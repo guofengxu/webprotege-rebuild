@@ -7,8 +7,8 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: blocked
-depends_on: [P6-29]
+status: todo
+depends_on: [P6-29, P6-65]
 ---
 
 # P6-30 Web 端：用户管理页删除用户
@@ -63,6 +63,7 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/admin/DeleteUserDi
 - 恢复已删除的用户、批量删除
 - 修订历史中显示用户的显示名称
 
-## 阻塞
+## 首次执行记录（2026-11-25，当时标为 blocked）
 - 日期：2026-11-25
 - 原因：本卡验收命令已通过（DeleteUserDialog + AdminUsersPage 共 12 测）。全量检查 pnpm -C frontend --filter wp-web run verify 失败于既有问题：src/features/workspace/WorkspacePage.spec.ts「opening with ?entity= shows the same IRI…」期望页面含实体 IRI，实际显示「未知错误」。已用 stash 验证去掉本卡全部改动后该用例仍失败，与 admin 删除用户无关。INDEX 中对应修复卡为 P6-65（WorkspacePage 测试与真实注册表隔离）。建议：先完成/合并 P6-65，再对本卡重新运行 test 与 finish；本卡产出已齐，勿在本分支改 workspace。
+- 重开（2026-11-28）：本卡增加依赖 P6-65（修复上面提到的 `WorkspacePage.spec.ts` 失败）并改回 `todo`；P6-65 合并前本卡不会出现在可以开工的卡中。本卡产出已随 PR #156 合入 `main`：开工前由人删除远端已合并的分支 `feature/p6-30-web-delete-user`，再按 `python tools/task.py start P6-30` 开工，运行 `test` 与 `finish`（预计不需要改代码）。

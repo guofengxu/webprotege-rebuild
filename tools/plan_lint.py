@@ -31,12 +31,14 @@ ID_RE = re.compile(r"^P(?:[0-9]|[1-9][0-9])-[0-9]{2}$")
 PHASE_RE = re.compile(r"^P(?:[0-9]|[1-9][0-9])$")
 REQUIRED_FIELDS = ["id", "title", "phase", "module", "type", "size", "work_type", "status", "depends_on"]
 REQUIRED_SECTIONS = ["目标", "参考", "产出", "验收", "完成判据", "不在本卡范围"]
-# cancelled：人决定不再做的卡（写「取消」小节说明原因），不进入可开工与阻塞列表。
-STATUSES = {"todo", "in_progress", "blocked", "done", "cancelled"}
+# suspended：人决定暂停、等外部条件的卡（写「挂起」小节说明恢复条件），在 INDEX 中单独列出。
+# cancelled：人决定不再做的卡（写「取消」小节说明原因）。两者都不进入可开工与阻塞列表。
+STATUSES = {"todo", "in_progress", "blocked", "suspended", "done", "cancelled"}
 TYPES = {"impl", "planning"}
 SIZES = {"S", "M"}
 BRANCH_TYPES = {"feature", "fix", "hotfix", "test", "refactor", "docs", "chore", "release"}
-STATUS_LABEL = {"todo": "待办", "in_progress": "进行中", "blocked": "阻塞", "done": "完成", "cancelled": "取消"}
+STATUS_LABEL = {"todo": "待办", "in_progress": "进行中", "blocked": "阻塞", "suspended": "挂起",
+                "done": "完成", "cancelled": "取消"}
 SUPERSEDED_MARK = "<!-- superseded"
 LIST_FIELDS = {"depends_on", "ecc_extra"}
 
@@ -203,6 +205,8 @@ def validate(cards: list[Card]) -> tuple[list[str], list[str]]:
                 errors.append(f"{rel}: 状态为 done，但缺少「执行记录」小节")
         if c.status == "blocked" and "阻塞" not in secs:
             errors.append(f"{rel}: 状态为 blocked，但缺少「阻塞」小节")
+        if c.status == "suspended" and "挂起" not in secs:
+            errors.append(f"{rel}: 状态为 suspended，但缺少「挂起」小节")
         if c.status == "cancelled" and "取消" not in secs:
             errors.append(f"{rel}: 状态为 cancelled，但缺少「取消」小节")
         if c.id in by_id:
@@ -259,7 +263,7 @@ def render_index(cards: list[Card], epics: list[str] | None = None) -> str:
         "会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。",
         "",
         f"共 {len(cards)} 张卡：完成 {counts['done']}，进行中 {counts['in_progress']}，"
-        f"阻塞 {counts['blocked']}，取消 {counts['cancelled']}，待办 {counts['todo']}。",
+        f"阻塞 {counts['blocked']}，挂起 {counts['suspended']}，取消 {counts['cancelled']}，待办 {counts['todo']}。",
         "",
         "## 现在可以开工的卡（按本地文件计算）",
         "",
@@ -273,6 +277,10 @@ def render_index(cards: list[Card], epics: list[str] | None = None) -> str:
     if blocked:
         lines += ["", "## 阻塞中", ""]
         lines += [f"- [{c.id}]({c.path.relative_to(TASKS).as_posix()}) {c.meta['title']}" for c in blocked]
+    suspended = [c for c in cards if c.status == "suspended"]
+    if suspended:
+        lines += ["", "## 挂起中", ""]
+        lines += [f"- [{c.id}]({c.path.relative_to(TASKS).as_posix()}) {c.meta['title']}" for c in suspended]
     for ph in phases:
         in_phase = [c for c in cards if c.meta["phase"] == ph]
         if not in_phase:
@@ -315,6 +323,7 @@ def render_graph(cards: list[Card]) -> str:
         "    classDef in_progress fill:#fff3bf,stroke:#e67700",
         "    classDef blocked fill:#ffe3e3,stroke:#c92a2a",
         "    classDef todo fill:#f1f3f5,stroke:#868e96",
+        "    classDef suspended fill:#f3f0ff,stroke:#7048e8",
         "    classDef cancelled fill:#f8f9fa,stroke:#adb5bd,stroke-dasharray:4 4,color:#868e96",
     ]
     for ph in phases:

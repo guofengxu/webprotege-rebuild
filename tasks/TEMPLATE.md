@@ -8,7 +8,7 @@ type: impl            # impl | planning
 size: S               # S ≤ 200 行，M ≤ 400 行（不含测试与测试数据）
 work_type: kernel     # 取值见 tools/ecc-routing.json 的 workTypes，决定用哪些 ECC skill 和全量检查
 ecc_extra: []         # 可选：rea | concurrency | security | docker | milestone
-status: todo          # todo | in_progress | blocked | done（由 tools/task.py 维护）| cancelled（人决定不再做，须写「取消」小节）
+status: todo          # todo | in_progress | blocked | done（由 tools/task.py 维护）| suspended（人决定暂停，须写「挂起」小节）| cancelled（人决定不再做，须写「取消」小节）
 depends_on: []
 ---
 
