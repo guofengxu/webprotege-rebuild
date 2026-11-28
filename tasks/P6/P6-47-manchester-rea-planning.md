@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: [rea]
-status: blocked
+status: cancelled
 depends_on: [P4-09]
 ---
 
@@ -64,3 +64,9 @@ test -s docs/01-rea/manchester-syntax.md
 - 原因：人决定 P6 中尚未开工的规划卡（P6-40、P6-47、P6-48、P6-63）统一暂缓，标为 `blocked`。这不是卡片本身的问题：本卡的依赖（P4-09）已完成。规划卡按编号会排在 P6-50、P6-57、P6-65、P6-68 等实现卡之前被选中（`python tools/task.py next` 与 `AGENTS.md` 第 1 节取编号最小的卡），打乱实现卡的推进顺序；而且 P6 卡号已用到 P6-99，本卡拆出的卡不能再放进 P6。决定见 `tasks/P6/EPIC.md`「规划卡暂缓与新阶段目录」。
 - 恢复方式：人决定开始本卡时，把本卡 `status` 改回 `todo` 并删除本节，同时撤销 `tasks/P7/EPIC.md` 顶部的暂缓说明；合并后按 `python tools/task.py start P6-47` 开工。远端已有本卡的认领分支 `docs/p6-47-manchester-rea-planning`（2026-11-24 从当时的 main 创建，没有提交）：恢复前由人删除该分支，否则 `start` 会提示远程已存在分支。
 - 影响：没有卡依赖本卡，P6 实现卡的依赖关系不变。本卡拆出的卡放在 `tasks/P7/`，编号从 P7-01 起。
+
+## 取消
+- 日期：2026-11-28
+- 决定：人决定把状态为“阻塞”的规划卡（P5-00、P6-40、P6-47、P6-48、P6-63）统一改为取消（`status: cancelled`）。上面的「阻塞」小节保留作历史记录，其中的“恢复方式”不再适用。决定见 `tasks/P6/EPIC.md`「阻塞的规划卡改为取消」。
+- 影响：没有卡依赖本卡，实现卡的依赖关系不变；`python tools/task.py next` 与 `tasks/INDEX.md`「现在可以开工」「阻塞中」都不再列出本卡。`tasks/P7/EPIC.md` 的预留目录与候选项保留，目前没有卡片。
+- 重新启动：由人决定。把本卡 `status` 改回 `todo`，删除「阻塞」与「取消」两节，并撤销 `tasks/P7/EPIC.md` 顶部的说明；也可以另开一张新的规划卡。远端认领分支 `docs/p6-47-manchester-rea-planning` 如仍存在，重新启动前由人删除。

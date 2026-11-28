@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: [concurrency]
-status: blocked
+status: cancelled
 depends_on: [P6-52, P6-27, P6-21]
 ---
 
@@ -68,3 +68,9 @@ python tools/plan_lint.py --check
 - 两位阶段号：已支持（2026-11-24，人决定修改卡号定义并保留 P10），`P10-01` 起的卡与对应分支可以通过校验，见 `tasks/P6/EPIC.md`「两位阶段号」。
 - 恢复方式：P6-52 完成后，人决定开始本卡时，把本卡 `status` 改回 `todo` 并删除本节，同时撤销 `tasks/P10/EPIC.md` 顶部的暂缓说明；合并后按 `python tools/task.py start P6-40` 开工。
 - 影响：没有卡依赖本卡，P6 实现卡的依赖关系不变；编辑器继续只支持单实例部署（`tasks/P6/EPIC.md`「多实例现状」）。
+
+## 取消
+- 日期：2026-11-28
+- 决定：人决定把状态为“阻塞”的规划卡（P5-00、P6-40、P6-47、P6-48、P6-63）统一改为取消（`status: cancelled`）。上面的「阻塞」小节保留作历史记录，其中的“恢复方式”不再适用。决定见 `tasks/P6/EPIC.md`「阻塞的规划卡改为取消」。
+- 影响：没有卡依赖本卡，实现卡的依赖关系不变；`python tools/task.py next` 与 `tasks/INDEX.md`「现在可以开工」「阻塞中」都不再列出本卡。`tasks/P10/EPIC.md` 的预留目录与候选项保留，目前没有卡片。
+- 重新启动：由人决定。把本卡 `status` 改回 `todo`，删除「阻塞」与「取消」两节，并撤销 `tasks/P10/EPIC.md` 顶部的说明；也可以另开一张新的规划卡。

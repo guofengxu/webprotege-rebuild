@@ -7,7 +7,7 @@ type: planning
 size: S
 work_type: planning
 ecc_extra: []
-status: blocked
+status: cancelled
 depends_on: [P3-24, P3-27]
 ---
 
@@ -61,3 +61,9 @@ python tools/plan_lint.py --check
 - 原因：人决定移动端（P5）暂时停止开发，在 P6-00 中记录。这不是卡片本身的问题：卡片内容保持不变，依赖（P3-24、P3-27）均已完成。
 - 恢复方式：人决定恢复移动端开发时，把本卡 `status` 改回 `todo` 并删除本节，再按 `python tools/task.py start P5-00` 开工；同时撤销 `tasks/P5/EPIC.md` 顶部的暂停说明。
 - 影响：P6 的卡片都不依赖 P5；`tasks/P6/EPIC.md` 中的“移动端：iOS 与微信小程序”“移动端推送通知”随 P5 一起暂缓。后端已完成的移动端令牌（P3-26）、长轮询（P3-21）与 `@wp/api-types`（P3-27）保持原样，不回退。
+
+## 取消
+- 日期：2026-11-28
+- 决定：人决定把状态为“阻塞”的规划卡（P5-00、P6-40、P6-47、P6-48、P6-63）统一改为取消（`status: cancelled`）。上面的「阻塞」小节保留作历史记录，其中的“恢复方式”不再适用。决定见 `tasks/P6/EPIC.md`「阻塞的规划卡改为取消」。
+- 影响：没有卡依赖本卡，实现卡的依赖关系不变；`python tools/task.py next` 与 `tasks/INDEX.md`「现在可以开工」「阻塞中」都不再列出本卡。`tasks/P5/EPIC.md` 的候选清单保留，作为日后重新规划移动端的依据。
+- 重新启动：由人决定。把本卡 `status` 改回 `todo`，删除「阻塞」与「取消」两节，并撤销 `tasks/P5/EPIC.md` 顶部的说明；也可以另开一张新的规划卡。

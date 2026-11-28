@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""plan_lint.py：卡号支持一位或两位阶段号（P0 ~ P99），阶段与卡号按数字排序。"""
+"""plan_lint.py：卡号支持一位或两位阶段号（P0 ~ P99），阶段与卡号按数字排序；状态含 cancelled（取消）。"""
 from __future__ import annotations
 
 import unittest
@@ -7,7 +7,8 @@ import unittest
 import plan_lint
 
 
-def make_card(card_id: str, module: str | None = None, status: str = "todo") -> plan_lint.Card:
+def make_card(card_id: str, module: str | None = None, status: str = "todo",
+              deps: list[str] | None = None, body: str = "") -> plan_lint.Card:
     phase = card_id.split("-")[0]
     text = (
         "---\n"
@@ -19,9 +20,10 @@ def make_card(card_id: str, module: str | None = None, status: str = "todo") -> 
         "size: S\n"
         "work_type: planning\n"
         f"status: {status}\n"
-        "depends_on: []\n"
+        f"depends_on: [{', '.join(deps or [])}]\n"
         "---\n"
         f"# {card_id} 示例\n"
+        f"{body}"
     )
     return plan_lint.parse_text(text, plan_lint.TASKS / phase / f"{card_id}-demo.md")
 
@@ -89,6 +91,54 @@ class EpicOnlyPhaseTest(unittest.TestCase):
         for ph in ("P7", "P8", "P9", "P10"):
             self.assertIn(ph, phases)
         self.assertEqual(phases, sorted(phases, key=plan_lint.phase_sort_key))
+
+
+class CancelledStatusTest(unittest.TestCase):
+    """人决定不再做的卡标为 cancelled（取消）：必须写明原因，不进入可开工与阻塞列表。"""
+
+    CANCEL_SECTION = "\n## 取消\n- 原因：人决定不再做。\n"
+
+    def status_errors(self, cards: list[plan_lint.Card]) -> list[str]:
+        errors, _ = plan_lint.validate(cards)
+        return [e for e in errors if "status" in e or "取消" in e or "依赖" in e]
+
+    def test_cancelled_card_with_reason_section_passes(self) -> None:
+        card = make_card("P6-47", status="cancelled", body=self.CANCEL_SECTION)
+        self.assertEqual(self.status_errors([card]), [])
+
+    def test_cancelled_card_requires_cancel_section(self) -> None:
+        errors = self.status_errors([make_card("P6-47", status="cancelled")])
+        self.assertTrue(any("状态为 cancelled，但缺少「取消」小节" in e for e in errors), errors)
+
+    def test_open_card_must_not_depend_on_cancelled_card(self) -> None:
+        cancelled = make_card("P6-47", status="cancelled", body=self.CANCEL_SECTION)
+        for status in ("todo", "in_progress", "blocked", "done"):
+            with self.subTest(status=status):
+                dependent = make_card("P7-01", status=status, deps=["P6-47"])
+                errors = self.status_errors([cancelled, dependent])
+                self.assertTrue(any("依赖 P6-47 已取消" in e for e in errors), errors)
+
+    def test_cancelled_card_may_depend_on_cancelled_card(self) -> None:
+        first = make_card("P6-47", status="cancelled", body=self.CANCEL_SECTION)
+        second = make_card("P7-01", status="cancelled", deps=["P6-47"], body=self.CANCEL_SECTION)
+        self.assertEqual(self.status_errors([first, second]), [])
+
+    def test_index_counts_and_labels_cancelled_cards(self) -> None:
+        cards = [make_card("P6-01"), make_card("P6-02", status="blocked"), make_card("P6-47", status="cancelled")]
+        text = plan_lint.render_index(cards, epics=[])
+        self.assertIn("共 3 张卡：完成 0，进行中 0，阻塞 1，取消 1，待办 1。", text)
+        self.assertIn("| 取消 |", text)
+        self.assertNotIn("[P6-47](P6/P6-47-demo.md) 示例 P6-47", text)  # 不在可开工 / 阻塞中两个列表里
+
+    def test_epic_only_phase_shows_cancelled_planning_card(self) -> None:
+        planner = make_card("P6-47", module="tasks/P7", status="cancelled")
+        text = plan_lint.render_index([make_card("P6-01"), planner], epics=["P6", "P7"])
+        self.assertIn("[P6-47](P6/P6-47-demo.md)（取消）", text[text.index("\n## P7\n"):])
+
+    def test_graph_styles_cancelled_cards(self) -> None:
+        text = plan_lint.render_graph([make_card("P6-47", status="cancelled")])
+        self.assertIn("classDef cancelled ", text)
+        self.assertIn('P6_47["P6-47"]:::cancelled', text)
 
 
 if __name__ == "__main__":
