@@ -28,6 +28,8 @@ public enum Action {
     UPLOAD_AND_MERGE(true),
     /** BS-10 / BS-14: append uploaded axioms into an existing project ontology. */
     UPLOAD_AND_MERGE_ADDITIONS(true),
+    /** BS-10 / BS-16: create, update, or delete form descriptors and selectors. */
+    EDIT_FORMS(true),
     CREATE_EMPTY_PROJECT(false),
     UPLOAD_PROJECT(false),
     CREATE_ACCOUNT(false),

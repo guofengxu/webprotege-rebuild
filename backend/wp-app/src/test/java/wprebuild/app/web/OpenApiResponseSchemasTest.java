@@ -79,7 +79,12 @@ class OpenApiResponseSchemasTest {
             new Success("updateWebhook", "200", JSON),
             new Success("listWebhookDeliveries", "200", JSON),
             // P6-51 OIDC login providers
-            new Success("listLoginProviders", "200", JSON));
+            new Success("listLoginProviders", "200", JSON),
+            // P6-67 form descriptor management (called by this test's SUCCESSES loop; no data files)
+            new Success("listProjectForms", "200", JSON),
+            new Success("getProjectForm", "200", JSON),
+            new Success("putProjectForm", "200", JSON),
+            new Success("allocateFormId", "200", JSON));
 
     private final MockMvc mockMvc;
 

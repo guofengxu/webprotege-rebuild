@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-security
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-66, P6-51]
 ---
 
@@ -47,10 +47,19 @@ depends_on: [P6-66, P6-51]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
+
 
 ## 不在本卡范围
 - 按实体取表单 / 保存、Web 设计器、迁移
+
+## 执行记录
+- 日期：2026-11-28
+- 分支：feature/p6-67-form-descriptor-api
+- 测试：2026-11-28T14:15:01+08:00 通过（3 项）
+- 实际改动：Added Action.EDIT_FORMS to CAN_MANAGE; form commands/handlers; FormDescriptorController at /api/projects/{id}/forms; OpenAPI and @wp/api-types updated; FormDescriptorApiTest covers 403/round-trip/404/400.
+- 偏差：无
+- 审查：java-reviewer, security-reviewer, (MEDIUM:, formId, must, be, textual, —, fixed;, added, get/delete, 403, coverage;, skipped, pre-existing, ordinal, race, and, app-wide, JSON, body, size, limit)

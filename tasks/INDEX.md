@@ -2,17 +2,18 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 200 张卡：完成 149，进行中 0，阻塞 0，挂起 2，取消 5，待办 44。
+共 200 张卡：完成 150，进行中 0，阻塞 0，挂起 2，取消 5，待办 43。
 
 ## 现在可以开工的卡（按本地文件计算）
 
 - [P6-30](P6/P6-30-web-delete-user.md) Web 端：用户管理页删除用户，并标出已删除的用户
 - [P6-42](P6/P6-42-web-typescript-7-evaluation.md) Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点
 - [P6-59](P6/P6-59-instances-write-api.md) 实例库服务：REST 批量写入（调用方时间戳、规则校验、单租户）
-- [P6-67](P6/P6-67-form-descriptor-api.md) 后端：EDIT_FORMS 权限与表单描述符、选择器的增删改查接口
 - [P6-68](P6/P6-68-form-change-generator.md) 内核：实体表单数据转公理变更生成器（BS-18 首期子集 TEXT/NUMBER）
+- [P6-69](P6/P6-69-entity-forms-api.md) 后端：按实体取表单接口（选择器子集与 PROPERTY 投影）
 - [P6-71](P6/P6-71-forms-migrator-export.md) 迁移工具：从 Mongo 导出 Forms 与 FormSelectors 到迁移包
 - [P6-74](P6/P6-74-discussion-schema.md) 讨论：entity_discussion_thread / comment 表结构（V11）、JDBC 仓储与 Modulith discussion 模块壳
+- [P6-75](P6/P6-75-discussion-permissions.md) 访问控制：填实 CAN_COMMENT 的讨论动作（VIEW/CREATE/EDIT_OWN/SET_STATUS）
 - [P11-01](P11/P11-01-admin-user-test-isolation.md) 后端测试：AdminUserManagementTest 与其它测试类的数据隔离，修复 main 上 Java CI 的失败
 
 ## 挂起中
@@ -219,15 +220,15 @@
 | [P6-64](P6/P6-64-instances-idempotency.md) | 实例库服务：写入幂等键（Idempotency-Key）与 instances OpenAPI 初稿 | wp-instances-app | app-service | M | 待办 | P6-60 |
 | [P6-65](P6/P6-65-web-workspace-spec-isolation.md) | Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败 | wp-web | web | S | 完成 | — |
 | [P6-66](P6/P6-66-form-schema.md) | 表单：project_form / project_form_selector 表结构（V10）、JDBC 仓储与 Modulith form 模块壳 | wp-app/form | db | M | 完成 | P6-43、P6-55 |
-| [P6-67](P6/P6-67-form-descriptor-api.md) | 后端：EDIT_FORMS 权限与表单描述符、选择器的增删改查接口 | wp-app/form | app-security | M | 待办（可开工） | P6-66、P6-51 |
+| [P6-67](P6/P6-67-form-descriptor-api.md) | 后端：EDIT_FORMS 权限与表单描述符、选择器的增删改查接口 | wp-app/form | app-security | M | 完成 | P6-66、P6-51 |
 | [P6-68](P6/P6-68-form-change-generator.md) | 内核：实体表单数据转公理变更生成器（BS-18 首期子集 TEXT/NUMBER） | wp-kernel | kernel | M | 待办（可开工） | P1-11、P6-26 |
-| [P6-69](P6/P6-69-entity-forms-api.md) | 后端：按实体取表单接口（选择器子集与 PROPERTY 投影） | wp-app/ontology | app-service | M | 待办 | P6-67 |
+| [P6-69](P6/P6-69-entity-forms-api.md) | 后端：按实体取表单接口（选择器子集与 PROPERTY 投影） | wp-app/ontology | app-service | M | 待办（可开工） | P6-67 |
 | [P6-70](P6/P6-70-web-entity-forms.md) | Web 端：实体表单面板（TEXT/NUMBER 可编辑，其它控件只读占位） | wp-web | web | M | 待办 | P6-73 |
 | [P6-71](P6/P6-71-forms-migrator-export.md) | 迁移工具：从 Mongo 导出 Forms 与 FormSelectors 到迁移包 | wp-legacy-migrator | migrator | M | 待办（可开工） | P6-66 |
 | [P6-72](P6/P6-72-forms-migration-import.md) | 后端：导入迁移包中的表单描述符与选择器 | wp-app/migration | app-service | M | 待办 | P6-66、P6-71 |
 | [P6-73](P6/P6-73-entity-forms-save-api.md) | 后端：保存实体表单接口（ChangePipeline、expectedHead 与 pristine 锚定） | wp-app/ontology | app-service | M | 待办 | P6-68、P6-69 |
 | [P6-74](P6/P6-74-discussion-schema.md) | 讨论：entity_discussion_thread / comment 表结构（V11）、JDBC 仓储与 Modulith discussion 模块壳 | wp-app/discussion | db | M | 待办（可开工） | P6-44、P6-66 |
-| [P6-75](P6/P6-75-discussion-permissions.md) | 访问控制：填实 CAN_COMMENT 的讨论动作（VIEW/CREATE/EDIT_OWN/SET_STATUS） | wp-app/access | app-security | S | 待办 | P6-44、P6-67 |
+| [P6-75](P6/P6-75-discussion-permissions.md) | 访问控制：填实 CAN_COMMENT 的讨论动作（VIEW/CREATE/EDIT_OWN/SET_STATUS） | wp-app/access | app-security | S | 待办（可开工） | P6-44、P6-67 |
 | [P6-76](P6/P6-76-discussion-api.md) | 后端：实体讨论 REST（线程与评论 CRUD、域事件） | wp-app/discussion | app-service | M | 待办 | P6-74、P6-75、P6-73、P6-82 |
 | [P6-77](P6/P6-77-discussion-events.md) | 事件：讨论域事件接入 ProjectEvent / SSE，并扩展 api-types 联合类型 | wp-app/events | app-service | M | 待办 | P6-76、P6-03 |
 | [P6-78](P6/P6-78-web-discussions.md) | Web 端：实体讨论面板与讨论事件的 applyProjectEvent 处理 | wp-web | web | M | 待办 | P6-77 |

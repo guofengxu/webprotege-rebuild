@@ -886,6 +886,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects/{projectId}/forms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List project form descriptors */
+        get: operations["listProjectForms"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{projectId}/forms/fresh-id": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Allocate a fresh form id */
+        post: operations["allocateFormId"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{projectId}/forms/{formId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one project form descriptor */
+        get: operations["getProjectForm"];
+        /** Create or update a project form descriptor */
+        put: operations["putProjectForm"];
+        post?: never;
+        /** Delete a project form descriptor */
+        delete: operations["deleteProjectForm"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/projects/{projectId}/webhooks": {
         parameters: {
             query?: never;
@@ -1142,6 +1195,10 @@ export interface components {
             entityType?: string;
             iri?: string;
         };
+        FreshFormIdResponse: {
+            /** Format: uuid */
+            formId: string;
+        };
         HierarchyLink: {
             child?: string;
             parent?: string;
@@ -1187,6 +1244,34 @@ export interface components {
             refreshExpiresAt?: string;
             refreshToken?: string;
         };
+        JsonNode: {
+            array?: boolean;
+            bigDecimal?: boolean;
+            bigInteger?: boolean;
+            binary?: boolean;
+            boolean?: boolean;
+            container?: boolean;
+            double?: boolean;
+            embeddedValue?: boolean;
+            empty?: boolean;
+            float?: boolean;
+            floatingPointNumber?: boolean;
+            int?: boolean;
+            integralNumber?: boolean;
+            long?: boolean;
+            missingNode?: boolean;
+            /** @enum {string} */
+            nodeType?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
+            null?: boolean;
+            number?: boolean;
+            object?: boolean;
+            pojo?: boolean;
+            short?: boolean;
+            string?: boolean;
+            /** @deprecated */
+            textual?: boolean;
+            valueNode?: boolean;
+        };
         LiteralValue: Omit<components["schemas"]["ValueNode"], "type"> & {
             datatype?: string;
             lang?: string;
@@ -1225,7 +1310,7 @@ export interface components {
             target: components["schemas"]["EntityRef"];
         };
         MyProjectPermissionsResponse: {
-            actions?: ("VIEW_PROJECT" | "VIEW_CHANGES" | "DOWNLOAD_PROJECT" | "EDIT_ONTOLOGY" | "EDIT_ONTOLOGY_ANNOTATIONS" | "CREATE_CLASS" | "DELETE_CLASS" | "CREATE_PROPERTY" | "DELETE_PROPERTY" | "CREATE_INDIVIDUAL" | "DELETE_INDIVIDUAL" | "MERGE_ENTITIES" | "REVERT_CHANGES" | "EDIT_PROJECT_SETTINGS" | "EDIT_SHARING_SETTINGS" | "EDIT_NEW_ENTITY_SETTINGS" | "EDIT_PROJECT_PREFIXES" | "MOVE_ANY_PROJECT_TO_TRASH")[];
+            actions?: ("VIEW_PROJECT" | "VIEW_CHANGES" | "DOWNLOAD_PROJECT" | "EDIT_ONTOLOGY" | "EDIT_ONTOLOGY_ANNOTATIONS" | "CREATE_CLASS" | "DELETE_CLASS" | "CREATE_PROPERTY" | "DELETE_PROPERTY" | "CREATE_INDIVIDUAL" | "DELETE_INDIVIDUAL" | "MERGE_ENTITIES" | "REVERT_CHANGES" | "EDIT_PROJECT_SETTINGS" | "EDIT_SHARING_SETTINGS" | "EDIT_NEW_ENTITY_SETTINGS" | "EDIT_PROJECT_PREFIXES" | "MOVE_ANY_PROJECT_TO_TRASH" | "UPLOAD_AND_MERGE" | "UPLOAD_AND_MERGE_ADDITIONS" | "EDIT_FORMS")[];
             projectId?: string;
             /**
              * @description Assigned project role, or null when the caller has none
@@ -1347,6 +1432,16 @@ export interface components {
             type: "ProjectChanged";
             user: string;
         };
+        ProjectFormResponse: {
+            /** @description Optional selector criteria; null when the form has no selector */
+            criteria?: components["schemas"]["JsonNode"];
+            /** @description Opaque FormDescriptor Jackson tree (polymorphic control type field) */
+            descriptor: components["schemas"]["JsonNode"];
+            /** Format: uuid */
+            formId: string;
+            /** Format: int32 */
+            ordinal: number;
+        };
         ProjectOntologySummary: {
             /** Format: int64 */
             axiomCount?: number;
@@ -1386,6 +1481,12 @@ export interface components {
             /** @enum {string} */
             kind?: "SOME" | "HAS_VALUE" | "DATA_SOME";
             property?: components["schemas"]["EntityNode"];
+        };
+        PutProjectFormRequest: {
+            /** @description Selector criteria object, or null/omitted to clear the selector */
+            criteria?: components["schemas"]["JsonNode"];
+            /** @description FormDescriptor Jackson tree; formId must match the path when present */
+            descriptor: components["schemas"]["JsonNode"];
         };
         RefreshTokenRequest: {
             refreshToken?: string;
@@ -6041,6 +6142,346 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ProjectResponse"];
                 };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    listProjectForms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectFormResponse"][];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    allocateFormId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FreshFormIdResponse"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getProjectForm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                formId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectFormResponse"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    putProjectForm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                formId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutProjectFormRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectFormResponse"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    deleteProjectForm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                formId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Form deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Bad request */
             400: {
