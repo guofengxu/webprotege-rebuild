@@ -31,11 +31,12 @@ ID_RE = re.compile(r"^P(?:[0-9]|[1-9][0-9])-[0-9]{2}$")
 PHASE_RE = re.compile(r"^P(?:[0-9]|[1-9][0-9])$")
 REQUIRED_FIELDS = ["id", "title", "phase", "module", "type", "size", "work_type", "status", "depends_on"]
 REQUIRED_SECTIONS = ["目标", "参考", "产出", "验收", "完成判据", "不在本卡范围"]
-STATUSES = {"todo", "in_progress", "blocked", "done"}
+# cancelled：人决定不再做的卡（写「取消」小节说明原因），不进入可开工与阻塞列表。
+STATUSES = {"todo", "in_progress", "blocked", "done", "cancelled"}
 TYPES = {"impl", "planning"}
 SIZES = {"S", "M"}
 BRANCH_TYPES = {"feature", "fix", "hotfix", "test", "refactor", "docs", "chore", "release"}
-STATUS_LABEL = {"todo": "待办", "in_progress": "进行中", "blocked": "阻塞", "done": "完成"}
+STATUS_LABEL = {"todo": "待办", "in_progress": "进行中", "blocked": "阻塞", "done": "完成", "cancelled": "取消"}
 SUPERSEDED_MARK = "<!-- superseded"
 LIST_FIELDS = {"depends_on", "ecc_extra"}
 
@@ -202,6 +203,8 @@ def validate(cards: list[Card]) -> tuple[list[str], list[str]]:
                 errors.append(f"{rel}: 状态为 done，但缺少「执行记录」小节")
         if c.status == "blocked" and "阻塞" not in secs:
             errors.append(f"{rel}: 状态为 blocked，但缺少「阻塞」小节")
+        if c.status == "cancelled" and "取消" not in secs:
+            errors.append(f"{rel}: 状态为 cancelled，但缺少「取消」小节")
         if c.id in by_id:
             errors.append(f"{rel}: id {c.id} 与 {by_id[c.id].path.relative_to(ROOT)} 重复")
         by_id[c.id] = c
@@ -210,6 +213,8 @@ def validate(cards: list[Card]) -> tuple[list[str], list[str]]:
         for d in c.deps:
             if d not in by_id:
                 errors.append(f"{c.path.relative_to(ROOT)}: 依赖 {d} 不存在")
+            elif by_id[d].status == "cancelled" and c.status != "cancelled":
+                errors.append(f"{c.path.relative_to(ROOT)}: 依赖 {d} 已取消，本卡永远无法开工（改依赖或一并取消）")
             elif c.status == "done" and by_id[d].status != "done":
                 errors.append(f"{c.path.relative_to(ROOT)}: 状态为 done，但依赖 {d} 尚未完成")
 
@@ -254,7 +259,7 @@ def render_index(cards: list[Card], epics: list[str] | None = None) -> str:
         "会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。",
         "",
         f"共 {len(cards)} 张卡：完成 {counts['done']}，进行中 {counts['in_progress']}，"
-        f"阻塞 {counts['blocked']}，待办 {counts['todo']}。",
+        f"阻塞 {counts['blocked']}，取消 {counts['cancelled']}，待办 {counts['todo']}。",
         "",
         "## 现在可以开工的卡（按本地文件计算）",
         "",
@@ -310,6 +315,7 @@ def render_graph(cards: list[Card]) -> str:
         "    classDef in_progress fill:#fff3bf,stroke:#e67700",
         "    classDef blocked fill:#ffe3e3,stroke:#c92a2a",
         "    classDef todo fill:#f1f3f5,stroke:#868e96",
+        "    classDef cancelled fill:#f8f9fa,stroke:#adb5bd,stroke-dasharray:4 4,color:#868e96",
     ]
     for ph in phases:
         out.append(f"    subgraph {ph}")

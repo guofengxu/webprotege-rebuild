@@ -1,6 +1,6 @@
 # P7 Manchester 语法编辑：卡片清单
 
-> **暂缓（2026-11-24，人的决定，记录于 `tasks/P6/EPIC.md`「规划卡暂缓与新阶段目录」）**：规划卡 `P6-47` 的状态为 `blocked`，`python tools/task.py next` 不再列出它。本目录预留给 `P6-47` 拆出的任务卡，目前还没有卡片；恢复方式见 `tasks/P6/P6-47-manchester-rea-planning.md` 的「阻塞」小节。
+> **已取消（2026-11-28，人的决定，记录于 `tasks/P6/EPIC.md`「阻塞的规划卡改为取消」）**：规划卡 `P6-47` 自 2026-11-24 起暂缓（`tasks/P6/EPIC.md`「规划卡暂缓与新阶段目录」），状态由 `blocked` 改为 `cancelled`，`python tools/task.py next` 不会列出它。本目录预留给 `P6-47` 拆出的任务卡，目前还没有卡片；重新启动方式见 `tasks/P6/P6-47-manchester-rea-planning.md` 的「取消」小节。
 
 本阶段承接 P6 第二轮候选项“Manchester 语法编辑”（`tasks/P6/EPIC.md`「第二轮优先级」）。P6 卡号已用到 P6-99，所以由规划卡 `P6-47` 在本目录下编写任务卡，而不是接在 P6 后面。
 
