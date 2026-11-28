@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: app-service
 ecc_extra: [rea]
-status: todo
+status: done
 depends_on: [P6-67]
 ---
 
@@ -48,10 +48,19 @@ depends_on: [P6-67]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
+
 
 ## 不在本卡范围
 - 保存（P6-73）、Web、描述符 CRUD、完整 MatchingEngine
+
+## 执行记录
+- 日期：2026-11-28
+- 分支：feature/p6-69-entity-forms-api
+- 测试：2026-11-28T21:12:49+08:00 通过（3 项）
+- 实际改动：Added GetEntityForms (VIEW_PROJECT): FormSelectorMatcher for EntityTypeIsOneOf/SubClassOf/Composite ALL|ANY with unsupported-node whole-selector miss; TEXT/NUMBER+PROPERTY projection; GET /api/projects/{id}/entity-forms returning forms+head; OpenAPI and @wp/api-types updated.
+- 偏差：无
+- 审查：java-reviewer, code-reviewer

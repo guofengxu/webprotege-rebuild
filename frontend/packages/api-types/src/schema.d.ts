@@ -886,6 +886,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects/{projectId}/entity-forms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get applicable forms for an entity */
+        get: operations["getEntityForms"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/projects/{projectId}/forms": {
         parameters: {
             query?: never;
@@ -1157,6 +1174,23 @@ export interface components {
             lang: string;
         };
         EntityCrudKitSettings: components["schemas"]["UuidEntityCrudKit"] | components["schemas"]["SuppliedNameEntityCrudKit"] | components["schemas"]["OboEntityCrudKit"];
+        EntityFormData: {
+            descriptor: components["schemas"]["JsonNode"];
+            /** Format: uuid */
+            formId: string;
+            values: components["schemas"]["EntityFormFieldValue"][];
+        };
+        EntityFormFieldValue: {
+            /** Format: uuid */
+            fieldId: string;
+            value?: components["schemas"]["IriValue"] | components["schemas"]["LiteralValue"];
+        };
+        EntityFormsResult: {
+            entity: string;
+            forms: components["schemas"]["EntityFormData"][];
+            /** Format: int64 */
+            head: number;
+        };
         EntityFrameChanged: {
             entity: components["schemas"]["EventEntity"];
             /** Format: int64 */
@@ -6141,6 +6175,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectResponse"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getEntityForms: {
+        parameters: {
+            query: {
+                entity: string;
+                formId?: string[];
+            };
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntityFormsResult"];
                 };
             };
             /** @description Bad request */
