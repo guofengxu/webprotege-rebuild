@@ -9,6 +9,7 @@ services:
       POSTGRES_PASSWORD: wp
     volumes:
       - wp-pg-data:/var/lib/postgresql
+      - ./docker/postgres/init-instances-db.sql:/docker-entrypoint-initdb.d/02-init-instances-db.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U wp -d wp"]
       interval: 5s
@@ -55,6 +56,41 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+
+  # Instance-store service (P6-61): same Postgres instance, database wp_instances.
+  # Jar must be built on the host first: ./mvnw -pl :wp-instances-app -am -DskipTests package
+  instances:
+    build:
+      context: .
+      dockerfile: docker/instances/Dockerfile
+    ports:
+      - "127.0.0.1:8082:8082"
+    environment:
+      WP_INSTANCES_DATASOURCE_URL: jdbc:postgresql://postgres:5432/wp_instances
+      WP_INSTANCES_DATASOURCE_USERNAME: wp
+      WP_INSTANCES_DATASOURCE_PASSWORD: wp
+      WP_PROJECTION_DATASOURCE_URL: jdbc:postgresql://postgres:5432/wp
+      WP_PROJECTION_DATASOURCE_USERNAME: wp_projection_reader
+      WP_PROJECTION_DATASOURCE_PASSWORD: ${WP_PROJECTION_READER_PASSWORD:-wp_projection_reader}
+      WP_INSTANCES_PROJECT_ID: ${WP_INSTANCES_PROJECT_ID:-11111111-2222-3333-4444-555555555555}
+      # Development-only defaults — override or clear outside local Compose (see docs/ops/instances.md).
+      WP_INSTANCES_API_KEY_PEPPER: ${WP_INSTANCES_API_KEY_PEPPER:-local-dev-only-pepper-change-me}
+      WP_INSTANCES_BOOTSTRAP_API_KEY: ${WP_INSTANCES_BOOTSTRAP_API_KEY:-local-dev-only-bootstrap-key}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8082 && printf \"GET /actuator/health/liveness HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n\" >&3 && cat <&3 | head -1 | grep -Eq \"200\"'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
 
 volumes:
   wp-pg-data:

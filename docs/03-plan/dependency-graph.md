@@ -180,7 +180,7 @@ flowchart LR
         P6_58["P6-58"]:::done
         P6_59["P6-59"]:::todo
         P6_60["P6-60"]:::todo
-        P6_61["P6-61"]:::todo
+        P6_61["P6-61"]:::blocked
         P6_62["P6-62"]:::todo
         P6_63["P6-63"]:::blocked
         P6_64["P6-64"]:::todo
