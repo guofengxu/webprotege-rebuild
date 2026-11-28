@@ -2,14 +2,13 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 200 张卡：完成 150，进行中 0，阻塞 0，挂起 2，取消 5，待办 43。
+共 200 张卡：完成 151，进行中 0，阻塞 0，挂起 2，取消 5，待办 42。
 
 ## 现在可以开工的卡（按本地文件计算）
 
 - [P6-30](P6/P6-30-web-delete-user.md) Web 端：用户管理页删除用户，并标出已删除的用户
 - [P6-42](P6/P6-42-web-typescript-7-evaluation.md) Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点
 - [P6-59](P6/P6-59-instances-write-api.md) 实例库服务：REST 批量写入（调用方时间戳、规则校验、单租户）
-- [P6-68](P6/P6-68-form-change-generator.md) 内核：实体表单数据转公理变更生成器（BS-18 首期子集 TEXT/NUMBER）
 - [P6-69](P6/P6-69-entity-forms-api.md) 后端：按实体取表单接口（选择器子集与 PROPERTY 投影）
 - [P6-71](P6/P6-71-forms-migrator-export.md) 迁移工具：从 Mongo 导出 Forms 与 FormSelectors 到迁移包
 - [P6-74](P6/P6-74-discussion-schema.md) 讨论：entity_discussion_thread / comment 表结构（V11）、JDBC 仓储与 Modulith discussion 模块壳
@@ -221,7 +220,7 @@
 | [P6-65](P6/P6-65-web-workspace-spec-isolation.md) | Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败 | wp-web | web | S | 完成 | — |
 | [P6-66](P6/P6-66-form-schema.md) | 表单：project_form / project_form_selector 表结构（V10）、JDBC 仓储与 Modulith form 模块壳 | wp-app/form | db | M | 完成 | P6-43、P6-55 |
 | [P6-67](P6/P6-67-form-descriptor-api.md) | 后端：EDIT_FORMS 权限与表单描述符、选择器的增删改查接口 | wp-app/form | app-security | M | 完成 | P6-66、P6-51 |
-| [P6-68](P6/P6-68-form-change-generator.md) | 内核：实体表单数据转公理变更生成器（BS-18 首期子集 TEXT/NUMBER） | wp-kernel | kernel | M | 待办（可开工） | P1-11、P6-26 |
+| [P6-68](P6/P6-68-form-change-generator.md) | 内核：实体表单数据转公理变更生成器（BS-18 首期子集 TEXT/NUMBER） | wp-kernel | kernel | M | 完成 | P1-11、P6-26 |
 | [P6-69](P6/P6-69-entity-forms-api.md) | 后端：按实体取表单接口（选择器子集与 PROPERTY 投影） | wp-app/ontology | app-service | M | 待办（可开工） | P6-67 |
 | [P6-70](P6/P6-70-web-entity-forms.md) | Web 端：实体表单面板（TEXT/NUMBER 可编辑，其它控件只读占位） | wp-web | web | M | 待办 | P6-73 |
 | [P6-71](P6/P6-71-forms-migrator-export.md) | 迁移工具：从 Mongo 导出 Forms 与 FormSelectors 到迁移包 | wp-legacy-migrator | migrator | M | 待办（可开工） | P6-66 |
