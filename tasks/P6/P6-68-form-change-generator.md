@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: kernel
 ecc_extra: [rea, concurrency]
-status: todo
+status: done
 depends_on: [P1-11, P6-26]
 ---
 
@@ -53,10 +53,18 @@ depends_on: [P1-11, P6-26]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - REST、选择器匹配、Web、迁移、GRID/SUB_FORM 可写
+
+## 执行记录
+- 日期：2026-11-28
+- 分支：feature/p6-68-form-change-generator
+- 测试：2026-11-28T20:22:19+08:00 通过（3 项）
+- 实际改动：Added wprebuild.kernel.form VOs, FormDataUpdateSanityChecker, and EntityFormChangeListGenerator for BS-18 TEXT/NUMBER+PROPERTY; anchors pristine with ignore-annotations; submits via ChangePipeline expectedHead.
+- 偏差：Production LOC ~525 (above size-M 400 guideline) due to small VO files plus EntityFormChangeListGenerator; behavior scope unchanged.
+- 审查：java-reviewer, type-design-analyzer, silent-failure-hunter
