@@ -84,7 +84,10 @@ class OpenApiResponseSchemasTest {
             new Success("listProjectForms", "200", JSON),
             new Success("getProjectForm", "200", JSON),
             new Success("putProjectForm", "200", JSON),
-            new Success("allocateFormId", "200", JSON));
+            new Success("allocateFormId", "200", JSON),
+            // P6-69 entity forms read (called by Surefire OpenApiResponseSchemasTest; Glob found this file;
+            // no data files; user asked 完成下一个任务卡)
+            new Success("getEntityForms", "200", JSON));
 
     private final MockMvc mockMvc;
 
