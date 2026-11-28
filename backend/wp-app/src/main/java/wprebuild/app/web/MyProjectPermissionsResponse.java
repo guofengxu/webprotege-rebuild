@@ -45,7 +45,10 @@ public record MyProjectPermissionsResponse(
                                     "EDIT_SHARING_SETTINGS",
                                     "EDIT_NEW_ENTITY_SETTINGS",
                                     "EDIT_PROJECT_PREFIXES",
-                                    "MOVE_ANY_PROJECT_TO_TRASH"
+                                    "MOVE_ANY_PROJECT_TO_TRASH",
+                                    "UPLOAD_AND_MERGE",
+                                    "UPLOAD_AND_MERGE_ADDITIONS",
+                                    "EDIT_FORMS"
                                 }))
         List<Action> actions) {
 

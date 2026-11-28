@@ -587,6 +587,16 @@
         },
         "type" : "object"
       },
+      "FreshFormIdResponse" : {
+        "properties" : {
+          "formId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "required" : [ "formId" ],
+        "type" : "object"
+      },
       "HierarchyLink" : {
         "properties" : {
           "child" : {
@@ -690,6 +700,85 @@
         },
         "type" : "object"
       },
+      "JsonNode" : {
+        "properties" : {
+          "array" : {
+            "type" : "boolean"
+          },
+          "bigDecimal" : {
+            "type" : "boolean"
+          },
+          "bigInteger" : {
+            "type" : "boolean"
+          },
+          "binary" : {
+            "type" : "boolean"
+          },
+          "boolean" : {
+            "type" : "boolean"
+          },
+          "container" : {
+            "type" : "boolean"
+          },
+          "double" : {
+            "type" : "boolean"
+          },
+          "embeddedValue" : {
+            "type" : "boolean"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "float" : {
+            "type" : "boolean"
+          },
+          "floatingPointNumber" : {
+            "type" : "boolean"
+          },
+          "int" : {
+            "type" : "boolean"
+          },
+          "integralNumber" : {
+            "type" : "boolean"
+          },
+          "long" : {
+            "type" : "boolean"
+          },
+          "missingNode" : {
+            "type" : "boolean"
+          },
+          "nodeType" : {
+            "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ],
+            "type" : "string"
+          },
+          "null" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "type" : "boolean"
+          },
+          "object" : {
+            "type" : "boolean"
+          },
+          "pojo" : {
+            "type" : "boolean"
+          },
+          "short" : {
+            "type" : "boolean"
+          },
+          "string" : {
+            "type" : "boolean"
+          },
+          "textual" : {
+            "deprecated" : true,
+            "type" : "boolean"
+          },
+          "valueNode" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
       "LiteralValue" : {
         "allOf" : [ {
           "$ref" : "#/components/schemas/ValueNode"
@@ -786,7 +875,7 @@
           "actions" : {
             "items" : {
               "description" : "Project-scoped action",
-              "enum" : [ "VIEW_PROJECT", "VIEW_CHANGES", "DOWNLOAD_PROJECT", "EDIT_ONTOLOGY", "EDIT_ONTOLOGY_ANNOTATIONS", "CREATE_CLASS", "DELETE_CLASS", "CREATE_PROPERTY", "DELETE_PROPERTY", "CREATE_INDIVIDUAL", "DELETE_INDIVIDUAL", "MERGE_ENTITIES", "REVERT_CHANGES", "EDIT_PROJECT_SETTINGS", "EDIT_SHARING_SETTINGS", "EDIT_NEW_ENTITY_SETTINGS", "EDIT_PROJECT_PREFIXES", "MOVE_ANY_PROJECT_TO_TRASH" ],
+              "enum" : [ "VIEW_PROJECT", "VIEW_CHANGES", "DOWNLOAD_PROJECT", "EDIT_ONTOLOGY", "EDIT_ONTOLOGY_ANNOTATIONS", "CREATE_CLASS", "DELETE_CLASS", "CREATE_PROPERTY", "DELETE_PROPERTY", "CREATE_INDIVIDUAL", "DELETE_INDIVIDUAL", "MERGE_ENTITIES", "REVERT_CHANGES", "EDIT_PROJECT_SETTINGS", "EDIT_SHARING_SETTINGS", "EDIT_NEW_ENTITY_SETTINGS", "EDIT_PROJECT_PREFIXES", "MOVE_ANY_PROJECT_TO_TRASH", "UPLOAD_AND_MERGE", "UPLOAD_AND_MERGE_ADDITIONS", "EDIT_FORMS" ],
               "type" : "string"
             },
             "type" : "array"
@@ -1113,6 +1202,29 @@
         "required" : [ "changeCount", "description", "revNo", "timestamp", "type", "user" ],
         "type" : "object"
       },
+      "ProjectFormResponse" : {
+        "properties" : {
+          "criteria" : {
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "Optional selector criteria; null when the form has no selector",
+            "type" : "null"
+          },
+          "descriptor" : {
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "Opaque FormDescriptor Jackson tree (polymorphic control type field)"
+          },
+          "formId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "ordinal" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "descriptor", "formId", "ordinal" ],
+        "type" : "object"
+      },
       "ProjectOntologySummary" : {
         "properties" : {
           "axiomCount" : {
@@ -1211,6 +1323,21 @@
             "$ref" : "#/components/schemas/EntityNode"
           }
         },
+        "type" : "object"
+      },
+      "PutProjectFormRequest" : {
+        "properties" : {
+          "criteria" : {
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "Selector criteria object, or null/omitted to clear the selector",
+            "type" : "null"
+          },
+          "descriptor" : {
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "FormDescriptor Jackson tree; formId must match the path when present"
+          }
+        },
+        "required" : [ "descriptor" ],
         "type" : "object"
       },
       "RefreshTokenRequest" : {
@@ -7165,6 +7292,417 @@
         },
         "summary" : "Move a project to trash",
         "tags" : [ "Projects" ]
+      }
+    },
+    "/api/projects/{projectId}/forms" : {
+      "get" : {
+        "operationId" : "listProjectForms",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "projectId",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ProjectFormResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          }
+        },
+        "summary" : "List project form descriptors",
+        "tags" : [ "Forms" ]
+      }
+    },
+    "/api/projects/{projectId}/forms/fresh-id" : {
+      "post" : {
+        "operationId" : "allocateFormId",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "projectId",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FreshFormIdResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          }
+        },
+        "summary" : "Allocate a fresh form id",
+        "tags" : [ "Forms" ]
+      }
+    },
+    "/api/projects/{projectId}/forms/{formId}" : {
+      "delete" : {
+        "operationId" : "deleteProjectForm",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "projectId",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "formId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Form deleted"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          }
+        },
+        "summary" : "Delete a project form descriptor",
+        "tags" : [ "Forms" ]
+      },
+      "get" : {
+        "operationId" : "getProjectForm",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "projectId",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "formId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProjectFormResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          }
+        },
+        "summary" : "Get one project form descriptor",
+        "tags" : [ "Forms" ]
+      },
+      "put" : {
+        "operationId" : "putProjectForm",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "projectId",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "formId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PutProjectFormRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProjectFormResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          }
+        },
+        "summary" : "Create or update a project form descriptor",
+        "tags" : [ "Forms" ]
       }
     },
     "/api/projects/{projectId}/webhooks" : {
