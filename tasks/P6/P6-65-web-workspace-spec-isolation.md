@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: todo
+status: done
 depends_on: []
 ---
 
@@ -52,12 +52,20 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/workspace/Workspac
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写（含全量 `vitest run` 的文件数与用例数）
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写（含全量 `vitest run` 的文件数与用例数）
 
 ## 不在本卡范围
 - 修改 `.github/workflows/ci.yml`，让 CI 的 `frontend` job 运行 wp-web 的 `verify`：`.github/` 是开发标准文件（CODEOWNERS），由人另开分支修改。
 - 重新执行 P6-42；`main` 上 Java CI 的失败（`AdminUserManagementTest`）。
 - 现有的 eslint 警告（34 条 warning，不影响退出码）。
+
+## 执行记录
+- 日期：2026-11-28
+- 分支：feature/p6-65-web-workspace-spec-isolation
+- 测试：2026-11-28T12:12:55+08:00 通过（4 项）
+- 实际改动：WorkspacePage.spec 用空注册表 Host 隔离真实 register.ts；authGuard.spec 将 createAppRouter 改为静态导入。全量 vitest：81 文件、348 用例通过。
+- 偏差：无
+- 审查：vue-reviewer, (LGTM);, typescript-reviewer, (LGTM);, a11y-architect, (LGTM, test-only)

@@ -12,6 +12,7 @@ import { featureRoutes as authRoutes } from "@/features/auth/routes";
 import { featureRoutes as projectRoutes } from "@/features/projects/routes";
 import ProjectListPage from "@/features/projects/ProjectListPage.vue";
 import { handleUnauthorized, installAuthGuard, safeRedirect } from "./authGuard";
+import { createAppRouter } from "./router";
 
 const StubPage = defineComponent({
   name: "StubPage",
@@ -46,8 +47,6 @@ test("projects list is a layout child and login stays a public root route", () =
 });
 
 test("createAppRouter mounts projects under an authenticated AppLayout parent", async () => {
-  const { createAppRouter } = await import("./router");
-  const { createMemoryHistory } = await import("vue-router");
   const router = createAppRouter(createMemoryHistory());
   await router.push("/");
   const matched = router.currentRoute.value.matched;
