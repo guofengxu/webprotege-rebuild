@@ -1,8 +1,21 @@
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, expect, test } from "vitest";
+import { defineComponent, h, provide } from "vue";
 import { renderWithProviders } from "@/shared/testing/renderWithProviders";
+import {
+  WorkspaceRegistryKey,
+  mergeRegistrations,
+} from "./registry";
 import { WORKSPACE_KIND_PATH } from "./routes";
 import WorkspacePage from "./WorkspacePage.vue";
+
+const WorkspacePageHost = defineComponent({
+  name: "WorkspacePageHost",
+  setup() {
+    provide(WorkspaceRegistryKey, mergeRegistrations({}));
+    return () => h(WorkspacePage);
+  },
+});
 
 afterEach(() => {
   localStorage.removeItem("wp.locale");
@@ -38,7 +51,7 @@ test("switching hierarchy tabs updates the kind segment in the URL", async () =>
 });
 
 async function renderPage(route: string) {
-  return renderWithProviders(WorkspacePage, {
+  return renderWithProviders(WorkspacePageHost, {
     route,
     routes: [
       {
@@ -47,17 +60,17 @@ async function renderPage(route: string) {
           {
             path: WORKSPACE_KIND_PATH,
             name: "workspace",
-            component: WorkspacePage,
+            component: WorkspacePageHost,
           },
           {
             path: "history",
             name: "history",
-            component: WorkspacePage,
+            component: WorkspacePageHost,
           },
           {
             path: "settings",
             name: "settings",
-            component: WorkspacePage,
+            component: WorkspacePageHost,
           },
         ],
       },
