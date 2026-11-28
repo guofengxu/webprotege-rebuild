@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: ci-devops
 ecc_extra: [docker]
-status: todo
+status: blocked
 depends_on: [P6-57]
 ---
 
@@ -51,3 +51,7 @@ python tools/plan_lint.py --check
 
 ## 不在本卡范围
 - 写入基准（P6-62）、CI 增加 instances job
+
+## 阻塞
+- 日期：2026-11-27
+- 原因：本卡验收命令全部通过（docker compose config、plan_lint）。全量检查 ./mvnw -q verify 失败于 wp-app 的 WebhookDeliveryTest.five_revisions_arrive_in_order_for_same_webhook（awaitUntil:645 condition not met）；单独重跑该类仍失败。本卡只改 compose.yaml / docker/instances / docker/postgres / docs/ops，未改 wp-app。建议：另开修复卡处理 webhook 投递顺序测试，或确认 main 上该测试是否已坏，修好后对本卡重新 test。
