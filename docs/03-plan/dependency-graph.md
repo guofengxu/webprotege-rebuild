@@ -8,6 +8,7 @@ flowchart LR
     classDef in_progress fill:#fff3bf,stroke:#e67700
     classDef blocked fill:#ffe3e3,stroke:#c92a2a
     classDef todo fill:#f1f3f5,stroke:#868e96
+    classDef suspended fill:#f3f0ff,stroke:#7048e8
     classDef cancelled fill:#f8f9fa,stroke:#adb5bd,stroke-dasharray:4 4,color:#868e96
     subgraph P0
         P0_01["P0-01"]:::done
@@ -148,9 +149,9 @@ flowchart LR
         P6_25["P6-25"]:::done
         P6_26["P6-26"]:::done
         P6_27["P6-27"]:::done
-        P6_28["P6-28"]:::blocked
+        P6_28["P6-28"]:::todo
         P6_29["P6-29"]:::done
-        P6_30["P6-30"]:::blocked
+        P6_30["P6-30"]:::todo
         P6_31["P6-31"]:::done
         P6_32["P6-32"]:::done
         P6_33["P6-33"]:::done
@@ -159,9 +160,9 @@ flowchart LR
         P6_36["P6-36"]:::done
         P6_37["P6-37"]:::done
         P6_38["P6-38"]:::todo
-        P6_39["P6-39"]:::blocked
+        P6_39["P6-39"]:::suspended
         P6_40["P6-40"]:::cancelled
-        P6_41["P6-41"]:::blocked
+        P6_41["P6-41"]:::suspended
         P6_42["P6-42"]:::todo
         P6_43["P6-43"]:::done
         P6_44["P6-44"]:::done
@@ -181,7 +182,7 @@ flowchart LR
         P6_58["P6-58"]:::done
         P6_59["P6-59"]:::todo
         P6_60["P6-60"]:::todo
-        P6_61["P6-61"]:::blocked
+        P6_61["P6-61"]:::todo
         P6_62["P6-62"]:::todo
         P6_63["P6-63"]:::cancelled
         P6_64["P6-64"]:::todo
@@ -220,6 +221,10 @@ flowchart LR
         P6_97["P6-97"]:::todo
         P6_98["P6-98"]:::todo
         P6_99["P6-99"]:::todo
+    end
+    subgraph P11
+        P11_01["P11-01"]:::todo
+        P11_02["P11-02"]:::todo
     end
     P0_01 --> P0_02
     P0_02 --> P0_03
@@ -432,8 +437,10 @@ flowchart LR
     P6_24 --> P6_27
     P6_50 --> P6_28
     P6_22 --> P6_28
+    P11_02 --> P6_28
     P6_50 --> P6_29
     P6_29 --> P6_30
+    P6_65 --> P6_30
     P6_11 --> P6_31
     P6_31 --> P6_32
     P6_53 --> P6_32
@@ -478,6 +485,7 @@ flowchart LR
     P6_58 --> P6_59
     P6_59 --> P6_60
     P6_57 --> P6_61
+    P11_01 --> P6_61
     P6_64 --> P6_62
     P6_61 --> P6_62
     P6_33 --> P6_63
@@ -561,4 +569,5 @@ flowchart LR
     P6_46 --> P6_99
     P6_92 --> P6_99
     P6_98 --> P6_99
+    P11_01 --> P11_02
 ```

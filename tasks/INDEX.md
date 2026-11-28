@@ -2,7 +2,7 @@
 
 > 本文件由 `python tools/plan_lint.py` 生成并纳入 Git，请勿手工编辑；`tools/task.py finish` / `block` 会自动更新。状态以各卡片文件为准，主分支上的进度也可以运行 `python tools/task.py next` 查看。
 
-共 198 张卡：完成 147，进行中 0，阻塞 5，取消 5，待办 41。
+共 200 张卡：完成 147，进行中 0，阻塞 0，挂起 2，取消 5，待办 46。
 
 ## 现在可以开工的卡（按本地文件计算）
 
@@ -10,14 +10,12 @@
 - [P6-65](P6/P6-65-web-workspace-spec-isolation.md) Web 端：WorkspacePage 测试与真实注册表隔离，修复 main 上 wp-web verify 的失败
 - [P6-66](P6/P6-66-form-schema.md) 表单：project_form / project_form_selector 表结构（V10）、JDBC 仓储与 Modulith form 模块壳
 - [P6-68](P6/P6-68-form-change-generator.md) 内核：实体表单数据转公理变更生成器（BS-18 首期子集 TEXT/NUMBER）
+- [P11-01](P11/P11-01-admin-user-test-isolation.md) 后端测试：AdminUserManagementTest 与其它测试类的数据隔离，修复 main 上 Java CI 的失败
 
-## 阻塞中
+## 挂起中
 
-- [P6-28](P6/P6-28-web-upload-merge.md) Web 端：上传并合并到已有项目（工作台工具栏入口，选择方式、预览差异、确认应用）
-- [P6-30](P6/P6-30-web-delete-user.md) Web 端：用户管理页删除用户，并标出已删除的用户
 - [P6-39](P6/P6-39-wecom-login.md) 后端：企业微信扫码登录（复用 P6-37 的外部身份绑定与会话建立）
 - [P6-41](P6/P6-41-web-vue-3-6-upgrade.md) Web 端：升级到 Vue 3.6 正式版（不启用 Vapor 模式），验证生态库兼容
-- [P6-61](P6/P6-61-instances-compose-ops.md) 实例库服务：Compose（同实例第二库）与备份、监控、限流说明
 
 ## P0
 
@@ -179,9 +177,9 @@
 | [P6-25](P6/P6-25-web-merge-entities.md) | Web 端：合并实体对话框（层级工具栏入口，选择目标与处理方式，按权限显示） | wp-web | web | M | 完成 | P6-24 |
 | [P6-26](P6/P6-26-upload-merge-diff.md) | 内核：上传本体与项目的合并计划（新版本差异 / 只追加两种方式，BS-14）及合并生成器 | wp-kernel | kernel | M | 完成 | P1-21 |
 | [P6-27](P6/P6-27-upload-merge-api.md) | 后端：上传合并的准备——新增两个动作、带归属与过期时间的上传暂存、列出项目本体的接口 | wp-app | app-service | M | 完成 | P6-24 |
-| [P6-28](P6/P6-28-web-upload-merge.md) | Web 端：上传并合并到已有项目（工作台工具栏入口，选择方式、预览差异、确认应用） | wp-web | web | M | 阻塞 | P6-50、P6-22 |
+| [P6-28](P6/P6-28-web-upload-merge.md) | Web 端：上传并合并到已有项目（工作台工具栏入口，选择方式、预览差异、确认应用） | wp-web | web | M | 待办 | P6-50、P6-22、P11-02 |
 | [P6-29](P6/P6-29-admin-delete-user.md) | 后端：系统管理员删除用户（停用并清除个人信息，账户 ID 保留在历史中） | wp-app | app-security | M | 完成 | P6-50 |
-| [P6-30](P6/P6-30-web-delete-user.md) | Web 端：用户管理页删除用户，并标出已删除的用户 | wp-web | web | S | 阻塞 | P6-29 |
+| [P6-30](P6/P6-30-web-delete-user.md) | Web 端：用户管理页删除用户，并标出已删除的用户 | wp-web | web | S | 待办 | P6-29、P6-65 |
 | [P6-31](P6/P6-31-instance-store-schema.md) | 实例库 PoC（一）：新建 wp-instances 模块，instances / links 表结构、带有效期的写入与追溯查询 | wp-instances | db | M | 完成 | P6-11 |
 | [P6-32](P6/P6-32-instance-store-benchmark.md) | 实例库 PoC（二）：按诺和诺德仓库规模造数，测量 1 ~ 3 跳与深层追溯查询，按通过标准决定是否继续 | wp-instances | benchmark | S | 完成 | P6-31、P6-53、P6-54 |
 | [P6-33](P6/P6-33-instance-store-validation.md) | 实例库 PoC（三）：从本体投影表生成定义域 / 值域校验规则，写入实例时校验 | wp-instances | db | M | 完成 | P6-32、P6-13 |
@@ -190,9 +188,9 @@
 | [P6-36](P6/P6-36-graph-publisher-evaluation.md) | 规划卡：评估 outbox → 图数据库 / RDF 三元组库发布器（按 ADR-013 第 5 节的条件，产出 ADR 草案或“暂不做”的结论） | tasks/P6 | planning | S | 完成 | P6-32 |
 | [P6-37](P6/P6-37-external-identities.md) | 后端：外部身份绑定（user_identities 表，按 issuer + subject 解析本地账户的规则），供 OIDC 与企业微信登录使用 | wp-app | app-security | M | 完成 | P6-29 |
 | [P6-38](P6/P6-38-web-oidc-login.md) | Web 端：登录页显示“企业账号登录”入口，并提示外部账号未绑定等错误 | wp-web | web | S | 待办 | P6-51、P6-28 |
-| [P6-39](P6/P6-39-wecom-login.md) | 后端：企业微信扫码登录（复用 P6-37 的外部身份绑定与会话建立） | wp-app | app-security | M | 阻塞 | P6-51 |
+| [P6-39](P6/P6-39-wecom-login.md) | 后端：企业微信扫码登录（复用 P6-37 的外部身份绑定与会话建立） | wp-app | app-security | M | 挂起 | P6-51 |
 | [P6-40](P6/P6-40-multi-instance-planning.md) | 规划卡：多实例部署（按项目路由），产出 ADR 草案与拆卡 | tasks/P10 | planning | S | 取消 | P6-52、P6-27、P6-21 |
-| [P6-41](P6/P6-41-web-vue-3-6-upgrade.md) | Web 端：升级到 Vue 3.6 正式版（不启用 Vapor 模式），验证生态库兼容 | wp-web | web | S | 阻塞 | P6-42 |
+| [P6-41](P6/P6-41-web-vue-3-6-upgrade.md) | Web 端：升级到 Vue 3.6 正式版（不启用 Vapor 模式），验证生态库兼容 | wp-web | web | S | 挂起 | P6-42 |
 | [P6-42](P6/P6-42-web-typescript-7-evaluation.md) | Web 端：评估 TypeScript 7（原生编译器）与 vue-tsc、typescript-eslint 的兼容性，能升则升，不能升则记录阻塞点 | wp-web | web | S | 待办 | P6-07、P6-65 |
 | [P6-43](P6/P6-43-forms-rea-planning.md) | 规划卡：表单（Forms）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 完成 | P4-22 |
 | [P6-44](P6/P6-44-discussions-rea-planning.md) | 规划卡：讨论与评论（实体级讨论线程）逆向分析，确定首期范围并拆卡 | tasks/P6 | planning | S | 完成 | P6-03 |
@@ -212,7 +210,7 @@
 | [P6-58](P6/P6-58-instances-api-keys.md) | 实例库服务：独立 API Key 认证（存于 wp_instances，不复用编辑器密钥） | wp-instances-app | app-security | M | 完成 | P6-57 |
 | [P6-59](P6/P6-59-instances-write-api.md) | 实例库服务：REST 批量写入（调用方时间戳、规则校验、单租户） | wp-instances-app | app-service | M | 待办（可开工） | P6-56、P6-58 |
 | [P6-60](P6/P6-60-instances-read-api.md) | 实例库服务：REST 读取与多跳追溯查询 | wp-instances-app | app-service | M | 待办 | P6-59 |
-| [P6-61](P6/P6-61-instances-compose-ops.md) | 实例库服务：Compose（同实例第二库）与备份、监控、限流说明 | root | ci-devops | M | 阻塞 | P6-57 |
+| [P6-61](P6/P6-61-instances-compose-ops.md) | 实例库服务：Compose（同实例第二库）与备份、监控、限流说明 | root | ci-devops | M | 待办 | P6-57、P11-01 |
 | [P6-62](P6/P6-62-instances-network-write-bench.md) | 实例库服务：经网络接口的端到端批量写入基准（只测量，不优化） | wp-instances-app | benchmark | S | 待办 | P6-64、P6-61 |
 | [P6-63](P6/P6-63-projection-constraints-planning.md) | 规划卡：扩展投影表以支持必填、基数、枚举取值（ADR 草案与拆卡） | tasks/P9 | planning | S | 取消 | P6-33 |
 | [P6-64](P6/P6-64-instances-idempotency.md) | 实例库服务：写入幂等键（Idempotency-Key）与 instances OpenAPI 初稿 | wp-instances-app | app-service | M | 待办 | P6-60 |
@@ -268,4 +266,11 @@
 
 暂无卡片。候选清单见 [P10/EPIC.md](P10/EPIC.md)；拆卡的规划卡：[P6-40](P6/P6-40-multi-instance-planning.md)（取消）。
 
-各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`、`P7/EPIC.md`、`P8/EPIC.md`、`P9/EPIC.md`、`P10/EPIC.md`。
+## P11
+
+| ID | 标题 | 模块 | 类型 | 规模 | 状态 | 依赖 |
+|---|---|---|---|---|---|---|
+| [P11-01](P11/P11-01-admin-user-test-isolation.md) | 后端测试：AdminUserManagementTest 与其它测试类的数据隔离，修复 main 上 Java CI 的失败 | wp-app | test-data | S | 待办（可开工） | — |
+| [P11-02](P11/P11-02-permissions-action-enum.md) | 后端：/permissions/me 的动作枚举补齐 UPLOAD_AND_MERGE 两项，重新生成 OpenAPI 与 @wp/api-types，并增加守护测试 | wp-app, packages/api-types | api-contract | S | 待办 | P11-01 |
+
+各阶段的候选清单见 `P4/EPIC.md`、`P5/EPIC.md`、`P6/EPIC.md`、`P7/EPIC.md`、`P8/EPIC.md`、`P9/EPIC.md`、`P10/EPIC.md`、`P11/EPIC.md`。

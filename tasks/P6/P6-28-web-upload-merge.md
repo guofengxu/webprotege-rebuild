@@ -7,8 +7,8 @@ type: impl
 size: M
 work_type: web
 ecc_extra: []
-status: blocked
-depends_on: [P6-50, P6-22]
+status: todo
+depends_on: [P6-50, P6-22, P11-02]
 ---
 
 # P6-28 Web 端：上传并合并到已有项目
@@ -63,6 +63,7 @@ pnpm -C frontend --filter wp-web exec vitest run src/features/upload-merge src/f
 - 后端（P6-27、P6-50）
 - 逐条勾选公理、在预览中搜索
 
-## 阻塞
+## 首次执行记录（2026-11-25，当时标为 blocked）
 - 日期：2026-11-25
 - 原因：依赖 P6-27 产出与本卡假设不符：后端 Action 已有 UPLOAD_AND_MERGE / UPLOAD_AND_MERGE_ADDITIONS，且 GET /permissions/me 运行时会返回它们，但 MyProjectPermissionsResponse 的 @Schema allowableValues、docs/api/openapi.json 与 @wp/api-types 的 ProjectAction 联合类型都未列入这两项。本卡 UploadMergeButton 要用 useProjectPermissions('UPLOAD_AND_MERGE'|'UPLOAD_AND_MERGE_ADDITIONS')，类型对不上。建议：补一张小卡（或回修 P6-27）更新 allowableValues → 重生成 openapi.json / schema.d.ts；本卡再开工。不在本卡范围的后端改动我未做。
+- 重开（2026-11-28）：修复卡 P11-02 已建（`tasks/P11/`），本卡增加依赖 P11-02 并改回 `todo`；P11-02 合并前本卡不会出现在可以开工的卡中。开工前由人删除远端已合并的分支 `feature/p6-28-web-upload-merge`，再按 `python tools/task.py start P6-28` 开工。

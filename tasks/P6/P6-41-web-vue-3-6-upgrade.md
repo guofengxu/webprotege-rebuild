@@ -7,7 +7,7 @@ type: impl
 size: S
 work_type: web
 ecc_extra: []
-status: blocked
+status: suspended
 depends_on: [P6-42]
 ---
 
@@ -63,3 +63,11 @@ pnpm -C frontend --filter wp-web exec node -e "const v=require('vue/package.json
 - 恢复方式：`npm view vue dist-tags.latest` 显示 3.6.x，且 `element-plus` 等关键依赖没有已知的不兼容问题时，人把本卡 `status` 改回 `todo` 并删除本节，再按 `python tools/task.py start P6-41` 开工。
 - 复核（2026-11-22）：外部条件仍未满足。npm 上 `vue` 的 `latest` 为 3.5.46，3.6 最新为 `3.6.0-rc.16`（2026-11-20 发布）；`element-plus` 的 `latest` 仍为 2.14.8。
 - 依赖说明（2026-11-22）：`task.py start` 要求全部依赖为 `done`，而本卡依赖的 P6-42 当时是 `blocked`（被一条与 TypeScript 无关的 wp-web 测试失败卡住）。修复卡 P6-65 合并、P6-42 按“保持 6.0.3”结束后，这项依赖即可解除；之后本卡只等 Vue 3.6 正式版。恢复时如果 P6-42 还没有完成，先完成 P6-42，不要去掉本卡对它的依赖（两张卡都修改 `package.json` 与锁文件，需要串行）。
+
+## 挂起
+- 日期：2026-11-28
+- 决定：人决定把本卡由 `blocked` 改为挂起（`status: suspended`）：本卡等的是外部条件（Vue 3.6 正式发布），不是执行中遇到的问题，而外部条件无法写进 `depends_on`。上面的「阻塞」小节保留作历史记录。
+- 复核（2026-11-28）：npm 上 `vue` 的 `latest` 为 3.5.46，3.6 最新为 `3.6.0-rc.17`；`element-plus` 的 `latest` 为 2.14.9。
+- 恢复条件：`npm view vue dist-tags.latest` 显示 3.6.x，`element-plus` 等关键依赖没有已知的不兼容问题，且 P6-42 已完成（两张卡都修改 `package.json` 与锁文件，需要串行）。
+- 恢复方式：人把本卡 `status` 改回 `todo`，删除「阻塞」与「挂起」两节，合并后按 `python tools/task.py start P6-41` 开工。
+- 影响：没有卡依赖本卡。
