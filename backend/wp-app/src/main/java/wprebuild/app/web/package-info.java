@@ -7,6 +7,7 @@
             "project",
             "revision",
             "ontology",
+            "form",
             "search",
             "events",
             "migration",

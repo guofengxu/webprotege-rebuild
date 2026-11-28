@@ -187,7 +187,7 @@ flowchart LR
         P6_63["P6-63"]:::cancelled
         P6_64["P6-64"]:::todo
         P6_65["P6-65"]:::done
-        P6_66["P6-66"]:::todo
+        P6_66["P6-66"]:::done
         P6_67["P6-67"]:::todo
         P6_68["P6-68"]:::todo
         P6_69["P6-69"]:::todo

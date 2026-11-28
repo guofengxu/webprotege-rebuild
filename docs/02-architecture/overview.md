@@ -47,10 +47,11 @@ webprotege-rebuild/
 | `bus` | 命令总线：`Command` / `CommandHandler`、校验链；通过 SPI 接口 `ProjectExistenceCheck` 判断项目状态，不直接依赖 `project` | access, shared |
 | `project` | 项目元数据、回收站、项目设置（前缀、CrudKit、显示语言）、共享设置；实现 `ProjectExistenceCheck` | bus, access, shared |
 | `revision` | PostgreSQL 实现的 `RevisionLog`、`SnapshotStore`；同一事务写 outbox；修订历史的只读查询接口 | shared |
-| `ontology` | `ProjectRuntime` 注册表（Caffeine）；本体命令与查询；导入导出；修订历史与回滚的命令处理器 | bus, project, access, revision, shared |
+| `ontology` | `ProjectRuntime` 注册表（Caffeine）；本体命令与查询；导入导出；修订历史与回滚的命令处理器 | bus, project, access, revision, shared, form |
+| `form` | 表单描述符与选择器持久化及管理命令 | bus, access, shared |
 | `search` | Lucene 实体索引；订阅修订提交事件做增量更新 | bus, ontology, ontology :: dto, access, shared |
 | `events` | 把修订翻译为高层事件（BS-11），通过 SSE 和长轮询推送 | bus, ontology, access, shared, project |
-| `migration` | 导入迁移包，生成带完整历史的项目 | bus, ontology, project, access, shared |
+| `migration` | 导入迁移包，生成带完整历史的项目 | bus, ontology, project, access, shared, form |
 | `projection` | 由本体派生的只读投影表，供外部 SQL 查询（ADR-013） | ontology, revision, bus, access, shared |
 | `integration` | webhook 与消息发布等对外集成，消费 outbox | bus, access, revision, shared |
 | `web` | REST 控制器、OpenAPI、异常映射、安全配置（含 CORS） | 以上全部 |
@@ -58,7 +59,7 @@ webprotege-rebuild/
 - 依赖关系由 `ApplicationModules.of(WpApplication.class).verify()` 测试强制执行（P0-07）。
 - `ontology` 写修订时只使用内核里的 `RevisionLog` / `SnapshotStore` 接口，实现由 `revision` 模块作为 Spring Bean 提供；只有查询修订历史时才直接调用 `revision` 模块公开的 `RevisionHistoryQueries`。
 - 跨模块的反向通知一律用 Spring 事件：`ontology` 发布 `RevisionCommittedEvent`，`project` 发布 `ProjectSettingsChanged`，`access` 发布 `RoleAssignmentsChanged`。下层模块不引用上层模块的类型。
-- 凡是需要操作 `ProjectRuntime` 的命令处理器（创建项目、上传、编辑、回滚等），都放在 `ontology` 模块。
+- 凡是需要操作 `ProjectRuntime` 的命令处理器（创建项目、上传、编辑、回滚等），都放在 `ontology` 模块。实体表单**读写**命令仍在 `ontology`（P6-69/P6-73）；`form` 只提供描述符/选择器仓储，不调用 `ChangePipeline`。`ontology` 允许依赖 `form` 仅用于加载描述符与选择器。
 
 ## 3. wp-kernel 的包结构
 

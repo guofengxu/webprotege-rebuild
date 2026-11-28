@@ -7,7 +7,7 @@ type: impl
 size: M
 work_type: db
 ecc_extra: []
-status: todo
+status: done
 depends_on: [P6-43, P6-55]
 ---
 
@@ -53,10 +53,18 @@ depends_on: [P6-43, P6-55]
 ```
 
 ## 完成判据
-- [ ] 产出清单中的每一项都已存在
-- [ ] 验收命令全部通过
-- [ ] 全量检查通过（由 `python tools/task.py test` 自动执行）
-- [ ] 执行记录已填写
+- [x] 产出清单中的每一项都已存在
+- [x] 验收命令全部通过
+- [x] 全量检查通过（由 `python tools/task.py test` 自动执行）
+- [x] 执行记录已填写
 
 ## 不在本卡范围
 - REST / OpenAPI、`EDIT_FORMS`、实体表单读写、迁移导入导出、内核生成器
+
+## 执行记录
+- 日期：2026-11-28
+- 分支：feature/p6-66-form-schema
+- 测试：2026-11-28T13:07:34+08:00 通过（3 项）
+- 实际改动：Added V10 project_form/project_form_selector, JDBC repositories with ordinal replace and cascade delete, Modulith form module shell, and overview/ModularityTest wiring for web/migration/ontology → form.
+- 偏差：No references projects on form tables (card DDL lists columns without FK; ProjectMigrator cleanup left for form import card).
+- 审查：database-reviewer, (fixed, delete, cascade, only-when-descriptor-removed;, deferred, project, FK, and, selector→form, FK, to, keep, card, DDL, and, migrator, scope);, java-reviewer, (clean)

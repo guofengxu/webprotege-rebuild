@@ -21,10 +21,14 @@ class ModularityTest {
             Map.entry("bus", new ModuleDeclaration(false, "access", "shared")),
             Map.entry("project", new ModuleDeclaration(false, "bus", "access", "shared")),
             Map.entry("revision", new ModuleDeclaration(false, "shared")),
-            Map.entry("ontology", new ModuleDeclaration(false, "bus", "project", "access", "revision", "shared")),
+            Map.entry(
+                    "ontology", new ModuleDeclaration(false, "bus", "project", "access", "revision", "shared", "form")),
+            Map.entry("form", new ModuleDeclaration(false, "bus", "access", "shared")),
             Map.entry("search", new ModuleDeclaration(false, "bus", "ontology", "ontology :: dto", "access", "shared")),
             Map.entry("events", new ModuleDeclaration(false, "bus", "ontology", "access", "shared", "project")),
-            Map.entry("migration", new ModuleDeclaration(false, "bus", "ontology", "project", "access", "shared")),
+            Map.entry(
+                    "migration",
+                    new ModuleDeclaration(false, "bus", "ontology", "project", "access", "shared", "form")),
             Map.entry("projection", new ModuleDeclaration(false, "ontology", "revision", "bus", "access", "shared")),
             Map.entry("integration", new ModuleDeclaration(false, "bus", "access", "revision", "shared")),
             Map.entry(
@@ -37,6 +41,7 @@ class ModularityTest {
                             "project",
                             "revision",
                             "ontology",
+                            "form",
                             "search",
                             "events",
                             "migration",
